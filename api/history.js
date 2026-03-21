@@ -1,24 +1,25 @@
-exports.handler = async (event) => {
-  const symbols = event.queryStringParameters?.symbols || '';
-  if (!symbols) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'No symbols' }) };
-  }
+// api/history.js — Vercel serverless function
+// Fetches 1-year monthly historical prices from Yahoo Finance
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Content-Type', 'application/json');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const symbols = req.query.symbols || '';
+  if (!symbols) return res.status(400).json({ error: 'No symbols' });
 
   const baseHeaders = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     'Accept': 'application/json',
   };
 
-  const responseHeaders = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-  };
-
-  const symbolList = symbols.split(',').map(s => s.trim()).slice(0, 20);
+  const symbolList = symbols.split(',').map(s => s.trim()).filter(Boolean).slice(0, 20);
   const now = Math.floor(Date.now() / 1000);
   const oneYearAgo = now - (365 * 24 * 60 * 60);
 
-  // Also get S&P 500 and NASDAQ 100 for comparison
+  // Include S&P 500 and NASDAQ 100 for comparison charts
   const allSymbols = [...new Set([...symbolList, '^GSPC', '^NDX'])];
 
   const results = {};
@@ -34,7 +35,6 @@ exports.handler = async (event) => {
       const timestamps = chart.timestamps || chart.timestamp || [];
       const closes = chart.indicators?.quote?.[0]?.close || [];
 
-      // Build monthly array: { date, close }
       const monthly = [];
       for (let i = 0; i < timestamps.length; i++) {
         const close = closes[i];
@@ -47,12 +47,10 @@ exports.handler = async (event) => {
       }
 
       if (monthly.length) results[symbol] = monthly;
-    } catch(e) {}
+    } catch (e) {
+      console.log(`History fetch failed for ${symbol}:`, e.message);
+    }
   }
 
-  return {
-    statusCode: 200,
-    headers: responseHeaders,
-    body: JSON.stringify(results),
-  };
-};
+  return res.status(200).json(results);
+}

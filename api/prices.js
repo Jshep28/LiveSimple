@@ -1,18 +1,19 @@
-exports.handler = async (event) => {
-  const symbols = event.queryStringParameters?.symbols || '';
-  if (!symbols) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'No symbols provided' }) };
-  }
+// api/prices.js — Vercel serverless function
+// Proxies Yahoo Finance to avoid browser CORS restrictions
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Content-Type', 'application/json');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const symbols = req.query.symbols || '';
+  if (!symbols) return res.status(400).json({ error: 'No symbols provided' });
 
   const baseHeaders = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/json,*/*',
     'Accept-Language': 'en-US,en;q=0.9',
-  };
-
-  const responseHeaders = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
   };
 
   const buildMap = (results) => {
@@ -36,7 +37,7 @@ exports.handler = async (event) => {
     return map;
   };
 
-  // Attempt 1: crumb-authenticated v7 quote
+  // Attempt 1: crumb-authenticated v7 quote (most complete data)
   try {
     const cookieRes = await fetch('https://finance.yahoo.com/', { headers: baseHeaders });
     const cookies = cookieRes.headers.get('set-cookie') || '';
@@ -44,18 +45,18 @@ exports.handler = async (event) => {
       headers: { ...baseHeaders, 'Cookie': cookies }
     });
     const crumb = await crumbRes.text();
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&crumb=${encodeURIComponent(crumb)}`;
-    const quoteRes = await fetch(url, { headers: { ...baseHeaders, 'Cookie': cookies } });
-    const data = await quoteRes.json();
-    const results = data?.quoteResponse?.result || [];
-    if (results.length) {
-      return { statusCode: 200, headers: responseHeaders, body: JSON.stringify(buildMap(results)) };
+    if (crumb && !crumb.includes('<!DOCTYPE')) {
+      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&crumb=${encodeURIComponent(crumb)}`;
+      const quoteRes = await fetch(url, { headers: { ...baseHeaders, 'Cookie': cookies } });
+      const data = await quoteRes.json();
+      const results = data?.quoteResponse?.result || [];
+      if (results.length) return res.status(200).json(buildMap(results));
     }
-  } catch(e) {}
+  } catch (e) { console.log('Attempt 1 failed:', e.message); }
 
   // Attempt 2: v8 chart per symbol (no auth needed)
   try {
-    const symbolList = symbols.split(',').map(s => s.trim()).slice(0, 20);
+    const symbolList = symbols.split(',').map(s => s.trim()).filter(Boolean).slice(0, 20);
     const map = {};
     for (const symbol of symbolList) {
       try {
@@ -74,19 +75,12 @@ exports.handler = async (event) => {
           dayChange: price - prevClose,
           dayChangePct: prevClose ? ((price - prevClose) / prevClose) * 100 : 0,
           quoteType: m.instrumentType || '',
-          sector: '',
-          name: symbol,
+          sector: '', name: symbol,
         };
-      } catch(e) {}
+      } catch (e) { console.log(`${symbol} failed:`, e.message); }
     }
-    if (Object.keys(map).length) {
-      return { statusCode: 200, headers: responseHeaders, body: JSON.stringify(map) };
-    }
-  } catch(e) {}
+    if (Object.keys(map).length) return res.status(200).json(map);
+  } catch (e) { console.log('Attempt 2 failed:', e.message); }
 
-  return {
-    statusCode: 500,
-    headers: responseHeaders,
-    body: JSON.stringify({ error: 'All fetch attempts failed' }),
-  };
-};
+  return res.status(500).json({ error: 'All fetch attempts failed' });
+}
