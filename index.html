@@ -1938,7 +1938,7 @@ nav {
       </div>
     </div>
     <button class="refresh-btn" id="refreshBtn" onclick="fetchAllPrices()">
-      <span>↻</span> Refresh
+      <span id="refreshIcon">↻</span> Refresh
     </button>
     <span class="last-updated" id="lastUpdated"></span>
   </div>
@@ -3582,8 +3582,8 @@ async function fetchFX() {
 async function fetchAllPrices() {
   const btn = document.getElementById('refreshBtn');
   const icon = document.getElementById('refreshIcon');
-  btn.classList.add('loading');
-  icon.innerHTML = '<span class="spin">↻</span>';
+  if (btn) btn.classList.add('loading');
+  if (icon) icon.innerHTML = '<span class="spin">↻</span>';
   setStatus('loading', 'Fetching prices...');
 
   await fetchFX();
@@ -3592,8 +3592,8 @@ async function fetchAllPrices() {
   const tickers = holdings.filter(h => !h.isCustom).map(h => h.ticker);
 
   if (!tickers.length) {
-    btn.classList.remove('loading');
-    icon.textContent = '↻';
+    if (btn) btn.classList.remove('loading');
+    if (icon) icon.textContent = '↻';
     renderAll();
     return;
   }
@@ -3630,8 +3630,8 @@ async function fetchAllPrices() {
   }
 
   updateMarketStatus();
-  btn.classList.remove('loading');
-  icon.textContent = '↻';
+  if (btn) btn.classList.remove('loading');
+  if (icon) icon.textContent = '↻';
   renderAll();
 }
 
