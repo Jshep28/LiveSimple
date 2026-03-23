@@ -1091,7 +1091,8 @@ nav {
 .alloc-drift-label { font-family:'Montserrat',sans-serif; font-weight:700; font-size:11px; color:var(--dark); width:90px; flex-shrink:0; }
 .alloc-drift-bar-wrap { flex:1; min-width:100px; height:8px; background:var(--border); border-radius:4px; position:relative; }
 .alloc-drift-bar-actual { height:100%; border-radius:4px; transition:width 0.4s; }
-.alloc-drift-target-line { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--navy); border-radius:1px; }
+.alloc-drift-target-line { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--dark); border-radius:1px; }
+[data-theme="dark"] .alloc-drift-target-line { background: #e0e8f0; }
 .alloc-drift-pcts { font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; white-space:nowrap; }
 .alloc-target-input { width:52px; border:1px solid var(--border); border-radius:6px; padding:5px 6px; font-family:'Montserrat',sans-serif; font-weight:700; font-size:12px; text-align:center; outline:none; }
 .alloc-target-input:focus { border-color:var(--navy); }
@@ -1558,12 +1559,6 @@ input, select, textarea, button, canvas, img,
 [data-theme="dark"] .cal-cell:hover { background: rgba(255,107,91,0.18); }
 [data-theme="dark"] .wm-row-name input { color: #e0e8f0; }
 
-/* Currency picker */
-[data-theme="dark"] #currencyPicker,
-[data-theme="dark"] #budgetCurrencyPicker { background: #162030; border-color: #1e2d3d; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-[data-theme="dark"] .curr-opt { color: #e0e8f0; }
-[data-theme="dark"] .curr-opt:hover { background: #1e2d3d; }
-
 /* ── Info popup ── */
 [data-theme="dark"] .info-popup { background: #162030; border-color: #1e2d3d; color: #c8d6e5; }
 [data-theme="dark"] .info-popup-title { color: var(--coral); }
@@ -1932,6 +1927,25 @@ nav {
 
 .empty-state { padding: 30px; text-align: center; color: var(--mid); font-size: 13px; font-style: italic; }
 
+/* CURRENCY PICKER DROPDOWN */
+.currency-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  border: 1px solid #dde3ea;
+  overflow: hidden;
+  z-index: 999;
+  min-width: 120px;
+}
+[data-theme="dark"] .currency-picker-dropdown {
+  background: #1a2d45;
+  border-color: #2a4060;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
 /* API NOTE */
 .curr-opt {
   padding: 8px 16px;
@@ -1949,6 +1963,12 @@ nav {
 /* Budget currency picker active state */
 #budgetCurrencyPicker .curr-opt.active { background: var(--coral); color: white; }
 #budgetCurrencyPicker .curr-opt:hover { background: #fce5cd; }
+
+[data-theme="dark"] .curr-opt { color: #e0e8f0; }
+[data-theme="dark"] .curr-opt:hover { background: #223550; }
+[data-theme="dark"] .curr-opt.active { background: #0097a7; color: white; }
+[data-theme="dark"] #budgetCurrencyPicker .curr-opt.active { background: var(--coral); color: white; }
+[data-theme="dark"] #budgetCurrencyPicker .curr-opt:hover { background: rgba(255,107,91,0.15); }
 
 
 /* INFO POPUP */
@@ -3065,9 +3085,7 @@ window.refreshMonthArrows = function() {
              color:white;cursor:pointer;outline:none;white-space:nowrap;">
       <span id="budgetCurrencyBtnLabel">$ AUD</span> ▾
     </button>
-    <div id="budgetCurrencyPicker" style="display:none;position:absolute;top:calc(100% + 6px);right:0;
-         background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
-         border:1px solid #ede8e2;overflow:hidden;z-index:999;min-width:120px;">
+    <div id="budgetCurrencyPicker" class="currency-picker-dropdown" style="display:none;">
       <div style="padding:6px 0;">
         <div class="curr-opt" onclick="pickBudgetCurrency('AUD','$ AUD','$')">$ AUD</div>
         <div class="curr-opt" onclick="pickBudgetCurrency('USD','$ USD','$')">$ USD</div>
@@ -3607,9 +3625,7 @@ window.refreshMonthArrows = function() {
                color:white;cursor:pointer;outline:none;white-space:nowrap;">
         <span id="currencyBtnLabel">$ USD</span> ▾
       </button>
-      <div id="currencyPicker" style="display:none;position:absolute;top:calc(100% + 6px);right:0;
-           background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
-           border:1px solid #dde3ea;overflow:hidden;z-index:999;min-width:120px;">
+      <div id="currencyPicker" class="currency-picker-dropdown" style="display:none;">
         <div style="padding:6px 0;">
           <div class="curr-opt" onclick="pickCurrency('USD','$ USD')">$ USD</div>
           <div class="curr-opt" onclick="pickCurrency('AUD','A$ AUD')">A$ AUD</div>
@@ -7418,7 +7434,7 @@ function renderTargetAllocDrift() {
     const actPct = ((actual[t] || 0) / totalVal * 100);
     const drift  = actPct - tgt;
     const driftCol = Math.abs(drift) < 2 ? 'var(--green)' : Math.abs(drift) < 5 ? 'var(--amber, #f59e0b)' : 'var(--red)';
-    const barCol   = actPct <= tgt ? 'var(--navy)' : 'var(--coral)';
+    const barCol   = actPct <= tgt ? 'var(--teal)' : 'var(--coral)';
     return `<div class="alloc-drift-row">
       <div class="alloc-drift-label">${t}</div>
       <div class="alloc-drift-bar-wrap">
