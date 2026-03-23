@@ -66,14 +66,14 @@
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
   font-size: 13px;
-  color: #2a252e;
+  color: #1a2332;
 }
 .logo-dd-name em { font-style: normal; color: #ff6b5b; }
 .logo-dd-sub {
   font-family: 'Montserrat', sans-serif;
   font-size: 10px;
   font-weight: 600;
-  color: #999;
+  color: #6b7a8d;
   margin-top: 2px;
 }
 .logo-dd-check {
@@ -82,6 +82,18 @@
   font-size: 14px;
   align-self: center;
 }
+
+/* Dark mode logo dropdown */
+[data-theme="dark"] .logo-dropdown-menu {
+  background: #1a2d45;
+  border-color: #2a4060;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+[data-theme="dark"] .logo-dropdown-item { border-bottom-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .logo-dropdown-item:hover { background: #223550; }
+[data-theme="dark"] .logo-dropdown-item.active-app { background: #0f2035; }
+[data-theme="dark"] .logo-dd-name { color: #e0e8f0; }
+[data-theme="dark"] .logo-dd-sub { color: #8a97a8; }
 </style>
 
 
@@ -148,6 +160,10 @@ nav {
   color: rgba(255,255,255,0.75);
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 .nav-tab.active {
   background: rgba(255,255,255,0.2);
@@ -167,16 +183,21 @@ nav {
 /* HERO BANNER */
 .hero {
   background: var(--coral);
-  padding: 20px 20px 16px;
+  padding: 16px 20px;
   color: white;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .hero-month {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 32px;
+  font-size: 28px;
   letter-spacing: 6px;
   text-transform: uppercase;
   color: white;
+  line-height: 1.1;
 }
 .hero-sub {
   font-size: 11px;
@@ -276,11 +297,12 @@ nav {
   overflow: hidden;
 }
 .section-head {
-  background: var(--coral);
+  background: white;
   padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 2px solid var(--navy);
 }
 .section-head h2 {
   font-family: 'Montserrat', sans-serif;
@@ -288,10 +310,10 @@ nav {
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: white;
+  color: var(--navy);
 }
 .section-head button {
-  background: rgba(255,255,255,0.2);
+  background: var(--navy);
   border: none;
   border-radius: 20px;
   padding: 3px 10px;
@@ -300,7 +322,9 @@ nav {
   font-size: 10px;
   color: white;
   cursor: pointer;
+  transition: background 0.15s;
 }
+.section-head button:hover { background: var(--coral); }
 
 /* TABLE ROWS */
 .tracker-row {
@@ -496,13 +520,15 @@ nav {
 .delete-btn {
   background: none;
   border: none;
-  color: var(--border);
+  color: #b0b8c4;
   cursor: pointer;
-  font-size: 16px;
-  padding: 2px 4px;
-  transition: color 0.15s;
+  font-size: 15px;
+  padding: 2px 6px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
 }
-.delete-btn:hover { color: var(--red); }
+.delete-btn:hover { color: var(--red); background: rgba(232,84,68,0.08); }
 
 /* BREAKDOWN */
 .breakdown-bar-row {
@@ -566,7 +592,11 @@ nav {
 /* HABIT TRACKER PAGE */
 .habit-hero {
   background: var(--coral);
-  padding: 20px 20px 16px;
+  padding: 16px 20px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .habit-hero h1 {
   font-family: 'Montserrat', sans-serif;
@@ -574,6 +604,7 @@ nav {
   font-size: 28px;
   letter-spacing: 5px;
   color: white;
+  line-height: 1.1;
 }
 .habit-hero p {
   font-size: 11px;
@@ -752,12 +783,13 @@ nav {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--border);
+  color: #b0b8c4;
   font-size: 12px;
   padding: 0;
   line-height: 1;
   flex-shrink: 0;
   display: none;
+  transition: color 0.15s;
 }
 .cal-row:hover .cal-habit-name .del { display: block; }
 .cal-habit-name .del:hover { color: var(--red); }
@@ -825,9 +857,10 @@ nav {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--border);
+  color: #b0b8c4;
   font-size: 14px;
   display: none;
+  transition: color 0.15s;
 }
 .wm-row:hover .wm-del { display: block; }
 .wm-del:hover { color: var(--red); }
@@ -866,9 +899,10 @@ nav {
   display: flex;
   gap: 6px;
   padding: 12px 16px 0;
+  background: var(--light);
 }
 .week-tab {
-  background: white;
+  background: var(--white);
   border: 1.5px solid var(--border);
   border-radius: 20px;
   padding: 4px 12px;
@@ -995,7 +1029,7 @@ nav {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--border);
+  color: #b0b8c4;
   font-size: 15px;
   cursor: pointer;
   padding: 4px 6px;
@@ -1213,7 +1247,7 @@ nav {
 
 /* YEAR SELECTOR */
 .year-bar {
-  background: var(--dark);
+  background: var(--navy);
   padding: 10px 20px;
   display: flex;
   align-items: center;
@@ -1239,15 +1273,8 @@ nav {
   color: white;
   letter-spacing: 3px;
 }
-.settings-section {
-  margin: 16px;
-  background: white;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-}
 .settings-section-title {
-  background: var(--dark);
+  background: var(--navy);
   padding: 10px 16px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
@@ -1255,6 +1282,13 @@ nav {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: white;
+}
+.settings-section {
+  margin: 16px;
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
 }
 .settings-row {
   padding: 14px 16px;
@@ -1328,7 +1362,7 @@ nav {
 .modal-btn { border: none; border-radius: 8px; padding: 9px 18px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
 .modal-btn.cancel { background: var(--light); color: var(--mid); }
 .modal-btn.confirm { background: var(--red); color: white; }
-.review-hero { background: var(--coral); padding: 20px 20px 16px; }
+.review-hero { background: var(--coral); padding: 16px 20px; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
 .review-hero h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: 4px; color: white; }
 .review-hero p { font-size: 11px; font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.65); margin-top: 4px; }
 .review-big-stat { background: white; margin: 16px 16px 0; border-radius: 16px; padding: 20px; text-align: center; }
@@ -1369,6 +1403,264 @@ nav {
   --amber: #f59e0b;
   --card-bg: #f8fafc;
 }
+
+/* ── DARK MODE VARIABLES ─────────────────────────────────────── */
+[data-theme="dark"] {
+  /* Budget app */
+  --coral: #ff7a6b;
+  --coral-dark: #e85444;
+  --coral-light: #3d1a14;
+  --navy: #0a1628;
+  --dark: #f0f4f8;
+  --mid: #8a97a8;
+  --light: #0f1923;
+  --white: #162030;
+  --border: #1e2d3d;
+  --green: #34d87a;
+  --red: #f87171;
+  --blue: #60a5fa;
+  /* Invest app extras */
+  --navy-light: #1a2d45;
+  --card-bg: #162030;
+  --teal: #22b8c8;
+  --amber: #fbbf24;
+}
+
+/* ── SMOOTH THEME TRANSITIONS ────────────────────────────────── */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease, box-shadow 0.25s ease;
+}
+/* Exclude transitions that cause jank */
+input, select, textarea, button, canvas, img,
+.tab-btn, .nav-tab, .scroll-arrow,
+.toggle-thumb, .market-ticker-inner {
+  transition: none !important;
+}
+.toggle-thumb { transition: transform 0.2s ease !important; }
+.tab-btn, .nav-tab { transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease !important; }
+
+/* ── DARK MODE OVERRIDES ─────────────────────────────────────── */
+[data-theme="dark"] body { background: #0b1520; color: var(--dark); }
+
+/* Nav */
+[data-theme="dark"] nav { background: #0a1628; border-bottom: 1px solid #1e2d3d; }
+[data-theme="dark"] .tab-bar { background: #0a1628 !important; border-top-color: rgba(255,255,255,0.05); }
+
+/* Cards & sections */
+[data-theme="dark"] .section,
+[data-theme="dark"] .stat-box,
+[data-theme="dark"] .left-card,
+[data-theme="dark"] .review-card,
+[data-theme="dark"] .review-big-stat,
+[data-theme="dark"] .modal,
+[data-theme="dark"] .calc-result-card,
+[data-theme="dark"] .goal-input-wrap,
+[data-theme="dark"] .invest-drawer { background: #162030; }
+
+[data-theme="dark"] .hero-card { background: #0f2035; }
+[data-theme="dark"] .hero-card.full { background: linear-gradient(135deg, #0a1628 0%, #0f2a40 100%); }
+
+/* Tables */
+[data-theme="dark"] .port-table th { background: #0f1923; }
+[data-theme="dark"] .port-table tr:hover td { background: rgba(255,255,255,0.03); }
+[data-theme="dark"] .port-table td { border-bottom-color: #1e2d3d; }
+
+/* Inputs & forms */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea,
+[data-theme="dark"] .invest-drawer-input,
+[data-theme="dark"] .row-name input[type=text],
+[data-theme="dark"] .amount-input input,
+[data-theme="dark"] .alloc-target-input,
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .calc-input {
+  background: #0f1923 !important;
+  border-color: #1e2d3d !important;
+  color: #e0e8f0 !important;
+}
+[data-theme="dark"] .add-form { background: #0f1923; border-top-color: #1e2d3d; }
+[data-theme="dark"] .expense-form,
+[data-theme="dark"] .expense-form-row2 { background: #0f1923; border-bottom-color: #1e2d3d; }
+
+/* ── Calculator & Goal — fix dark text on dark bg ── */
+[data-theme="dark"] .calc-result-val { color: #7dd3fc; }
+[data-theme="dark"] .calc-result-label { color: #8a97a8; }
+[data-theme="dark"] .calc-label { color: #8a97a8; }
+[data-theme="dark"] .calc-label span { color: #7dd3fc; }
+[data-theme="dark"] .calc-slider { accent-color: var(--coral); }
+[data-theme="dark"] .goal-input-wrap span { color: #8a97a8; }
+[data-theme="dark"] .goal-input-wrap input { color: #e0e8f0 !important; }
+[data-theme="dark"] .goal-bar-bg { background: #1e2d3d; }
+[data-theme="dark"] .goal-label-row { color: #8a97a8; }
+[data-theme="dark"] #goal-rate-out { color: #7dd3fc !important; }
+[data-theme="dark"] #goal-eta { color: #8a97a8; }
+
+/* Budget specific */
+[data-theme="dark"] .hero { background: #e05545; }
+[data-theme="dark"] .habit-hero { background: #e05545; }
+[data-theme="dark"] .week-tabs { background: var(--light); }
+[data-theme="dark"] .review-hero { background: #e05545; }
+[data-theme="dark"] .tracker-row { border-bottom-color: #1e2d3d; }
+[data-theme="dark"] .tracker-row.header { background: #0f1923; }
+[data-theme="dark"] .section-footer { background: #0a1628; }
+[data-theme="dark"] .progress-bar-bg { background: #1e2d3d; }
+[data-theme="dark"] .copy-bar { background: #162030; border-color: #1e2d3d; }
+[data-theme="dark"] .insights-bar { background: rgba(255,100,70,0.12); }
+[data-theme="dark"] .expense-form { background: #0f1923; }
+[data-theme="dark"] .habit-day { background: #1e2d3d; }
+[data-theme="dark"] .wk-tab { background: #162030; color: var(--mid); }
+[data-theme="dark"] .wk-tab.active { background: #0a1628; color: var(--coral); }
+[data-theme="dark"] .cal-habit-name,
+[data-theme="dark"] .cal-habit-col { background: #162030 !important; }
+[data-theme="dark"] .cal-row:hover .cal-habit-name { background: #1e2d3d !important; }
+
+/* Drawers & overlays */
+[data-theme="dark"] .expense-drawer,
+[data-theme="dark"] .invest-drawer { background: #162030; }
+[data-theme="dark"] .drawer-header { border-bottom-color: #1e2d3d; }
+[data-theme="dark"] .invest-drawer-title { color: #e0e8f0; }
+[data-theme="dark"] .invest-drawer-field label { color: #8a97a8; }
+
+/* Dropdowns & pickers */
+[data-theme="dark"] .info-popup-title { color: #cbd5e1; }
+
+
+/* Settings */
+[data-theme="dark"] .settings-row { border-bottom-color: #1e2d3d; }
+[data-theme="dark"] .settings-row-label { color: #e0e8f0; }
+[data-theme="dark"] .settings-row-desc { color: #8a97a8; }
+[data-theme="dark"] .settings-btn.neutral { background: #223550; border-color: #2a4060; color: #cbd5e1; }
+[data-theme="dark"] .settings-btn.neutral:hover { background: #2a4060; }
+[data-theme="dark"] .settings-btn.danger { background: rgba(239,68,68,0.18); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+[data-theme="dark"] .settings-btn.primary { background: var(--coral); color: white; }
+
+/* Holding action buttons */
+[data-theme="dark"] .act-btn.add  { background: rgba(100,180,220,0.15); color: #7dd3fc; }
+[data-theme="dark"] .act-btn.sell { background: rgba(239,68,68,0.18); color: #fca5a5; }
+[data-theme="dark"] .act-btn.div  { background: rgba(34,197,94,0.18); color: #86efac; }
+
+/* Habits page */
+[data-theme="dark"] .habit-stat { background: #162030; }
+[data-theme="dark"] .daily-habits-section,
+[data-theme="dark"] .wm-section { background: #162030; }
+[data-theme="dark"] .habit-add-row,
+[data-theme="dark"] .wm-add { background: #0f1923; border-color: #1e2d3d; }
+[data-theme="dark"] .cal-header { background: #0f1923; border-bottom-color: #1e2d3d; }
+[data-theme="dark"] .cal-row { border-bottom-color: #1e2d3d; }
+[data-theme="dark"] .cal-row:hover { background: #1a2d45; }
+[data-theme="dark"] .wm-row { border-bottom-color: #1e2d3d; }
+[data-theme="dark"] .week-tab { background: #162030; border-color: #2a4060; color: #8a97a8; }
+[data-theme="dark"] .week-tab.active { background: var(--coral); border-color: var(--coral); color: white; }
+[data-theme="dark"] .month-notes-wrap textarea { background: #162030; border-color: #1e2d3d; color: #e0e8f0; }
+[data-theme="dark"] .cal-day-num { color: #cbd5e1; }
+[data-theme="dark"] .cal-cell:hover { background: rgba(255,107,91,0.18); }
+[data-theme="dark"] .wm-row-name input { color: #e0e8f0; }
+
+/* Currency picker */
+[data-theme="dark"] #currencyPicker,
+[data-theme="dark"] #budgetCurrencyPicker { background: #162030; border-color: #1e2d3d; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+[data-theme="dark"] .curr-opt { color: #e0e8f0; }
+[data-theme="dark"] .curr-opt:hover { background: #1e2d3d; }
+
+/* ── Info popup ── */
+[data-theme="dark"] .info-popup { background: #162030; border-color: #1e2d3d; color: #c8d6e5; }
+[data-theme="dark"] .info-popup-title { color: var(--coral); }
+[data-theme="dark"] .info-popup p { color: #c8d6e5; }
+[data-theme="dark"] .info-popup strong { color: #e0e8f0; }
+[data-theme="dark"] .info-close-btn { color: #8a97a8; }
+[data-theme="dark"] .info-close-btn:hover { color: #e0e8f0; }
+
+/* Goal achieve card */
+[data-theme="dark"] .goal-achieve-card-inner { background: #0f2035; border-color: #0097a7; }
+[data-theme="dark"] .goal-achieve-label { color: #7dd3fc; }
+[data-theme="dark"] .goal-achieve-stat-label { color: #8a97a8; }
+[data-theme="dark"] .goal-achieve-stat-val { color: #e0e8f0; }
+
+/* Target allocation */
+[data-theme="dark"] .alloc-drift-bar-wrap { background: #1e2d3d; }
+[data-theme="dark"] .alloc-drift-label { color: #e0e8f0; }
+[data-theme="dark"] .alloc-drift-pcts { color: #e0e8f0; }
+
+/* Misc */
+[data-theme="dark"] .perf-legend-item { color: #8a97a8; }
+[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,0.7); }
+[data-theme="dark"] .rmb-bar-wrap { background: #1e2d3d; }
+[data-theme="dark"] .empty-state { color: #8a97a8; }
+[data-theme="dark"] .mono { color: #c8d6e5; }
+[data-theme="dark"] .up-val { color: #34d87a; }
+[data-theme="dark"] .down-val { color: #f87171; }
+
+/* Month selector buttons */
+[data-theme="dark"] .month-btn { background: #162030; border-color: #2a4060; color: #8a97a8; }
+[data-theme="dark"] .month-btn.active { background: var(--coral); border-color: var(--coral); color: white; }
+
+/* Month scroll arrows */
+[data-theme="dark"] .month-scroll-arrow { background: rgba(255,255,255,0.1); color: #e0e8f0; }
+[data-theme="dark"] .month-scroll-arrow:hover { background: rgba(255,255,255,0.18); }
+
+/* Settings — year data cards */
+[data-theme="dark"] .year-card { background: #162030; border-color: #2a4060; }
+[data-theme="dark"] .year-card-year { color: #e0e8f0; }
+[data-theme="dark"] .year-card-meta { color: #8a97a8; }
+[data-theme="dark"] .review-big-stat { background: #162030; }
+[data-theme="dark"] .review-big-label { color: #8a97a8; }
+[data-theme="dark"] .review-big-num { color: var(--coral); }
+[data-theme="dark"] .review-card { background: #162030; }
+[data-theme="dark"] .review-card-val { color: #e0e8f0; }
+[data-theme="dark"] .review-card-label { color: #8a97a8; }
+
+/* × Delete/remove buttons — brighter in dark mode so they're visible */
+[data-theme="dark"] .delete-btn,
+[data-theme="dark"] .row-del,
+[data-theme="dark"] .wm-del,
+[data-theme="dark"] .cal-habit-name .del,
+[data-theme="dark"] .del-row { color: #64748b; }
+[data-theme="dark"] .act-btn.del { color: #64748b; background: rgba(255,255,255,0.06); }
+[data-theme="dark"] .delete-btn:hover,
+[data-theme="dark"] .row-del:hover,
+[data-theme="dark"] .wm-del:hover,
+[data-theme="dark"] .cal-habit-name .del:hover,
+[data-theme="dark"] .del-row:hover { color: #f87171; }
+
+/* Year bar (review page) */
+[data-theme="dark"] .year-bar { background: #0a1628; }
+[data-theme="dark"] .year-bar button { color: #94a3b8; }
+[data-theme="dark"] .year-bar button:hover { color: white; }
+[data-theme="dark"] .year-label { color: #e0e8f0; }
+
+/* Settings sections — "Your Data" card and all section titles */
+[data-theme="dark"] .settings-section { background: #162030; }
+[data-theme="dark"] .settings-section-title { background: #0a1628; color: #94a3b8; border-bottom: 1px solid #1e2d3d; }
+
+/* Section heads — unified navy border for both apps */
+[data-theme="dark"] .section-head { background: #162030; border-bottom: 2px solid #2a4060; }
+[data-theme="dark"] .section-head h2 { color: #93c5fd; }
+[data-theme="dark"] #app-budget .section-head h2 { color: #fda4af; }
+[data-theme="dark"] #app-budget .section-head { border-bottom-color: rgba(255,107,91,0.4); }
+[data-theme="dark"] #app-budget .section-head button { background: var(--coral); color: white; }
+[data-theme="dark"] #app-invest .section-head button { background: #2a4060; color: #cbd5e1; }
+[data-theme="dark"] #app-invest .section-head button:hover { background: #344d6e; }
+
+/* ── DARK MODE TOGGLE BUTTON ─────────────────────────────────── */
+.dark-toggle {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: flex; align-items: center; gap: 5px;
+  color: rgba(255,255,255,0.8);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.dark-toggle:hover { background: rgba(255,255,255,0.18); }
+[data-theme="dark"] .dark-toggle { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
 body { font-family: 'Lora', Georgia, serif; background: var(--light); color: var(--dark); min-height: 100vh; }
 
 /* NAV */
@@ -1456,16 +1748,17 @@ nav {
 /* SECTION */
 .section { background: var(--white); border-radius: 14px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 .section-head {
-  background: var(--navy); padding: 10px 16px;
+  background: var(--white); padding: 10px 16px;
   display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 2px solid var(--coral);
 }
-.section-head h2 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: white; }
+.section-head h2 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--dark); }
 .section-head button {
-  background: rgba(255,255,255,0.12); border: none; border-radius: 20px;
+  background: var(--navy); border: none; border-radius: 20px;
   padding: 3px 12px; font-family: 'Montserrat', sans-serif; font-weight: 700;
   font-size: 10px; color: white; cursor: pointer; transition: background 0.2s;
 }
-.section-head button:hover { background: rgba(255,255,255,0.2); }
+.section-head button:hover { background: var(--navy-light); }
 
 /* PORTFOLIO TABLE */
 .port-table { width: 100%; border-collapse: collapse; }
@@ -1493,7 +1786,7 @@ nav {
 .down-val { color: var(--red); }
 .neutral-val { color: var(--mid); }
 
-.del-row { background: none; border: none; cursor: pointer; color: var(--border); font-size: 16px; padding: 2px 4px; transition: color 0.15s; line-height: 1; }
+.del-row { background: none; border: none; cursor: pointer; color: #b0b8c4; font-size: 16px; padding: 2px 4px; transition: color 0.15s; line-height: 1; }
 .del-row:hover { color: var(--red); }
 
 /* ADD HOLDING FORM */
@@ -2063,6 +2356,13 @@ html, body {
   margin-left: auto;
 }
 
+/* Dark toggle always furthest right */
+#app-budget nav #budgetDarkToggle {
+  flex-shrink: 0;
+  order: 100;
+  margin-left: 8px;
+}
+
 /* Wrapped state overrides */
 #app-budget nav.nav-wrapped .logo-dropdown-wrap {
   order: 1;
@@ -2073,8 +2373,12 @@ html, body {
   order: 2;
   margin-left: 0;   /* logo's flex:1 already pushes it right */
 }
-#app-budget nav.nav-wrapped .scroll-tab-wrap {
+#app-budget nav.nav-wrapped #budgetDarkToggle {
   order: 3;
+  margin-left: 4px;
+}
+#app-budget nav.nav-wrapped .scroll-tab-wrap {
+  order: 4;
   justify-content: flex-start;
   margin-left: 0;
 }
@@ -2082,6 +2386,7 @@ html, body {
 /* ══════════════════════════════════════════════════════════════
    INVEST APP NAV — hide overflow-prone elements gracefully
    ══════════════════════════════════════════════════════════════ */
+
 @media (max-width: 540px) {
   #app-invest nav {
     height: auto;
@@ -2587,6 +2892,7 @@ setTimeout(initScrollArrows, 300);
     var tabs   = document.getElementById('budgetNavTabs');
     var logo   = nav.querySelector('.logo-dropdown-wrap');
     var curr   = document.getElementById('budgetCurrencyDropdown');
+    var toggle = document.getElementById('budgetDarkToggle');
     if (!tabs || !logo || !curr) return;
 
     // Temporarily unwrap to measure natural widths
@@ -2594,13 +2900,14 @@ setTimeout(initScrollArrows, 300);
     nav.classList.remove('nav-wrapped');
 
     // Force a reflow to get accurate measurements
-    var navW   = nav.clientWidth;
-    var logoW  = logo.scrollWidth;
-    var tabsW  = tabs.scrollWidth;   // natural (unconstrained) width of all tabs
-    var currW  = curr.scrollWidth;
-    var gap    = 16; // padding + breathing room
+    var navW    = nav.clientWidth;
+    var logoW   = logo.scrollWidth;
+    var tabsW   = tabs.scrollWidth;
+    var currW   = curr.scrollWidth;
+    var toggleW = toggle ? toggle.scrollWidth : 0;
+    var gap     = 80; // generous buffer — wrap well before any overlap
 
-    var fits = (logoW + tabsW + currW + gap) <= navW;
+    var fits = (logoW + tabsW + currW + toggleW + gap) <= navW;
 
     if (!fits) {
       nav.classList.add('nav-wrapped');
@@ -2747,7 +3054,7 @@ window.refreshMonthArrows = function() {
       <button class="nav-tab active" id="tab-budget" onclick="showPage('budget',this)">Budget</button>
       <button class="nav-tab" id="tab-habits" onclick="showPage('habits',this)">Habits</button>
       <button class="nav-tab" id="tab-review" onclick="showPage('review',this)">Review</button>
-      <button class="nav-tab" id="tab-settings" onclick="showPage('settings',this)">⚙</button>
+      <button class="nav-tab" id="tab-settings" onclick="showPage('settings',this)">⚙ Settings</button>
     </div>
     <button class="scroll-arrow scroll-arrow-right" id="budgetNavRight" onclick="scrollTabBar('budgetNavTabs',120)" aria-label="Scroll tabs right">›</button>
   </div>
@@ -2773,6 +3080,9 @@ window.refreshMonthArrows = function() {
       </div>
     </div>
   </div>
+  <button class="dark-toggle" id="budgetDarkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+    <span id="budgetDarkIcon">🌙</span>
+  </button>
 </nav>
 
 
@@ -3066,7 +3376,7 @@ window.refreshMonthArrows = function() {
   <div class="section-head" style="margin: 16px 16px 0; border-radius: 14px 14px 0 0; padding: 10px 16px;">
     <h2>Weekly Habits</h2>
   </div>
-  <div class="week-tabs" style="background: white; margin: 0 16px; padding: 10px 16px 0;">
+  <div class="week-tabs" style="margin: 0 16px; padding: 10px 16px 0;">
     <button class="week-tab active" onclick="selectWeek(0,this)">Wk 1<span class="week-tab-rate" id="wk-rate-0"></span></button>
     <button class="week-tab" onclick="selectWeek(1,this)">Wk 2<span class="week-tab-rate" id="wk-rate-1"></span></button>
     <button class="week-tab" onclick="selectWeek(2,this)">Wk 3<span class="week-tab-rate" id="wk-rate-2"></span></button>
@@ -3166,6 +3476,20 @@ window.refreshMonthArrows = function() {
   <div class="review-hero">
     <h1>S E T T I N G S</h1>
     <p>· Manage your data ·</p>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Appearance</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Dark Mode</div>
+        <div class="settings-row-desc">Switch to a dark theme — easier on the eyes at night</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="darkModeToggleBudget" onchange="toggleDarkMode(this.checked)">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
   </div>
 
   <div class="settings-section">
@@ -3303,6 +3627,9 @@ window.refreshMonthArrows = function() {
       <span id="refreshIcon">↻</span> Refresh
     </button>
     <span class="last-updated" id="lastUpdated"></span>
+    <button class="dark-toggle" id="investDarkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+      <span id="investDarkIcon">🌙</span>
+    </button>
   </div>
 </nav>
 
@@ -3468,7 +3795,7 @@ window.refreshMonthArrows = function() {
 
   <!-- TARGET ALLOCATION -->
   <div class="section">
-    <div class="section-head"><h2>Target Allocation</h2><button onclick="showTab('invest-settings', document.querySelector(\'[onclick*=invest-settings]\'))">Set Targets</button></div>
+    <div class="section-head"><h2>Target Allocation</h2><button onclick="goToInvestSettings()">Set Targets</button></div>
     <div id="target-alloc-content" style="padding:16px;">
       <div class="empty-state">Set target allocations in ⚙ Settings to see drift analysis</div>
     </div>
@@ -3725,6 +4052,20 @@ window.refreshMonthArrows = function() {
 
 <!-- ======= INVEST SETTINGS ======= -->
 <div id="tab-invest-settings" class="panel">
+
+  <div class="settings-section">
+    <div class="settings-section-title">Appearance</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Dark Mode</div>
+        <div class="settings-row-desc">Switch to a dark theme — easier on the eyes at night</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="darkModeToggleInvest" onchange="toggleDarkMode(this.checked)">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+  </div>
 
   <div class="settings-section">
     <div class="settings-section-title">Target Allocation</div>
@@ -7180,6 +7521,16 @@ function renderRealisedTab() {
   }
 }
 
+function goToInvestSettings() {
+  // Find the Settings tab button and activate it
+  const btns = document.querySelectorAll('#investTabBar .tab-btn');
+  const settingsBtn = Array.from(btns).find(b => b.textContent.includes('Settings'));
+  if (settingsBtn) {
+    showTab('invest-settings', settingsBtn);
+    settingsBtn.scrollIntoView({ inline: 'nearest', behavior: 'smooth' });
+  }
+}
+
 // ── Invest settings functions ─────────────────────────────────
 function exportInvestData() {
   const s = getState();
@@ -7247,6 +7598,72 @@ fetchAllPrices();
   var saved = localStorage.getItem('ls_active_app') || 'budget';
   if (saved !== 'budget') {
     switchApp(saved);
+  }
+})();
+</script>
+
+<script>
+// ============================================================
+//  DARK MODE
+// ============================================================
+function applyDarkMode(isDark) {
+  const html = document.documentElement;
+  if (isDark) {
+    html.setAttribute('data-theme', 'dark');
+  } else {
+    html.removeAttribute('data-theme');
+  }
+
+  // Sync all toggle checkboxes
+  ['darkModeToggleBudget','darkModeToggleInvest'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = isDark;
+  });
+
+  // Sync nav icon buttons
+  const icon = isDark ? '☀️' : '🌙';
+  ['budgetDarkIcon','investDarkIcon'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = isDark ? '☀️' : '🌙';
+  });
+
+  // Update Chart.js defaults for all future charts
+  const textColor  = isDark ? '#8a97a8' : '#6b7a8d';
+  const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+  if (window.Chart) {
+    Chart.defaults.color = textColor;
+    Chart.defaults.borderColor = gridColor;
+  }
+
+  // Re-render any active charts so they pick up new colours
+  // We do this by invalidating the performance cache and re-rendering overviews
+  if (typeof renderAll === 'function') renderAll();
+
+  localStorage.setItem('ls_dark_mode', isDark ? '1' : '0');
+}
+
+function toggleDarkMode(forcedVal) {
+  const isDark = forcedVal !== undefined
+    ? forcedVal
+    : document.documentElement.getAttribute('data-theme') !== 'dark';
+  applyDarkMode(isDark);
+}
+
+// Restore on load
+(function() {
+  const saved = localStorage.getItem('ls_dark_mode');
+  // Also respect OS preference if no saved preference
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved !== null ? saved === '1' : prefersDark;
+  if (isDark) applyDarkMode(true);
+
+  // Listen for OS theme changes
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (localStorage.getItem('ls_dark_mode') === null) {
+        applyDarkMode(e.matches);
+      }
+    });
   }
 })();
 </script>
