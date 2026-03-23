@@ -1022,9 +1022,59 @@ nav {
 }
 
 /* Goal yearly table needs separate borders so border-radius works on tds */
-.goal-yearly-table {
-  border-collapse: collapse;
+.goal-yearly-table { border-collapse: collapse; }
+
+/* ── HOLDING ACTION BUTTONS ──────────────────────────────────── */
+.holding-actions { display:flex; gap:4px; align-items:center; flex-wrap:nowrap; }
+.act-btn {
+  font-family:'Montserrat',sans-serif; font-weight:700; font-size:9px;
+  border:none; border-radius:5px; padding:3px 7px; cursor:pointer;
+  white-space:nowrap; transition:opacity 0.15s;
 }
+.act-btn:hover { opacity:0.75; }
+.act-btn.add  { background:rgba(0,69,98,0.12); color:var(--navy); }
+.act-btn.sell { background:rgba(239,68,68,0.12); color:var(--red); }
+.act-btn.div  { background:rgba(34,197,94,0.12); color:var(--green); }
+.act-btn.del  { background:rgba(239,68,68,0.08); color:#9ca3af; }
+
+/* ── MONTHLY HEATMAP ─────────────────────────────────────────── */
+.month-heatmap { display:flex; flex-direction:column; gap:6px; }
+.heatmap-year-row { display:flex; align-items:center; gap:4px; flex-wrap:nowrap; }
+.heatmap-year-label { font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; color:var(--mid); width:36px; flex-shrink:0; }
+.heatmap-cell {
+  width:44px; height:36px; border-radius:6px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Montserrat',sans-serif; font-weight:700; font-size:9px;
+  color:white; cursor:default; transition:transform 0.1s;
+}
+.heatmap-cell:hover { transform:scale(1.08); }
+.heatmap-cell.empty { background:var(--border); color:var(--mid); }
+.heatmap-month-labels { display:flex; gap:4px; padding-left:40px; margin-bottom:4px; }
+.heatmap-month-label { width:44px; text-align:center; font-family:'Montserrat',sans-serif; font-weight:700; font-size:9px; color:var(--mid); flex-shrink:0; }
+
+/* ── TARGET ALLOCATION DRIFT ─────────────────────────────────── */
+.alloc-drift-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+.alloc-drift-label { font-family:'Montserrat',sans-serif; font-weight:700; font-size:11px; color:var(--dark); width:90px; flex-shrink:0; }
+.alloc-drift-bar-wrap { flex:1; min-width:100px; height:8px; background:var(--border); border-radius:4px; position:relative; }
+.alloc-drift-bar-actual { height:100%; border-radius:4px; transition:width 0.4s; }
+.alloc-drift-target-line { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--navy); border-radius:1px; }
+.alloc-drift-pcts { font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; white-space:nowrap; }
+.alloc-target-input { width:52px; border:1px solid var(--border); border-radius:6px; padding:5px 6px; font-family:'Montserrat',sans-serif; font-weight:700; font-size:12px; text-align:center; outline:none; }
+.alloc-target-input:focus { border-color:var(--navy); }
+
+/* ── INVEST ACTION DRAWERS ───────────────────────────────────── */
+.invest-drawer-overlay { display:none; position:fixed; inset:0; background:rgba(26,35,50,0.55); z-index:500; align-items:flex-end; justify-content:center; }
+.invest-drawer-overlay.open { display:flex; }
+.invest-drawer { background:white; border-radius:20px 20px 0 0; width:100%; max-width:480px; padding:0 0 32px; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0,0.15,1); box-shadow:0 -4px 32px rgba(0,0,0,0.18); }
+.invest-drawer-overlay.open .invest-drawer { transform:translateY(0); }
+.invest-drawer-title { font-family:'Montserrat',sans-serif; font-weight:900; font-size:16px; color:var(--dark); }
+.invest-drawer-body { padding:16px 20px 0; }
+.invest-drawer-field { margin-bottom:12px; }
+.invest-drawer-field label { display:block; font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--mid); margin-bottom:5px; }
+.invest-drawer-input { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-family:'Lora',serif; font-size:15px; color:var(--dark); background:var(--light); outline:none; }
+.invest-drawer-input:focus { border-color:var(--navy); background:white; }
+.invest-drawer-submit { margin-top:14px; width:100%; background:var(--navy); border:none; border-radius:12px; padding:13px; font-family:'Montserrat',sans-serif; font-weight:700; font-size:14px; color:white; cursor:pointer; }
+.invest-drawer-submit:hover { background:var(--navy-light); }
 
 /* ── GOAL ACHIEVE CARD ───────────────────────────────────────── */
 .goal-achieve-card-inner {
@@ -3294,6 +3344,7 @@ window.refreshMonthArrows = function() {
     <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
     <button class="tab-btn" onclick="showTab('holdings',this)">Holdings</button>
     <button class="tab-btn" onclick="showTab('performance',this)">Performance</button>
+    <button class="tab-btn" onclick="showTab('watchlist',this)">Watchlist</button>
     <button class="tab-btn" onclick="showTab('calculator',this)">Calculator</button>
     <button class="tab-btn" onclick="showTab('goal',this)">Goal</button>
     <button class="tab-btn" onclick="showTab('invest-settings',this)">⚙ Settings</button>
@@ -3394,6 +3445,14 @@ window.refreshMonthArrows = function() {
     </div>
   </div>
 
+  <!-- TARGET ALLOCATION -->
+  <div class="section">
+    <div class="section-head"><h2>Target Allocation</h2><button onclick="showTab('invest-settings', document.querySelector(\'[onclick*=invest-settings]\'))">Set Targets</button></div>
+    <div id="target-alloc-content" style="padding:16px;">
+      <div class="empty-state">Set target allocations in ⚙ Settings to see drift analysis</div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ======= HOLDINGS ======= -->
@@ -3409,11 +3468,10 @@ window.refreshMonthArrows = function() {
             <th class="hide-mobile">Avg Buy</th>
             <th class="hide-mobile">Cost Basis</th>
             <th>Price</th>
-            <th class="hide-mobile">Manual Price</th>
             <th class="hide-mobile">Market Value</th>
             <th>Gain/Loss $</th>
             <th>Gain/Loss %</th>
-            <th></th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="holdings-body">
@@ -3444,6 +3502,30 @@ window.refreshMonthArrows = function() {
       <button class="add-btn" onclick="addHolding()">+ Add</button>
     </div>
   </div>
+
+  <!-- REALISED GAINS -->
+  <div class="section">
+    <div class="section-head"><h2>Realised Gains</h2></div>
+    <div id="realised-summary" style="padding:12px 16px 0;display:flex;gap:16px;flex-wrap:wrap;"></div>
+    <div style="overflow-x:auto;">
+      <table class="port-table">
+        <thead><tr><th style="text-align:left">Ticker</th><th>Date</th><th>Units Sold</th><th>Sell Price</th><th>Cost Basis</th><th>P&amp;L</th><th>Return</th><th></th></tr></thead>
+        <tbody id="realised-body"><tr><td colspan="8" class="empty-state">No sales recorded yet — use the Sell button on a holding</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DIVIDENDS -->
+  <div class="section">
+    <div class="section-head"><h2>Dividends Received</h2></div>
+    <div id="dividend-summary" style="padding:12px 16px 0;display:flex;gap:16px;flex-wrap:wrap;"></div>
+    <div style="overflow-x:auto;">
+      <table class="port-table">
+        <thead><tr><th style="text-align:left">Ticker</th><th>Date</th><th>Amount</th><th>Note</th><th></th></tr></thead>
+        <tbody id="dividend-body"><tr><td colspan="5" class="empty-state">No dividends logged yet — use the Div button on a holding</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- ======= PERFORMANCE ======= -->
@@ -3454,24 +3536,70 @@ window.refreshMonthArrows = function() {
   </div>
 
   <div id="perf-content" style="display:none;">
+
+    <!-- CHART 1: Real portfolio value over time -->
     <div class="section">
-      <div class="section-head"><h2>Portfolio vs Market (Indexed to 100)</h2></div>
-      <div class="perf-legend">
+      <div class="section-head"><h2>Real Portfolio Value</h2></div>
+      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">Actual value of your holdings over the past 12 months</div>
+      <div class="perf-legend" id="perf-real-legend">
         <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#ff6b5b;height:3px;width:20px;"></div> Your Portfolio</div>
-        <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#bdc2d2;height:3px;width:20px;border:1px dashed #aaa;"></div> S&P 500</div>
-        <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#0097a7;height:3px;width:20px;"></div> NASDAQ 100</div>
+        <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#bdc2d2;height:2px;width:20px;border-top:1px dashed #aaa;"></div> S&amp;P 500 (scaled)</div>
+        <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#0097a7;height:2px;width:20px;"></div> NASDAQ 100 (scaled)</div>
       </div>
-      <div class="chart-wrap"><canvas id="perfChart"></canvas></div>
+      <div class="chart-wrap"><canvas id="realPerfChart"></canvas></div>
+      <div style="padding:0 16px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="perf-real-summary"></div>
     </div>
 
+    <!-- CHART 2: Indexed comparison — "if you held 1 year ago" -->
+    <div class="section">
+      <div class="section-head"><h2>1-Year Indexed Comparison</h2></div>
+      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">If you held these stocks 1 year ago — growth indexed to 100 at start</div>
+      <div class="perf-legend">
+        <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#ff6b5b;height:3px;width:20px;"></div> Your Portfolio</div>
+        <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#bdc2d2;height:2px;width:20px;border-top:1px dashed #aaa;"></div> S&amp;P 500</div>
+        <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#0097a7;height:2px;width:20px;"></div> NASDAQ 100</div>
+      </div>
+      <div class="chart-wrap"><canvas id="perfChart"></canvas></div>
+      <div style="padding:0 16px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="perf-summary"></div>
+    </div>
+
+    <!-- CHART 3: Monthly returns -->
     <div class="section">
       <div class="section-head"><h2>Monthly Returns</h2></div>
+      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">Month-by-month portfolio performance over the past year</div>
       <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
     </div>
 
+    <!-- MONTHLY CHANGE HEATMAP CALENDAR -->
     <div class="section">
-      <div class="section-head"><h2>Performance Summary</h2></div>
-      <div style="padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="perf-summary"></div>
+      <div class="section-head"><h2>Monthly P&amp;L Calendar</h2></div>
+      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">Real portfolio gain/loss each month since you started tracking</div>
+      <div id="monthly-calendar" style="padding:16px;overflow-x:auto;"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ======= WATCHLIST ======= -->
+<div id="tab-watchlist" class="panel">
+  <div class="section">
+    <div class="section-head"><h2>Watchlist</h2><button onclick="fetchWatchlistPrices()">↻ Refresh</button></div>
+    <div style="overflow-x:auto;">
+      <table class="port-table">
+        <thead><tr><th>Ticker</th><th>Price</th><th>Day Change</th><th>52w High</th><th>52w Low</th><th>Note</th><th></th></tr></thead>
+        <tbody id="watchlist-body"><tr><td colspan="7" class="empty-state">Add tickers you're watching below</td></tr></tbody>
+      </table>
+    </div>
+    <div class="add-form" style="grid-template-columns:1fr 2fr auto;">
+      <div class="form-group">
+        <label>Ticker</label>
+        <input type="text" id="watch-ticker" placeholder="e.g. TSLA" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <input type="text" id="watch-note" placeholder="Why you're watching this">
+      </div>
+      <button class="add-btn" onclick="addWatchlistItem()">+ Watch</button>
     </div>
   </div>
 </div>
@@ -3598,6 +3726,15 @@ window.refreshMonthArrows = function() {
 <div id="tab-invest-settings" class="panel">
 
   <div class="settings-section">
+    <div class="settings-section-title">Target Allocation</div>
+    <div style="padding:12px 16px;">
+      <div style="font-size:12px;color:var(--mid);margin-bottom:12px;font-family:'Montserrat',sans-serif;font-weight:600;">Set your desired % for each asset type. The Overview will show how far you've drifted.</div>
+      <div id="target-alloc-inputs"></div>
+      <button onclick="saveTargetAlloc()" style="margin-top:10px;background:var(--navy);border:none;border-radius:8px;padding:8px 16px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:white;cursor:pointer;">Save Targets</button>
+    </div>
+  </div>
+
+  <div class="settings-section">
     <div class="settings-section-title">Data</div>
     <div class="settings-row">
       <div class="settings-row-info">
@@ -3627,6 +3764,62 @@ window.refreshMonthArrows = function() {
     </div>
   </div>
 
+</div>
+
+<!-- ===== INVEST ACTION DRAWERS ===== -->
+
+<!-- ADD MORE UNITS DRAWER -->
+<div class="invest-drawer-overlay" id="addUnitsOverlay" onclick="closeInvestDrawer('addUnitsOverlay',event)">
+  <div class="invest-drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-header">
+      <span class="invest-drawer-title" id="addUnitsTitle">Add More Units</span>
+      <button class="drawer-close" onclick="closeInvestDrawer('addUnitsOverlay')">×</button>
+    </div>
+    <div class="invest-drawer-body">
+      <div style="padding:8px 0 12px;font-size:12px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;" id="addUnitsCurrentInfo"></div>
+      <div class="invest-drawer-field"><label>Additional Units</label><input type="number" class="invest-drawer-input" id="add-units-qty" placeholder="e.g. 5" min="0" step="any"></div>
+      <div class="invest-drawer-field"><label>Purchase Price (native currency)</label><input type="number" class="invest-drawer-input" id="add-units-price" placeholder="e.g. 180.00" min="0" step="any"></div>
+      <div style="padding:10px;background:#f0f4f8;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--navy);" id="addUnitsPreview"></div>
+      <button class="invest-drawer-submit" onclick="confirmAddUnits()">Update Holding</button>
+    </div>
+  </div>
+</div>
+
+<!-- SELL DRAWER -->
+<div class="invest-drawer-overlay" id="sellDrawerOverlay" onclick="closeInvestDrawer('sellDrawerOverlay',event)">
+  <div class="invest-drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-header">
+      <span class="invest-drawer-title" id="sellDrawerTitle">Sell Holding</span>
+      <button class="drawer-close" onclick="closeInvestDrawer('sellDrawerOverlay')">×</button>
+    </div>
+    <div class="invest-drawer-body">
+      <div style="padding:8px 0 12px;font-size:12px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;" id="sellCurrentInfo"></div>
+      <div class="invest-drawer-field"><label>Units to Sell</label><input type="number" class="invest-drawer-input" id="sell-units" placeholder="e.g. 2" min="0" step="any"></div>
+      <div class="invest-drawer-field"><label>Sell Price (native currency)</label><input type="number" class="invest-drawer-input" id="sell-price" placeholder="e.g. 200.00" min="0" step="any"></div>
+      <div class="invest-drawer-field"><label>Date</label><input type="date" class="invest-drawer-input" id="sell-date"></div>
+      <div style="padding:10px;background:#f0f4f8;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--navy);" id="sellPreview"></div>
+      <button class="invest-drawer-submit" onclick="confirmSell()">Record Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIVIDEND DRAWER -->
+<div class="invest-drawer-overlay" id="divDrawerOverlay" onclick="closeInvestDrawer('divDrawerOverlay',event)">
+  <div class="invest-drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-header">
+      <span class="invest-drawer-title" id="divDrawerTitle">Log Dividend</span>
+      <button class="drawer-close" onclick="closeInvestDrawer('divDrawerOverlay')">×</button>
+    </div>
+    <div class="invest-drawer-body">
+      <div class="invest-drawer-field"><label>Amount (display currency)</label><input type="number" class="invest-drawer-input" id="div-amount" placeholder="e.g. 45.00" min="0" step="any"></div>
+      <div class="invest-drawer-field"><label>Date</label><input type="date" class="invest-drawer-input" id="div-date"></div>
+      <div class="invest-drawer-field"><label>Note (optional)</label><input type="text" class="invest-drawer-input" id="div-note" placeholder="e.g. Q1 dividend"></div>
+      <button class="invest-drawer-submit" onclick="confirmDividend()">Log Dividend</button>
+    </div>
+  </div>
 </div>
 
 <!-- INFO POPUP -->
@@ -5308,6 +5501,29 @@ function getGoalSettings() {
 }
 function saveGoalSettings(g) { const s = getState(); s.goal = g; saveState(s); }
 
+// ── Realised trades ───────────────────────────────────────────
+function getRealisedTrades() { const s = getState(); return s.realisedTrades || []; }
+function saveRealisedTrades(t) { const s = getState(); s.realisedTrades = t; saveState(s); }
+
+// ── Dividends ─────────────────────────────────────────────────
+function getDividends() { const s = getState(); return s.dividends || []; }
+function saveDividends(d) { const s = getState(); s.dividends = d; saveState(s); }
+
+// ── Watchlist ─────────────────────────────────────────────────
+function getWatchlist() { const s = getState(); return s.watchlist || []; }
+function saveWatchlist(w) { const s = getState(); s.watchlist = w; saveState(s); }
+
+// ── Target allocations ────────────────────────────────────────
+function getTargetAlloc() { const s = getState(); return s.targetAlloc || {}; }
+function saveTargetAlloc() {
+  const inputs = document.querySelectorAll('.alloc-target-input');
+  const alloc = {};
+  inputs.forEach(inp => { alloc[inp.dataset.type] = parseFloat(inp.value) || 0; });
+  const s = getState(); s.targetAlloc = alloc; saveState(s);
+  renderOverview(); // refresh drift chart
+  alert('Target allocation saved.');
+}
+
 function fmt(n, dp=2) {
   if (n === null || n === undefined || isNaN(n)) return '—';
   const abs = Math.abs(n);
@@ -5804,7 +6020,7 @@ function portfolioTotals() {
 // ============================================================
 //  RENDER FUNCTIONS
 // ============================================================
-let allocChartObj = null, regionChartObj = null, sectorChartObj = null, typeChartObj = null, perfChartObj = null, monthlyChartObj = null, calcChartObj = null, goalChartObj = null;
+let allocChartObj = null, regionChartObj = null, sectorChartObj = null, typeChartObj = null, perfChartObj = null, realPerfChartObj = null, monthlyChartObj = null, calcChartObj = null, goalChartObj = null;
 
 // Build a grouped donut chart from holdings grouped by a key
 function buildGroupedDonut(canvasId, legendId, holdings, keyFn, chartObjRef) {
@@ -5845,6 +6061,9 @@ function buildGroupedDonut(canvasId, legendId, holdings, keyFn, chartObjRef) {
 function renderAll() {
   renderOverview();
   renderHoldings();
+  renderRealisedTrades();
+  renderDividends();
+  renderWatchlist();
   updateGoal();
   // Performance is async — only renders when tab is opened
 }
@@ -5953,6 +6172,23 @@ function renderOverview() {
   regionChartObj = rRef.obj;
   sectorChartObj = sRef.obj;
   typeChartObj = tRef.obj;
+
+  // Target allocation drift
+  renderTargetAllocDrift();
+
+  // Total return including dividends
+  const divs = getDividends();
+  const totalDivs = divs.reduce((a, d) => a + d.amount, 0);
+  if (totalDivs > 0) {
+    const gainEl = document.getElementById('ov-gain-badge');
+    if (gainEl) {
+      const totals = portfolioTotals();
+      const totalReturn = totals.totalGain + totalDivs;
+      const up = totalReturn >= 0;
+      gainEl.className = 'hero-badge ' + (up ? 'up' : 'down');
+      gainEl.textContent = (up ? '↑ ' : '↓ ') + fmtDisplay(Math.abs(totalReturn)) + ' total return (incl. dividends)';
+    }
+  }
 }
 
 function renderHoldings() {
@@ -6020,11 +6256,15 @@ function renderHoldings() {
       <td class="mono hide-mobile">${avgBuyFmt}</td>
       <td class="mono hide-mobile">${fmtDisplay(c.costBasis)}</td>
       <td>${priceCell}</td>
-      <td class="hide-mobile">${manualInput}</td>
       <td class="mono hide-mobile">${fmtDisplay(c.marketValue)}</td>
       <td class="mono ${upDown ? 'up-val' : 'down-val'}">${upDown?'+':''}${fmtDisplay(c.gainLoss)}</td>
       <td class="mono ${upDown ? 'up-val' : 'down-val'}">${c.priceSource === 'none' ? '—' : (upDown?'+':'') + c.gainPct.toFixed(2) + '%'}</td>
-      <td><button class="del-row" onclick="deleteHolding(${i})">×</button></td>
+      <td><div class="holding-actions">
+        <button class="act-btn add"  onclick="openAddUnits(${i})"  title="Buy more units">+Buy</button>
+        <button class="act-btn sell" onclick="openSell(${i})"      title="Record a sale">Sell</button>
+        <button class="act-btn div"  onclick="openDividend(${i})"  title="Log dividend">Div</button>
+        <button class="act-btn del"  onclick="deleteHolding(${i})" title="Remove holding">×</button>
+      </div></td>
     </tr>`;
   }).join('');
 }
@@ -6143,28 +6383,106 @@ async function renderPerformance() {
 
   const labels = perfData.map(d => d.label);
 
+  // ── CHART 1: Real portfolio value (in display currency) ────────
+  // Scale S&P 500 and NASDAQ to start at the same $ value as portfolio for visual comparison
+  const firstRealPortfolio = firstPortfolioVal * (fromUSD(1));
+  const realPortfolioValues = validIndices.map(i =>
+    portfolioValues[i] ? parseFloat((portfolioValues[i] * fromUSD(1)).toFixed(2)) : null
+  );
+  const spScale = firstRealPortfolio / (firstSP || 1);
+  const nqScale = firstRealPortfolio / (firstNQ || 1);
+  const realSP = validIndices.map(i => sp500Data[i] ? parseFloat((sp500Data[i].close * spScale).toFixed(2)) : null);
+  const realNQ = validIndices.map(i => nasdaqData[i] ? parseFloat((nasdaqData[i].close * nqScale).toFixed(2)) : null);
+
+  if (realPerfChartObj) { realPerfChartObj.destroy(); }
+  realPerfChartObj = new Chart(document.getElementById('realPerfChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Your Portfolio', data: realPortfolioValues, borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.1)', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
+        { label: 'S&P 500 (scaled)', data: realSP, borderColor: '#bdc2d2', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+        { label: 'NASDAQ 100 (scaled)', data: realNQ, borderColor: '#0097a7', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmtDisplay(ctx.parsed.y) } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7a8d', font: { size: 10 }, callback: v => fmtKDisplay(v / (FX_RATES[displayCurrency] || 1)) } }
+      }
+    }
+  });
+
+  // Real summary: actual gain/loss in $ and %
+  const firstReal = realPortfolioValues[0] || 0;
+  const lastReal = realPortfolioValues[realPortfolioValues.length - 1] || firstReal;
+  const realGain = lastReal - firstReal;
+  const realGainPct = firstReal ? (realGain / firstReal * 100) : 0;
+  const lastRealSP = realSP[realSP.length - 1] || firstRealPortfolio;
+  const lastRealNQ = realNQ[realNQ.length - 1] || firstRealPortfolio;
+  const spGainPct = firstRealPortfolio ? ((lastRealSP - firstRealPortfolio) / firstRealPortfolio * 100) : 0;
+  const nqGainPct = firstRealPortfolio ? ((lastRealNQ - firstRealPortfolio) / firstRealPortfolio * 100) : 0;
+
+  document.getElementById('perf-real-summary').innerHTML = [
+    { label: 'Your Portfolio', val: (realGain >= 0 ? '+' : '') + fmtDisplay(realGain), sub: (realGainPct >= 0 ? '+' : '') + realGainPct.toFixed(2) + '%', up: realGain >= 0 },
+    { label: 'S&P 500', val: (spGainPct >= 0 ? '+' : '') + spGainPct.toFixed(2) + '%', sub: 'if started same value', up: spGainPct >= 0 },
+    { label: 'NASDAQ 100', val: (nqGainPct >= 0 ? '+' : '') + nqGainPct.toFixed(2) + '%', sub: 'if started same value', up: nqGainPct >= 0 },
+  ].map(c => `
+    <div class="calc-result-card">
+      <div class="calc-result-label">${c.label}</div>
+      <div class="calc-result-val" style="color:${c.up ? 'var(--green)' : 'var(--red)'};font-size:16px;">${c.val}</div>
+      <div style="font-size:10px;color:var(--mid);margin-top:2px;">${c.sub}</div>
+    </div>
+  `).join('');
+
+  // ── CHART 2: Indexed comparison (if held 1 year ago) ──────────
   if (perfChartObj) { perfChartObj.destroy(); }
   perfChartObj = new Chart(document.getElementById('perfChart'), {
     type: 'line',
     data: {
       labels,
       datasets: [
-        { label: 'Your Portfolio', data: perfData.map(d => d.portfolio), borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.08)', borderWidth: 2.5, pointRadius: 3, tension: 0.3, fill: true },
+        { label: 'Your Portfolio', data: perfData.map(d => d.portfolio), borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.08)', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
         { label: 'S&P 500', data: perfData.map(d => d.sp500), borderColor: '#bdc2d2', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
         { label: 'NASDAQ 100', data: perfData.map(d => d.nasdaq), borderColor: '#0097a7', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y?.toFixed(2) } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y?.toFixed(1) } } },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, maxTicksLimit: 13 } },
+        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
         y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7a8d', font: { size: 10 }, callback: v => v.toFixed(0) } }
       }
     }
   });
 
-  // Monthly returns bar chart
+  // Indexed summary
+  const lastPortfolio = perfData[perfData.length-1].portfolio || 100;
+  const lastSP = perfData[perfData.length-1].sp500 || 100;
+  const lastNQ = perfData[perfData.length-1].nasdaq || 100;
+  const portfolioReturn = lastPortfolio - 100;
+  const sp500Return = lastSP - 100;
+  const nasdaqReturn = lastNQ - 100;
+
+  document.getElementById('perf-summary').innerHTML = [
+    { label: 'Your Portfolio', val: (portfolioReturn >= 0 ? '+' : '') + portfolioReturn.toFixed(2) + '%', up: portfolioReturn >= 0 },
+    { label: 'S&P 500', val: (sp500Return >= 0 ? '+' : '') + sp500Return.toFixed(2) + '%', up: sp500Return >= 0 },
+    { label: 'NASDAQ 100', val: (nasdaqReturn >= 0 ? '+' : '') + nasdaqReturn.toFixed(2) + '%', up: nasdaqReturn >= 0 },
+  ].map(c => `
+    <div class="calc-result-card">
+      <div class="calc-result-label">${c.label}</div>
+      <div class="calc-result-val" style="color:${c.up ? 'var(--green)' : 'var(--red)'}">${c.val}</div>
+      <div style="font-size:10px;color:var(--mid);margin-top:2px;">1 year indexed</div>
+    </div>
+  `).join('');
+
+  // ── CHART 3: Monthly returns ────────────────────────────────────
   const returns = perfData.slice(1).map((d, i) => {
     const prev = perfData[i].portfolio;
     if (!prev || !d.portfolio) return 0;
@@ -6186,31 +6504,14 @@ async function renderPerformance() {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y.toFixed(2) + '%' } } },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, autoSkip: false, maxRotation: 45 } },
+        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, autoSkip: true, maxTicksLimit: 12, maxRotation: 0 } },
         y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7a8d', font: { size: 10 }, callback: v => v.toFixed(1) + '%' } }
       }
     }
   });
 
-  // Summary cards
-  const lastPortfolio = perfData[perfData.length-1].portfolio || 100;
-  const lastSP = perfData[perfData.length-1].sp500 || 100;
-  const lastNQ = perfData[perfData.length-1].nasdaq || 100;
-  const portfolioReturn = lastPortfolio - 100;
-  const sp500Return = lastSP - 100;
-  const nasdaqReturn = lastNQ - 100;
-
-  document.getElementById('perf-summary').innerHTML = [
-    { label: 'Your Portfolio', val: portfolioReturn.toFixed(2) + '%', up: portfolioReturn >= 0 },
-    { label: 'S&P 500', val: sp500Return.toFixed(2) + '%', up: sp500Return >= 0 },
-    { label: 'NASDAQ 100', val: nasdaqReturn.toFixed(2) + '%', up: nasdaqReturn >= 0 },
-  ].map(c => `
-    <div class="calc-result-card">
-      <div class="calc-result-label">${c.label}</div>
-      <div class="calc-result-val" style="color:${c.up ? 'var(--green)' : 'var(--red)'}">${c.up && !c.val.startsWith('-') ? '+' : ''}${c.val}</div>
-      <div style="font-size:10px;color:var(--mid);margin-top:2px;">1 year</div>
-    </div>
-  `).join('');
+  // Monthly P&L heatmap calendar
+  renderMonthlyCalendar(perfData);
 }
 
 // ============================================================
@@ -6499,6 +6800,403 @@ function deleteHolding(i) {
   renderAll();
 }
 
+// ── Active drawer state ───────────────────────────────────────
+let _drawerHoldingIdx = -1;
+
+function closeInvestDrawer(overlayId, e) {
+  if (e && e.target !== document.getElementById(overlayId)) return;
+  document.getElementById(overlayId).classList.remove('open');
+}
+
+// ── Add More Units ────────────────────────────────────────────
+function openAddUnits(i) {
+  _drawerHoldingIdx = i;
+  const h = getHoldings()[i];
+  const c = calcHolding(h);
+  document.getElementById('addUnitsTitle').textContent = 'Add More ' + h.ticker;
+  document.getElementById('addUnitsCurrentInfo').textContent =
+    'Currently: ' + h.units + ' units @ ' + fmtNative(h.buyPrice, c.nativeCurrency) + ' avg';
+  document.getElementById('add-units-qty').value = '';
+  document.getElementById('add-units-price').value = '';
+  document.getElementById('addUnitsPreview').textContent = 'Enter units and price to preview new average';
+  document.getElementById('addUnitsOverlay').classList.add('open');
+
+  // Live preview
+  ['add-units-qty','add-units-price'].forEach(id => {
+    document.getElementById(id).oninput = function() {
+      const addQty = parseFloat(document.getElementById('add-units-qty').value) || 0;
+      const addPrice = parseFloat(document.getElementById('add-units-price').value) || 0;
+      if (!addQty || !addPrice) { document.getElementById('addUnitsPreview').textContent = ''; return; }
+      const newUnits = h.units + addQty;
+      const newAvg = ((h.units * h.buyPrice) + (addQty * addPrice)) / newUnits;
+      document.getElementById('addUnitsPreview').innerHTML =
+        '<strong>New average:</strong> ' + fmtNative(newAvg, c.nativeCurrency) +
+        ' &nbsp;|&nbsp; <strong>Total units:</strong> ' + newUnits.toFixed(4).replace(/\.?0+$/,'');
+    };
+  });
+}
+
+function confirmAddUnits() {
+  const addQty   = parseFloat(document.getElementById('add-units-qty').value);
+  const addPrice = parseFloat(document.getElementById('add-units-price').value);
+  if (!addQty || !addPrice) { alert('Please enter units and price.'); return; }
+  const holdings = getHoldings();
+  const h = holdings[_drawerHoldingIdx];
+  const newUnits = h.units + addQty;
+  h.buyPrice = ((h.units * h.buyPrice) + (addQty * addPrice)) / newUnits;
+  h.units = newUnits;
+  saveHoldings(holdings);
+  document.getElementById('addUnitsOverlay').classList.remove('open');
+  renderAll();
+}
+
+// ── Sell ──────────────────────────────────────────────────────
+function openSell(i) {
+  _drawerHoldingIdx = i;
+  const h = getHoldings()[i];
+  const c = calcHolding(h);
+  document.getElementById('sellDrawerTitle').textContent = 'Sell ' + h.ticker;
+  document.getElementById('sellCurrentInfo').textContent =
+    h.units + ' units held · Avg cost: ' + fmtNative(h.buyPrice, c.nativeCurrency) +
+    (h.livePrice ? ' · Current: ' + fmtNative(h.livePrice, c.nativeCurrency) : '');
+  document.getElementById('sell-units').value = '';
+  document.getElementById('sell-price').value = h.livePrice ? h.livePrice.toFixed(2) : '';
+  document.getElementById('sell-date').valueAsDate = new Date();
+  document.getElementById('sellPreview').textContent = '';
+  document.getElementById('sellDrawerOverlay').classList.add('open');
+
+  ['sell-units','sell-price'].forEach(id => {
+    document.getElementById(id).oninput = function() {
+      const qty   = parseFloat(document.getElementById('sell-units').value) || 0;
+      const price = parseFloat(document.getElementById('sell-price').value) || 0;
+      if (!qty || !price) { document.getElementById('sellPreview').textContent = ''; return; }
+      const nativeCur = c.nativeCurrency;
+      const proceeds  = toUSD(price * qty, nativeCur);
+      const costBasis = toUSD(h.buyPrice * qty, nativeCur);
+      const pnl       = proceeds - costBasis;
+      const pnlPct    = costBasis ? (pnl / costBasis * 100) : 0;
+      const sign      = pnl >= 0 ? '+' : '';
+      document.getElementById('sellPreview').innerHTML =
+        '<strong>P&amp;L:</strong> ' + sign + fmtDisplay(pnl) +
+        ' (' + sign + pnlPct.toFixed(2) + '%)' +
+        '&nbsp;|&nbsp;<strong>Proceeds:</strong> ' + fmtDisplay(proceeds);
+    };
+  });
+}
+
+function confirmSell() {
+  const qty   = parseFloat(document.getElementById('sell-units').value);
+  const price = parseFloat(document.getElementById('sell-price').value);
+  const date  = document.getElementById('sell-date').value;
+  if (!qty || !price) { alert('Please enter units and sell price.'); return; }
+  const holdings = getHoldings();
+  const h = holdings[_drawerHoldingIdx];
+  if (qty > h.units) { alert('Cannot sell more units than you hold (' + h.units + ').'); return; }
+
+  const nativeCur = getNativeCurrency(h.ticker);
+  const proceeds  = toUSD(price * qty, nativeCur);
+  const costBasis = toUSD(h.buyPrice * qty, nativeCur);
+  const pnl       = proceeds - costBasis;
+  const pnlPct    = costBasis ? (pnl / costBasis * 100) : 0;
+
+  // Log realised trade
+  const trades = getRealisedTrades();
+  trades.unshift({ ticker: h.ticker, date, units: qty, sellPrice: price, avgCost: h.buyPrice, proceeds, costBasis, pnl, pnlPct, nativeCur });
+  saveRealisedTrades(trades);
+
+  // Reduce or remove holding
+  if (qty >= h.units) {
+    holdings.splice(_drawerHoldingIdx, 1);
+  } else {
+    h.units = parseFloat((h.units - qty).toFixed(8));
+  }
+  saveHoldings(holdings);
+  document.getElementById('sellDrawerOverlay').classList.remove('open');
+  renderAll();
+  renderRealisedTrades();
+}
+
+// ── Dividends ─────────────────────────────────────────────────
+function openDividend(i) {
+  _drawerHoldingIdx = i;
+  const h = getHoldings()[i];
+  document.getElementById('divDrawerTitle').textContent = h.ticker + ' — Log Dividend';
+  document.getElementById('div-amount').value = '';
+  document.getElementById('div-note').value = '';
+  document.getElementById('div-date').valueAsDate = new Date();
+  document.getElementById('divDrawerOverlay').classList.add('open');
+}
+
+function confirmDividend() {
+  const amount = parseFloat(document.getElementById('div-amount').value);
+  const date   = document.getElementById('div-date').value;
+  const note   = document.getElementById('div-note').value.trim();
+  if (!amount) { alert('Please enter a dividend amount.'); return; }
+  const h = getHoldings()[_drawerHoldingIdx];
+  const divs = getDividends();
+  divs.unshift({ ticker: h.ticker, date, amount, note });
+  saveDividends(divs);
+  document.getElementById('divDrawerOverlay').classList.remove('open');
+  renderDividends();
+  renderOverview(); // update total return
+}
+
+// ── Render Realised Trades ────────────────────────────────────
+function renderRealisedTrades() {
+  const trades = getRealisedTrades();
+  const tbody  = document.getElementById('realised-body');
+  if (!tbody) return;
+  if (!trades.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No sales recorded yet</td></tr>';
+    document.getElementById('realised-summary').innerHTML = '';
+    return;
+  }
+  const totalPnl = trades.reduce((a, t) => a + t.pnl, 0);
+  document.getElementById('realised-summary').innerHTML = `
+    <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:${totalPnl>=0?'var(--green)':'var(--red)'}">
+      Total P&amp;L: ${totalPnl>=0?'+':''}${fmtDisplay(totalPnl)}
+    </div>
+    <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:var(--mid);">${trades.length} sale${trades.length!==1?'s':''} recorded</div>`;
+  tbody.innerHTML = trades.map((t, i) => {
+    const up = t.pnl >= 0;
+    return `<tr>
+      <td><div class="ticker-badge" style="background:var(--navy);color:white;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;padding:3px 7px;border-radius:6px;display:inline-block;">${t.ticker}</div></td>
+      <td class="mono" style="color:var(--mid);font-size:11px;">${t.date || '—'}</td>
+      <td class="mono">${t.units}</td>
+      <td class="mono">${fmtNative(t.sellPrice, t.nativeCur)}</td>
+      <td class="mono">${fmtDisplay(t.costBasis)}</td>
+      <td class="mono ${up?'up-val':'down-val'}">${up?'+':''}${fmtDisplay(t.pnl)}</td>
+      <td class="mono ${up?'up-val':'down-val'}">${up?'+':''}${t.pnlPct.toFixed(2)}%</td>
+      <td><button class="act-btn del" onclick="deleteRealisedTrade(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteRealisedTrade(i) {
+  const trades = getRealisedTrades();
+  trades.splice(i, 1);
+  saveRealisedTrades(trades);
+  renderRealisedTrades();
+}
+
+// ── Render Dividends ──────────────────────────────────────────
+function renderDividends() {
+  const divs  = getDividends();
+  const tbody = document.getElementById('dividend-body');
+  if (!tbody) return;
+  if (!divs.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No dividends logged yet</td></tr>';
+    document.getElementById('dividend-summary').innerHTML = '';
+    return;
+  }
+  const total = divs.reduce((a, d) => a + d.amount, 0);
+  document.getElementById('dividend-summary').innerHTML = `
+    <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--green);">
+      Total Dividends: ${fmtDisplay(total)}
+    </div>
+    <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:var(--mid);">${divs.length} payment${divs.length!==1?'s':''}</div>`;
+  tbody.innerHTML = divs.map((d, i) => `
+    <tr>
+      <td><div class="ticker-badge" style="background:var(--navy);color:white;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;padding:3px 7px;border-radius:6px;display:inline-block;">${d.ticker}</div></td>
+      <td class="mono" style="color:var(--mid);font-size:11px;">${d.date || '—'}</td>
+      <td class="mono up-val">${fmtDisplay(d.amount)}</td>
+      <td style="font-size:12px;color:var(--mid);">${d.note || ''}</td>
+      <td><button class="act-btn del" onclick="deleteDividend(${i})">×</button></td>
+    </tr>`).join('');
+}
+
+function deleteDividend(i) {
+  const divs = getDividends();
+  divs.splice(i, 1);
+  saveDividends(divs);
+  renderDividends();
+  renderOverview();
+}
+
+// ── Watchlist ─────────────────────────────────────────────────
+function addWatchlistItem() {
+  const ticker = (document.getElementById('watch-ticker').value || '').trim().toUpperCase();
+  const note   = (document.getElementById('watch-note').value || '').trim();
+  if (!ticker) { alert('Enter a ticker symbol.'); return; }
+  const wl = getWatchlist();
+  if (wl.find(w => w.ticker === ticker)) { alert(ticker + ' is already on your watchlist.'); return; }
+  wl.push({ ticker, note, livePrice: null, dayChange: null, dayChangePct: null, high52: null, low52: null });
+  saveWatchlist(wl);
+  document.getElementById('watch-ticker').value = '';
+  document.getElementById('watch-note').value = '';
+  renderWatchlist();
+  fetchWatchlistPrices();
+}
+
+function deleteWatchlistItem(i) {
+  const wl = getWatchlist();
+  wl.splice(i, 1);
+  saveWatchlist(wl);
+  renderWatchlist();
+}
+
+async function fetchWatchlistPrices() {
+  const wl = getWatchlist();
+  if (!wl.length) return;
+  const tickers = wl.map(w => w.ticker).join(',');
+  try {
+    const r = await fetch('/api/prices?symbols=' + encodeURIComponent(tickers));
+    if (!r.ok) return;
+    const data = await r.json();
+    wl.forEach((w, i) => {
+      const d = data[w.ticker];
+      if (d) {
+        wl[i].livePrice     = d.price || null;
+        wl[i].dayChange     = d.dayChange || null;
+        wl[i].dayChangePct  = d.dayChangePct || null;
+        wl[i].high52        = d.high52 || null;
+        wl[i].low52         = d.low52 || null;
+      }
+    });
+    saveWatchlist(wl);
+    renderWatchlist();
+  } catch(e) { console.warn('Watchlist fetch failed', e); }
+}
+
+function renderWatchlist() {
+  const wl    = getWatchlist();
+  const tbody = document.getElementById('watchlist-body');
+  if (!tbody) return;
+  if (!wl.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Add tickers you\'re watching below</td></tr>';
+    return;
+  }
+  tbody.innerHTML = wl.map((w, i) => {
+    const up   = (w.dayChange || 0) >= 0;
+    const sym  = CURRENCY_SYMBOLS[getNativeCurrency(w.ticker)] || '$';
+    const price = w.livePrice ? sym + w.livePrice.toFixed(2) : '—';
+    const chg   = w.dayChange != null
+      ? `<span style="color:${up?'var(--green)':'var(--red)'};">${up?'+':''}${sym}${Math.abs(w.dayChange).toFixed(2)} (${up?'+':''}${(w.dayChangePct||0).toFixed(2)}%)</span>`
+      : '—';
+    const h52 = w.high52 ? sym + w.high52.toFixed(2) : '—';
+    const l52 = w.low52  ? sym + w.low52.toFixed(2)  : '—';
+    return `<tr>
+      <td><div class="ticker-badge" style="background:var(--navy);color:white;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;padding:3px 7px;border-radius:6px;display:inline-block;">${w.ticker}</div></td>
+      <td class="mono">${price}</td>
+      <td>${chg}</td>
+      <td class="mono">${h52}</td>
+      <td class="mono">${l52}</td>
+      <td style="font-size:12px;color:var(--mid);">${w.note||''}</td>
+      <td><button class="act-btn del" onclick="deleteWatchlistItem(${i})">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Target Allocation (render inputs + drift) ─────────────────
+function renderTargetAllocInputs() {
+  const holdings   = getHoldings();
+  const targets    = getTargetAlloc();
+  const assetTypes = [...new Set(holdings.map(h => h.assetType || 'Stock'))];
+  // Add common types not yet in portfolio
+  ['Stock','ETF','Bond','Cash','Crypto','Property'].forEach(t => { if (!assetTypes.includes(t)) assetTypes.push(t); });
+  const el = document.getElementById('target-alloc-inputs');
+  if (!el) return;
+  el.innerHTML = assetTypes.map(t => `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <label style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--dark);width:90px;flex-shrink:0;">${t}</label>
+      <input type="number" class="alloc-target-input" data-type="${t}" value="${targets[t]||0}" min="0" max="100" step="1" placeholder="0">
+      <span style="font-size:12px;color:var(--mid);">%</span>
+    </div>`).join('');
+}
+
+function renderTargetAllocDrift() {
+  const el = document.getElementById('target-alloc-content');
+  if (!el) return;
+  const holdings = getHoldings();
+  const targets  = getTargetAlloc();
+  if (!Object.keys(targets).length || !holdings.length) {
+    el.innerHTML = '<div class="empty-state">Set target allocations in ⚙ Settings to see drift analysis</div>';
+    return;
+  }
+  const totals = portfolioTotals();
+  const totalVal = totals.totalValue || 1;
+  // Group actual by asset type
+  const actual = {};
+  holdings.forEach(h => {
+    const c    = calcHolding(h);
+    const type = h.assetType || 'Stock';
+    actual[type] = (actual[type] || 0) + c.marketValue;
+  });
+  const types = [...new Set([...Object.keys(targets), ...Object.keys(actual)])];
+  el.innerHTML = types.map(t => {
+    const tgt    = targets[t] || 0;
+    const actPct = ((actual[t] || 0) / totalVal * 100);
+    const drift  = actPct - tgt;
+    const driftCol = Math.abs(drift) < 2 ? 'var(--green)' : Math.abs(drift) < 5 ? 'var(--amber, #f59e0b)' : 'var(--red)';
+    const barCol   = actPct <= tgt ? 'var(--navy)' : 'var(--coral)';
+    return `<div class="alloc-drift-row">
+      <div class="alloc-drift-label">${t}</div>
+      <div class="alloc-drift-bar-wrap">
+        <div class="alloc-drift-bar-actual" style="width:${Math.min(actPct,100)}%;background:${barCol};"></div>
+        <div class="alloc-drift-target-line" style="left:${Math.min(tgt,100)}%;"></div>
+      </div>
+      <div class="alloc-drift-pcts">
+        <span style="color:var(--dark);">${actPct.toFixed(1)}%</span>
+        <span style="color:var(--mid);">/ ${tgt}%</span>
+        <span style="color:${driftCol};margin-left:4px;">(${drift>=0?'+':''}${drift.toFixed(1)}%)</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Monthly P&L Heatmap ───────────────────────────────────────
+function renderMonthlyCalendar(perfData) {
+  const el = document.getElementById('monthly-calendar');
+  if (!el || !perfData || !perfData.length) return;
+
+  // Build map: "YYYY-MM" -> % return
+  const returnMap = {};
+  perfData.slice(1).forEach((d, i) => {
+    const prev = perfData[i].portfolio;
+    if (!prev || !d.portfolio) return;
+    // Extract year/month from label (e.g. "Jan 24")
+    const match = d.label.match(/(\w+)\s+(\d+)/);
+    if (!match) return;
+    const monthIdx = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(match[1]);
+    const year = '20' + match[2];
+    if (monthIdx < 0) return;
+    const key = year + '-' + String(monthIdx + 1).padStart(2,'0');
+    returnMap[key] = parseFloat(((d.portfolio - prev) / prev * 100).toFixed(2));
+  });
+
+  if (!Object.keys(returnMap).length) {
+    el.innerHTML = '<div class="empty-state">No historical data to display yet</div>';
+    return;
+  }
+
+  const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const years = [...new Set(Object.keys(returnMap).map(k => k.slice(0,4)))].sort();
+
+  const maxAbs = Math.max(...Object.values(returnMap).map(Math.abs), 1);
+
+  el.innerHTML = `
+    <div class="month-heatmap">
+      <div class="heatmap-month-labels">${MONTH_ABBR.map(m => `<span class="heatmap-month-label">${m}</span>`).join('')}</div>
+      ${years.map(yr => `
+        <div class="heatmap-year-row">
+          <span class="heatmap-year-label">${yr}</span>
+          ${MONTH_ABBR.map((m, mi) => {
+            const key = yr + '-' + String(mi + 1).padStart(2,'0');
+            const val = returnMap[key];
+            if (val === undefined) return `<div class="heatmap-cell empty">${m}</div>`;
+            const intensity = Math.min(Math.abs(val) / maxAbs, 1);
+            const bg = val >= 0
+              ? `rgba(34,197,94,${0.2 + intensity * 0.75})`
+              : `rgba(239,68,68,${0.2 + intensity * 0.75})`;
+            const sign = val >= 0 ? '+' : '';
+            return `<div class="heatmap-cell" style="background:${bg};" title="${m} ${yr}: ${sign}${val.toFixed(2)}%">${sign}${val.toFixed(1)}%</div>`;
+          }).join('')}
+        </div>`).join('')}
+    </div>`;
+}
+
+
+
 // ============================================================
 //  TAB SWITCHING
 // ============================================================
@@ -6508,6 +7206,8 @@ function showTab(id, btn) {
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'performance') renderPerformance();
+  if (id === 'watchlist') { renderWatchlist(); fetchWatchlistPrices(); }
+  if (id === 'invest-settings') renderTargetAllocInputs();
 }
 
 // ── Invest settings functions ─────────────────────────────────
