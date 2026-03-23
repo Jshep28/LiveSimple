@@ -3578,13 +3578,6 @@ window.refreshMonthArrows = function() {
       <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
     </div>
 
-    <!-- Heatmap Calendar -->
-    <div class="section">
-      <div class="section-head"><h2>Monthly P&amp;L Calendar</h2></div>
-      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">If you held your current stocks — monthly gain/loss over the past year</div>
-      <div id="monthly-calendar" style="padding:16px;overflow-x:auto;"></div>
-    </div>
-
   </div>
 </div>
 
@@ -3594,7 +3587,7 @@ window.refreshMonthArrows = function() {
     <div class="section-head"><h2>Watchlist</h2><button onclick="fetchWatchlistPrices()">↻ Refresh</button></div>
     <div style="overflow-x:auto;">
       <table class="port-table">
-        <thead><tr><th>Ticker</th><th>Price</th><th>Day Change</th><th>52w High</th><th>52w Low</th><th>Note</th><th></th></tr></thead>
+        <thead><tr><th>Ticker</th><th>Price</th><th>Day Change</th><th>Prev Close</th><th>Note</th><th></th></tr></thead>
         <tbody id="watchlist-body"><tr><td colspan="7" class="empty-state">Add tickers you're watching below</td></tr></tbody>
       </table>
     </div>
@@ -6447,8 +6440,7 @@ async function renderPerformance() {
     }
   });
 
-  // ── Heatmap calendar ──────────────────────────────────────────
-  renderMonthlyCalendar(perfData);
+  // ── Heatmap calendar removed ─────────────────────────────────
 }
 
 
@@ -6980,7 +6972,7 @@ function addWatchlistItem() {
   if (!ticker) { alert('Enter a ticker symbol.'); return; }
   const wl = getWatchlist();
   if (wl.find(w => w.ticker === ticker)) { alert(ticker + ' is already on your watchlist.'); return; }
-  wl.push({ ticker, note, livePrice: null, dayChange: null, dayChangePct: null, high52: null, low52: null });
+  wl.push({ ticker, note, livePrice: null, dayChange: null, dayChangePct: null, prevClose: null });
   saveWatchlist(wl);
   document.getElementById('watch-ticker').value = '';
   document.getElementById('watch-note').value = '';
@@ -7006,11 +6998,10 @@ async function fetchWatchlistPrices() {
     wl.forEach((w, i) => {
       const d = data[w.ticker];
       if (d) {
-        wl[i].livePrice     = d.price || null;
-        wl[i].dayChange     = d.dayChange || null;
-        wl[i].dayChangePct  = d.dayChangePct || null;
-        wl[i].high52        = d.high52 || null;
-        wl[i].low52         = d.low52 || null;
+        wl[i].livePrice    = d.price        || null;
+        wl[i].dayChange    = d.dayChange    || null;
+        wl[i].dayChangePct = d.dayChangePct || null;
+        wl[i].prevClose    = d.prevClose    || null;
       }
     });
     saveWatchlist(wl);
@@ -7033,14 +7024,12 @@ function renderWatchlist() {
     const chg   = w.dayChange != null
       ? `<span style="color:${up?'var(--green)':'var(--red)'};">${up?'+':''}${sym}${Math.abs(w.dayChange).toFixed(2)} (${up?'+':''}${(w.dayChangePct||0).toFixed(2)}%)</span>`
       : '—';
-    const h52 = w.high52 ? sym + w.high52.toFixed(2) : '—';
-    const l52 = w.low52  ? sym + w.low52.toFixed(2)  : '—';
+    const h52 = w.prevClose ? sym + w.prevClose.toFixed(2) : '—';
     return `<tr>
       <td><div class="ticker-badge" style="background:var(--navy);color:white;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;padding:3px 7px;border-radius:6px;display:inline-block;">${w.ticker}</div></td>
       <td class="mono">${price}</td>
       <td>${chg}</td>
-      <td class="mono">${h52}</td>
-      <td class="mono">${l52}</td>
+      <td class="mono" style="color:var(--mid);">${h52}</td>
       <td style="font-size:12px;color:var(--mid);">${w.note||''}</td>
       <td><button class="act-btn del" onclick="deleteWatchlistItem(${i})">×</button></td>
     </tr>`;
@@ -7105,58 +7094,6 @@ function renderTargetAllocDrift() {
 }
 
 // ── Monthly P&L Heatmap ───────────────────────────────────────
-function renderMonthlyCalendar(perfData) {
-  const el = document.getElementById('monthly-calendar');
-  if (!el || !perfData || !perfData.length) return;
-
-  // Build map: "YYYY-MM" -> % return
-  const returnMap = {};
-  perfData.slice(1).forEach((d, i) => {
-    const prev = perfData[i].portfolio;
-    if (!prev || !d.portfolio) return;
-    // Extract year/month from label (e.g. "Jan 24")
-    const match = d.label.match(/(\w+)\s+(\d+)/);
-    if (!match) return;
-    const monthIdx = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(match[1]);
-    const year = '20' + match[2];
-    if (monthIdx < 0) return;
-    const key = year + '-' + String(monthIdx + 1).padStart(2,'0');
-    returnMap[key] = parseFloat(((d.portfolio - prev) / prev * 100).toFixed(2));
-  });
-
-  if (!Object.keys(returnMap).length) {
-    el.innerHTML = '<div class="empty-state">No historical data to display yet</div>';
-    return;
-  }
-
-  const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const years = [...new Set(Object.keys(returnMap).map(k => k.slice(0,4)))].sort();
-
-  const maxAbs = Math.max(...Object.values(returnMap).map(Math.abs), 1);
-
-  el.innerHTML = `
-    <div class="month-heatmap">
-      <div class="heatmap-month-labels">${MONTH_ABBR.map(m => `<span class="heatmap-month-label">${m}</span>`).join('')}</div>
-      ${years.map(yr => `
-        <div class="heatmap-year-row">
-          <span class="heatmap-year-label">${yr}</span>
-          ${MONTH_ABBR.map((m, mi) => {
-            const key = yr + '-' + String(mi + 1).padStart(2,'0');
-            const val = returnMap[key];
-            if (val === undefined) return `<div class="heatmap-cell empty">${m}</div>`;
-            const intensity = Math.min(Math.abs(val) / maxAbs, 1);
-            const bg = val >= 0
-              ? `rgba(34,197,94,${0.2 + intensity * 0.75})`
-              : `rgba(239,68,68,${0.2 + intensity * 0.75})`;
-            const sign = val >= 0 ? '+' : '';
-            return `<div class="heatmap-cell" style="background:${bg};" title="${m} ${yr}: ${sign}${val.toFixed(2)}%">${sign}${val.toFixed(1)}%</div>`;
-          }).join('')}
-        </div>`).join('')}
-    </div>`;
-}
-
-
-
 // ============================================================
 //  TAB SWITCHING
 // ============================================================
