@@ -93,6 +93,7 @@
   --coral: #ff6b5b;
   --coral-dark: #e85444;
   --coral-light: #fce5cd;
+  --navy: #004562;
   --dark: #2a252e;
   --mid: #7a7480;
   --light: #f7f4f0;
@@ -112,7 +113,7 @@ body {
 
 /* NAV */
 nav {
-  background: var(--coral);
+  background: var(--navy);
   padding: 0 20px;
   height: 56px;
   display: flex;
@@ -127,10 +128,10 @@ nav {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
   font-size: 17px;
-  color: var(--dark);
+  color: white;
   letter-spacing: -0.3px;
 }
-#app-budget .logo em { color: white; font-style: normal; }
+#app-budget .logo em { color: var(--coral); font-style: normal; }
 
 .nav-tabs {
   display: flex;
@@ -144,25 +145,20 @@ nav {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 12px;
-  color: var(--dark);
+  color: rgba(255,255,255,0.75);
   cursor: pointer;
   transition: all 0.2s;
 }
-.nav-tab.active, .nav-tab:hover {
-  background: rgba(0,0,0,0.15);
+.nav-tab.active {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.nav-tab:hover {
+  background: rgba(255,255,255,0.12);
+  color: white;
 }
 
-.currency-select {
-  background: rgba(0,0,0,0.15);
-  border: none;
-  border-radius: 8px;
-  padding: 4px 8px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--dark);
-  cursor: pointer;
-}
+/* currency-select replaced with dropdown picker */
 
 /* PAGES */
 .page { display: none; }
@@ -171,8 +167,8 @@ nav {
 /* HERO BANNER */
 .hero {
   background: var(--coral);
-  padding: 20px 20px 0;
-  color: var(--dark);
+  padding: 20px 20px 16px;
+  color: white;
 }
 .hero-month {
   font-family: 'Montserrat', sans-serif;
@@ -180,14 +176,16 @@ nav {
   font-size: 32px;
   letter-spacing: 6px;
   text-transform: uppercase;
-  opacity: 0.9;
+  color: white;
 }
 .hero-sub {
-  font-size: 12px;
+  font-size: 11px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
-  opacity: 0.7;
-  margin-top: 2px;
+  color: rgba(255,255,255,0.65);
+  margin-top: 4px;
 }
 
 /* LEFT AMOUNT CARD */
@@ -290,17 +288,17 @@ nav {
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--dark);
+  color: white;
 }
 .section-head button {
-  background: rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.2);
   border: none;
   border-radius: 20px;
   padding: 3px 10px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 10px;
-  color: var(--dark);
+  color: white;
   cursor: pointer;
 }
 
@@ -575,14 +573,16 @@ nav {
   font-weight: 900;
   font-size: 28px;
   letter-spacing: 5px;
-  color: var(--dark);
+  color: white;
 }
 .habit-hero p {
-  font-size: 12px;
-  letter-spacing: 1.5px;
+  font-size: 11px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(42,37,46,0.65);
-  margin-top: 3px;
+  color: rgba(255,255,255,0.65);
+  margin-top: 4px;
 }
 
 .habit-stats {
@@ -678,6 +678,10 @@ nav {
   letter-spacing: 1px;
   color: var(--mid);
   border-right: 1px solid var(--border);
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--light);
 }
 .cal-day-head {
   width: 34px;
@@ -719,6 +723,7 @@ nav {
 }
 .cal-row:last-child { border-bottom: none; }
 .cal-row:hover { background: #fafaf9; }
+.cal-row:hover .cal-habit-name { background: #fafaf9; }
 
 .cal-habit-name {
   width: 160px;
@@ -731,6 +736,10 @@ nav {
   align-items: center;
   justify-content: space-between;
   gap: 4px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: white;
 }
 .cal-habit-name .pct {
   font-family: 'Montserrat', sans-serif;
@@ -876,8 +885,272 @@ nav {
   color: white;
 }
 
-/* BOTTOM SAFE SPACE */
-.bottom-space { height: 40px; }
+/* RECURRING TOGGLE BUTTON */
+.recurring-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--mid);
+  cursor: pointer;
+  padding: 1px 4px;
+  line-height: 1.4;
+  transition: all 0.15s;
+}
+.recurring-btn:hover { border-color: var(--coral); color: var(--coral); }
+.recurring-btn.active { background: var(--coral); border-color: var(--coral); color: white; }
+
+/* SPENDING INSIGHTS BAR */
+.insights-bar {
+  margin: 0 16px 10px;
+  background: #fff5f0;
+  border: 1px solid #fcd5c8;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+}
+.insights-bar.visible { display: flex; }
+.insight-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--coral-dark);
+}
+
+/* MONTH NOTES */
+.month-notes-wrap {
+  margin: 0 16px 16px;
+}
+.month-notes-wrap textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  color: var(--dark);
+  background: white;
+  resize: none;
+  outline: none;
+  min-height: 64px;
+  line-height: 1.5;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.month-notes-wrap textarea:focus { border-color: var(--coral); }
+.month-notes-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--mid);
+  margin-bottom: 5px;
+}
+
+/* ROLLOVER BADGE on left-card */
+.rollover-badge {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--mid);
+  margin-top: 4px;
+}
+.rollover-badge span { font-weight: 700; }
+.rollover-badge span.pos { color: var(--green); }
+.rollover-badge span.neg { color: var(--red); }
+
+/* WEEKLY HABIT COMPLETION */
+.week-tab-rate {
+  font-size: 9px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  opacity: 0.7;
+  margin-left: 3px;
+}
+
+/* COPY BAR — helper strip shown when month has no data */
+.copy-bar {
+  display: none;
+  background: #fff8f0;
+  border-bottom: 1px solid var(--border);
+  padding: 9px 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.copy-bar.visible { display: flex; }
+
+/* TRACKER ROW DELETE BUTTON */
+.tracker-row { position: relative; }
+.row-del {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--border);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  z-index: 2;
+}
+.tracker-row:hover .row-del { opacity: 1; }
+.row-del:hover { color: var(--red); }
+
+/* MINI PROGRESS BAR under each tracker row */
+.row-progress {
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  margin: 0 16px 0;
+  overflow: hidden;
+}
+.row-progress-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+/* Goal yearly table needs separate borders so border-radius works on tds */
+.goal-yearly-table {
+  border-collapse: collapse;
+}
+
+/* ── GOAL ACHIEVE CARD ───────────────────────────────────────── */
+.goal-achieve-card-inner {
+  background: #e8eef2;
+  border: 2px solid #004562;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+.goal-achieve-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  color: #004562;
+  margin-bottom: 10px;
+}
+.goal-achieve-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.goal-achieve-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.goal-achieve-stat-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--mid);
+}
+.goal-achieve-stat-val {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+}
+@media (max-width: 480px) {
+  .goal-achieve-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── INVEST APP COMPREHENSIVE MOBILE ────────────────────────────
+   Targets the invest panel, tables, grids at small viewports     */
+@media (max-width: 600px) {
+  /* Panel */
+  #app-invest .panel {
+    padding: 10px 8px 60px;
+  }
+
+  /* Hero cards — single column */
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  .hero-card.full { grid-column: 1 !important; }
+  .hero-val.lg { font-size: 26px; }
+  .hero-val { font-size: 20px; }
+
+  /* Section */
+  #app-invest .section { border-radius: 10px; }
+
+  /* Holdings add form */
+  .add-form {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px;
+  }
+  .add-form .form-group:first-child { grid-column: 1 / -1; }
+  .add-btn { grid-column: 1 / -1; }
+
+  /* All port-tables: allow horizontal scroll, don't overflow page */
+  .port-table th, .port-table td {
+    padding: 8px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* Allocation row: stack chart above legend */
+  .alloc-wrap-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  /* Breakdown grid: single column */
+  .breakdown-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .breakdown-col + .breakdown-col {
+    border-left: none !important;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Calculator */
+  .calc-grid {
+    grid-template-columns: 1fr !important;
+    padding: 12px;
+  }
+  .calc-input-group.half { grid-column: auto; }
+  .calc-result-grid {
+    grid-template-columns: 1fr 1fr !important;
+    padding: 0 12px 12px;
+  }
+  .calc-result-val { font-size: 14px; }
+
+  /* Goal grid */
+  .goal-grid {
+    grid-template-columns: 1fr !important;
+    padding: 12px;
+  }
+
+  /* Performance legend */
+  .perf-legend {
+    gap: 10px;
+    padding: 0 12px 8px;
+  }
+
+  /* Invest settings */
+  #tab-invest-settings .settings-section { margin: 8px; }
+  #tab-invest-settings .settings-row { flex-wrap: wrap; gap: 6px; }
+}
+
 
 /* EMPTY STATE */
 .empty {
@@ -1005,9 +1278,9 @@ nav {
 .modal-btn { border: none; border-radius: 8px; padding: 9px 18px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
 .modal-btn.cancel { background: var(--light); color: var(--mid); }
 .modal-btn.confirm { background: var(--red); color: white; }
-.review-hero { background: var(--dark); padding: 20px 20px 16px; }
+.review-hero { background: var(--coral); padding: 20px 20px 16px; }
 .review-hero h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: 4px; color: white; }
-.review-hero p { font-size: 12px; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+.review-hero p { font-size: 11px; font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.65); margin-top: 4px; }
 .review-big-stat { background: white; margin: 16px 16px 0; border-radius: 16px; padding: 20px; text-align: center; }
 .review-big-label { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--mid); margin-bottom: 6px; }
 .review-big-num { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 42px; letter-spacing: -1px; line-height: 1; color: var(--coral); }
@@ -1296,7 +1569,7 @@ nav {
 /* MARKET STATUS BAR */
 .market-bar {
   background: #0a1929; padding: 6px 20px;
-  display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none;
+  display: flex; gap: 20px; overflow: hidden; scrollbar-width: none;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .market-bar::-webkit-scrollbar { display: none; }
@@ -1329,6 +1602,11 @@ nav {
 }
 .curr-opt:hover { background: #f0f4f8; }
 .curr-opt.active { background: #004562; color: white; }
+
+/* Budget currency picker active state */
+#budgetCurrencyPicker .curr-opt.active { background: var(--coral); color: white; }
+#budgetCurrencyPicker .curr-opt:hover { background: #fce5cd; }
+
 
 /* INFO POPUP */
 /* INFO POPUP */
@@ -1405,6 +1683,191 @@ nav {
 .info-fab:hover { background: var(--navy-light); transform: scale(1.08); }
 .info-fab.hidden { display: none; }
 
+/* ── LOG EXPENSE FAB ─────────────────────────────────────────── */
+.expense-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 20px;
+  background: var(--coral);
+  border: none;
+  border-radius: 30px;
+  padding: 0 20px 0 14px;
+  height: 52px;
+  display: none; /* shown by JS when budget page is active */
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255,107,91,0.45);
+  z-index: 300;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.expense-fab:hover { transform: scale(1.04); box-shadow: 0 6px 24px rgba(255,107,91,0.55); }
+.expense-fab.visible { display: flex; }
+.fab-label {
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+/* ── DRAWER OVERLAY ──────────────────────────────────────────── */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(42,37,46,0.5);
+  z-index: 500;
+  align-items: flex-end;
+  justify-content: center;
+}
+.drawer-overlay.open { display: flex; }
+
+/* ── DRAWER PANEL ────────────────────────────────────────────── */
+.expense-drawer {
+  background: white;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 520px;
+  padding: 0 0 32px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0,0.15,1);
+  box-shadow: 0 -4px 32px rgba(0,0,0,0.15);
+}
+.drawer-overlay.open .expense-drawer {
+  transform: translateY(0);
+}
+.drawer-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 0;
+}
+.drawer-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--dark);
+}
+.drawer-close {
+  background: var(--light);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  color: var(--mid);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.drawer-close:hover { background: var(--border); }
+
+.drawer-body {
+  padding: 16px 20px 0;
+}
+.drawer-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.drawer-field label {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--mid);
+  margin-bottom: 6px;
+}
+.drawer-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: 'Lora', serif;
+  font-size: 15px;
+  color: var(--dark);
+  background: var(--light);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.drawer-input:focus { border-color: var(--coral); background: white; }
+.drawer-amount-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.drawer-amount-wrap span {
+  position: absolute;
+  left: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--mid);
+  pointer-events: none;
+}
+.drawer-amount-wrap .drawer-input {
+  padding-left: 26px;
+}
+.drawer-submit {
+  margin-top: 18px;
+  width: 100%;
+  background: var(--coral);
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.drawer-submit:hover { background: var(--coral-dark); }
+.drawer-submit:active { transform: scale(0.98); }
+
+/* TOGGLE SWITCH */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track {
+  width: 44px;
+  height: 26px;
+  background: var(--border);
+  border-radius: 13px;
+  position: relative;
+  transition: background 0.2s;
+}
+.toggle-switch input:checked + .toggle-track { background: var(--coral); }
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-track .toggle-thumb { transform: translateX(18px); }
+
 /* RESET */
 .reset-zone { padding: 16px; }
 .reset-btn {
@@ -1428,7 +1891,7 @@ nav {
   margin-left: 4px;
   white-space: nowrap;
 }
-#app-budget .logo-app-label { color: rgba(0,0,0,0.45); }
+#app-budget .logo-app-label { color: rgba(255,255,255,0.6); }
 #app-invest .logo-app-label { color: rgba(255,255,255,0.6); }
 
 .logo-dropdown-trigger:hover .logo-dropdown-arrow { opacity: 1; }
@@ -1450,9 +1913,746 @@ nav {
 .logo-dd-check { display: none; margin-left: auto; color: #ff6b5b; font-size: 14px; font-weight: 900; }
 /* Ensure dropdown appears over invest tab-bar */
 #app-invest nav { position: sticky; top: 0; z-index: 200; }
-#app-invest .tab-bar { position: sticky; top: 56px; z-index: 199; }
+/* tab-bar stickiness is handled by mobile fix CSS */
+#app-invest .invest-tab-wrap { position: sticky; top: 56px; z-index: 199; }
+#app-invest .tab-bar { position: static; }
+@media (max-width: 540px) {
+  /* On mobile the nav wraps and is taller; let tab-bar stack naturally below it */
+  #app-invest .invest-tab-wrap { position: sticky; top: 0; z-index: 199; }
+}
 .logo-dropdown-wrap { z-index: 300; }
 </style>
+
+<!-- ===== MOBILE FIXES ===== -->
+<style>
+/* ── Prevent ALL horizontal scroll / white-space overflow on the page ── */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.app-wrapper {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BUDGET APP NAV  — single-row default; wraps when tabs overflow
+   ══════════════════════════════════════════════════════════════ */
+
+/* Default: everything on one row */
+#app-budget nav {
+  flex-wrap: nowrap;
+  height: 56px;
+  padding: 0 20px;
+  gap: 0;
+}
+
+/* When JS detects overflow it adds .nav-wrapped to <nav> */
+#app-budget nav.nav-wrapped {
+  height: auto;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  gap: 0;
+  row-gap: 4px;
+}
+
+/* Row 1: logo left, currency right */
+#app-budget nav.nav-wrapped .logo-dropdown-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#app-budget nav.nav-wrapped #budgetCurrencyDropdown {
+  order: 2;
+  flex-shrink: 0;
+}
+
+/* Row 2: tabs take full width */
+#app-budget nav.nav-wrapped .scroll-tab-wrap {
+  order: 3;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Tabs inside the wrap — scrollable */
+#app-budget nav.nav-wrapped .nav-tabs {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+#app-budget nav.nav-wrapped .nav-tabs::-webkit-scrollbar { display: none; }
+#app-budget nav.nav-wrapped .nav-tab {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Un-wrapped single row: logo | [spacer via tab wrap] | currency far right */
+#app-budget nav:not(.nav-wrapped) .logo-dropdown-wrap {
+  flex-shrink: 0;
+  order: 1;
+}
+#app-budget nav:not(.nav-wrapped) .scroll-tab-wrap {
+  flex: 1;           /* fills the middle */
+  overflow: visible;
+  min-width: 0;
+  order: 2;
+  display: flex;
+  justify-content: center;  /* centre tabs in the available space */
+}
+#app-budget nav:not(.nav-wrapped) .nav-tabs {
+  overflow: visible;
+  flex-wrap: nowrap;
+}
+
+/* Currency always last, always far right */
+#app-budget nav #budgetCurrencyDropdown {
+  flex-shrink: 0;
+  order: 99;
+  margin-left: auto;
+}
+
+/* Wrapped state overrides */
+#app-budget nav.nav-wrapped .logo-dropdown-wrap {
+  order: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#app-budget nav.nav-wrapped #budgetCurrencyDropdown {
+  order: 2;
+  margin-left: 0;   /* logo's flex:1 already pushes it right */
+}
+#app-budget nav.nav-wrapped .scroll-tab-wrap {
+  order: 3;
+  justify-content: flex-start;
+  margin-left: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INVEST APP NAV — hide overflow-prone elements gracefully
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 540px) {
+  #app-invest nav {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  /* Logo stays left */
+  #app-invest nav .logo-dropdown-wrap {
+    flex-shrink: 0;
+  }
+
+  /* Right-side controls wrap and shrink */
+  #app-invest nav .nav-right {
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Hide "last updated" text — saves space */
+  #app-invest nav .last-updated {
+    display: none;
+  }
+
+  /* Shrink price status text */
+  #app-invest nav .price-status {
+    font-size: 9px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INVEST APP TAB BAR — horizontally scrollable
+   ══════════════════════════════════════════════════════════════ */
+.tab-bar {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  /* keep items on one line */
+  flex-wrap: nowrap;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* When the nav is taller (wrapped), adjust the sticky offset */
+@media (max-width: 540px) {
+  #app-invest .invest-tab-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 199;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GENERAL MOBILE — stop inner content from overflowing
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 540px) {
+  /* Panel padding tighter on small screens */
+  .panel {
+    padding: 12px 10px 60px;
+  }
+
+  /* Hero value font scale-down */
+  .hero-val.lg { font-size: 28px; }
+  .hero-val     { font-size: 22px; }
+
+  /* Prevent hero-grid from overflowing */
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-card.full {
+    grid-column: 1;
+  }
+
+  /* Stats / card grids */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  /* Sections inside budget app */
+  .section {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  /* Left card */
+  .left-card {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  /* Expense form: stack inputs */
+  .expense-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .expense-form input[type="date"] {
+    grid-column: 1 / -1;
+  }
+
+  /* Expense row: tighter */
+  .expense-row {
+    grid-template-columns: 60px 70px 1fr auto;
+    gap: 4px;
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  /* Tracker rows */
+  .tracker-row {
+    grid-template-columns: 1fr 76px 76px;
+    gap: 4px;
+    padding: 8px 10px;
+  }
+  .section-footer {
+    grid-template-columns: 1fr 76px 76px;
+    gap: 4px;
+    padding: 8px 10px;
+  }
+
+  /* Amount inputs smaller */
+  .amount-input input {
+    width: 60px;
+    font-size: 12px;
+  }
+
+  /* Habit stats */
+  .habit-stats {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  /* Weekly/monthly sections */
+  .wm-section, .daily-habits-section {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  /* Year-in-review hero */
+  .review-hero h1 {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+  .review-big-num {
+    font-size: 32px;
+  }
+  .review-grid {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  /* Settings */
+  .settings-section {
+    margin: 10px;
+  }
+  .settings-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Calc result grid: 3 col is fine but shrink font */
+  .calc-result-grid {
+    padding: 0 10px 12px;
+  }
+  .calc-result-val {
+    font-size: 14px;
+  }
+
+  /* Goal grid */
+  .goal-grid {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  /* Hero month text */
+  .hero-month {
+    font-size: 22px;
+    letter-spacing: 3px;
+  }
+
+  /* Habit hero */
+  .habit-hero h1 {
+    font-size: 22px;
+    letter-spacing: 3px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Extra small screens ≤ 360px
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  #app-budget nav .nav-tab {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .tab-btn {
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+
+  .tracker-row {
+    grid-template-columns: 1fr 66px 66px;
+  }
+  .section-footer {
+    grid-template-columns: 1fr 66px 66px;
+  }
+  .amount-input input {
+    width: 52px;
+    font-size: 11px;
+  }
+}
+</style>
+
+<!-- ===== SCROLL ARROW INDICATORS ===== -->
+<style>
+/* ── Wrapper that holds [arrow] [scrollable-tabs] [arrow] ── */
+.scroll-tab-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* sits inside the nav on budget; is the tab-bar row on invest */
+}
+
+/* Budget: the wrap fills the tab-slot inside the nav flex row */
+#app-budget nav .scroll-tab-wrap {
+  order: 3;
+  width: 100%;
+  overflow: hidden;  /* arrows clip neatly */
+  min-width: 0;
+}
+
+/* Invest: the wrap is the full-width sticky bar */
+.invest-tab-wrap {
+  width: 100%;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ── The arrow buttons ── */
+.scroll-arrow {
+  flex-shrink: 0;
+  width: 28px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, opacity 0.2s;
+  /* hidden by default — JS shows them only when needed */
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.scroll-arrow:hover { background: rgba(255,255,255,0.28); }
+
+/* Invest arrows — styled for the dark tab bar */
+.invest-arrow {
+  height: 40px;
+  background: rgba(255,255,255,0.1);
+}
+.invest-arrow:hover { background: rgba(255,255,255,0.22); }
+
+/* Visible state — JS adds .visible */
+.scroll-arrow.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Fade-edge on the scrollable strip to hint more content */
+.scroll-tab-wrap.can-scroll-right .nav-tabs,
+.scroll-tab-wrap.can-scroll-right .tab-bar {
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+.scroll-tab-wrap.can-scroll-left .nav-tabs,
+.scroll-tab-wrap.can-scroll-left .tab-bar {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%);
+  mask-image: linear-gradient(to right, transparent 0%, black 15%);
+}
+.scroll-tab-wrap.can-scroll-left.can-scroll-right .nav-tabs,
+.scroll-tab-wrap.can-scroll-left.can-scroll-right .tab-bar {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+/* ── Month selector scroll arrows ── */
+.month-scroll-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.month-scroll-wrap .month-selector {
+  flex: 1;
+  min-width: 0;
+}
+.month-scroll-arrow {
+  flex-shrink: 0;
+  width: 30px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.07);
+  color: var(--mid, #7a7480);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, opacity 0.2s;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  margin: 0 3px;
+}
+.month-scroll-arrow:hover { background: rgba(0,0,0,0.14); }
+.month-scroll-arrow.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.month-scroll-wrap.can-scroll-right .month-selector {
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+.month-scroll-wrap.can-scroll-left .month-selector {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%);
+  mask-image: linear-gradient(to right, transparent 0%, black 15%);
+}
+.month-scroll-wrap.can-scroll-left.can-scroll-right .month-selector {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+</style>
+
+<!-- ===== MARKET BAR MARQUEE (always on) ===== -->
+<style>
+/* ── Always-scrolling ticker layout ── */
+.market-bar {
+  overflow: hidden;
+  padding: 6px 0;
+}
+.market-ticker-track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  will-change: transform;
+}
+.market-ticker-set {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  padding: 0 28px;
+  flex-shrink: 0;
+}
+/* note pill — no special margin needed in ticker mode */
+.market-pill-note {
+  margin-left: 0;
+  border-left: none;
+  padding-left: 0;
+}
+/* set B always visible for seamless loop */
+#marketSetB { display: flex; }
+
+/* pause on tap/hover */
+.market-ticker-track:hover,
+.market-ticker-track.paused {
+  animation-play-state: paused !important;
+}
+
+@keyframes marketScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--market-scroll-dist)); }
+}
+</style>
+
+<script>
+(function() {
+  function initMarquee() {
+    var setA = document.getElementById('marketSetA');
+    var setB = document.getElementById('marketSetB');
+    var track = document.getElementById('marketTickerTrack');
+    if (!setA || !setB || !track) return;
+
+    // Clone set A content into set B for seamless loop
+    setB.innerHTML = setA.innerHTML;
+
+    // Calculate scroll distance = width of one set (including its padding)
+    var setWidth = setA.offsetWidth;
+    if (setWidth === 0) {
+      requestAnimationFrame(initMarquee);
+      return;
+    }
+
+    // Speed: pixels per second — comfortable reading pace
+    var pxPerSec = 48;
+    var duration = setWidth / pxPerSec;
+
+    track.style.setProperty('--market-scroll-dist', '-' + setWidth + 'px');
+    track.style.animation = 'marketScroll ' + duration + 's linear infinite';
+  }
+
+  // Run after layout
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(initMarquee, 150); });
+  } else {
+    setTimeout(initMarquee, 150);
+  }
+
+  // Re-init on resize so duration stays correct if window width changes
+  window.addEventListener('resize', function() {
+    var track = document.getElementById('marketTickerTrack');
+    if (track) track.style.animation = '';
+    setTimeout(initMarquee, 100);
+  });
+})();
+</script>
+
+<script>
+// ── Scroll a tab bar by delta px ──────────────────────────────
+function scrollTabBar(id, delta) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.scrollBy({ left: delta, behavior: 'smooth' });
+}
+
+// ── Update arrow visibility for a scroll-tab-wrap ────────────
+function updateScrollArrows(stripId, leftBtnId, rightBtnId, wrapId) {
+  var strip = document.getElementById(stripId);
+  var leftBtn = document.getElementById(leftBtnId);
+  var rightBtn = document.getElementById(rightBtnId);
+  var wrap = document.getElementById(wrapId);
+  if (!strip || !leftBtn || !rightBtn || !wrap) return;
+
+  var canScrollLeft  = strip.scrollLeft > 2;
+  var canScrollRight = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 2;
+
+  // Only show arrows if there is actually overflow
+  var hasOverflow = strip.scrollWidth > strip.clientWidth + 4;
+
+  leftBtn.classList.toggle('visible',  hasOverflow && canScrollLeft);
+  rightBtn.classList.toggle('visible', hasOverflow && canScrollRight);
+
+  wrap.classList.toggle('can-scroll-left',  hasOverflow && canScrollLeft);
+  wrap.classList.toggle('can-scroll-right', hasOverflow && canScrollRight);
+}
+
+// ── Wire up both bars ─────────────────────────────────────────
+function initScrollArrows() {
+  // Budget nav tabs
+  var budgetStrip = document.getElementById('budgetNavTabs');
+  if (budgetStrip) {
+    budgetStrip.addEventListener('scroll', function() {
+      updateScrollArrows('budgetNavTabs','budgetNavLeft','budgetNavRight','budgetNavWrap');
+    });
+    updateScrollArrows('budgetNavTabs','budgetNavLeft','budgetNavRight','budgetNavWrap');
+  }
+
+  // Invest tab bar
+  var investStrip = document.getElementById('investTabBar');
+  if (investStrip) {
+    investStrip.addEventListener('scroll', function() {
+      updateScrollArrows('investTabBar','investTabLeft','investTabRight','investTabWrap');
+    });
+    updateScrollArrows('investTabBar','investTabLeft','investTabRight','investTabWrap');
+  }
+}
+
+// Re-check on resize (viewport change)
+window.addEventListener('resize', function() {
+  updateScrollArrows('budgetNavTabs','budgetNavLeft','budgetNavRight','budgetNavWrap');
+  updateScrollArrows('investTabBar','investTabLeft','investTabRight','investTabWrap');
+});
+
+// Init after DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initScrollArrows);
+} else {
+  initScrollArrows();
+}
+// Also init slightly later to catch any layout shifts
+setTimeout(initScrollArrows, 300);
+
+// ── Budget nav: dynamically wrap when tabs don't fit ─────────
+(function() {
+  function checkBudgetNavWrap() {
+    var nav = document.querySelector('#app-budget nav');
+    if (!nav) return;
+    var tabs   = document.getElementById('budgetNavTabs');
+    var logo   = nav.querySelector('.logo-dropdown-wrap');
+    var curr   = document.getElementById('budgetCurrencyDropdown');
+    if (!tabs || !logo || !curr) return;
+
+    // Temporarily unwrap to measure natural widths
+    var wasWrapped = nav.classList.contains('nav-wrapped');
+    nav.classList.remove('nav-wrapped');
+
+    // Force a reflow to get accurate measurements
+    var navW   = nav.clientWidth;
+    var logoW  = logo.scrollWidth;
+    var tabsW  = tabs.scrollWidth;   // natural (unconstrained) width of all tabs
+    var currW  = curr.scrollWidth;
+    var gap    = 16; // padding + breathing room
+
+    var fits = (logoW + tabsW + currW + gap) <= navW;
+
+    if (!fits) {
+      nav.classList.add('nav-wrapped');
+    }
+    // Re-run scroll arrows after layout settles
+    if (typeof updateScrollArrows === 'function') {
+      requestAnimationFrame(function() {
+        updateScrollArrows('budgetNavTabs','budgetNavLeft','budgetNavRight','budgetNavWrap');
+      });
+    }
+  }
+
+  // ResizeObserver watches the nav — fires instantly on any size change
+  if (window.ResizeObserver) {
+    var nav = document.querySelector('#app-budget nav');
+    if (nav) {
+      new ResizeObserver(checkBudgetNavWrap).observe(nav);
+    }
+  }
+  // Fallback for older browsers
+  window.addEventListener('resize', checkBudgetNavWrap);
+
+  // Initial check
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      checkBudgetNavWrap();
+      setTimeout(checkBudgetNavWrap, 200);
+    });
+  } else {
+    checkBudgetNavWrap();
+    setTimeout(checkBudgetNavWrap, 200);
+  }
+})();
+</script>
+
+<script>
+// ── Month selector scroll arrows ──────────────────────────────
+
+function scrollMonths(stripId, delta) {
+  var el = document.getElementById(stripId);
+  if (!el) return;
+  el.scrollBy({ left: delta, behavior: 'smooth' });
+}
+
+function updateMonthArrows(stripId, leftBtnId, rightBtnId, wrapId) {
+  var strip  = document.getElementById(stripId);
+  var lBtn   = document.getElementById(leftBtnId);
+  var rBtn   = document.getElementById(rightBtnId);
+  var wrap   = document.getElementById(wrapId);
+  if (!strip || !lBtn || !rBtn || !wrap) return;
+
+  var hasOverflow    = strip.scrollWidth > strip.clientWidth + 4;
+  var canScrollLeft  = strip.scrollLeft > 2;
+  var canScrollRight = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 2;
+
+  lBtn.classList.toggle('visible',  hasOverflow && canScrollLeft);
+  rBtn.classList.toggle('visible',  hasOverflow && canScrollRight);
+  wrap.classList.toggle('can-scroll-left',  hasOverflow && canScrollLeft);
+  wrap.classList.toggle('can-scroll-right', hasOverflow && canScrollRight);
+}
+
+function initMonthArrows() {
+  var pairs = [
+    { strip: 'monthSelector',     left: 'budgetMonthLeft', right: 'budgetMonthRight', wrap: 'budgetMonthWrap' },
+    { strip: 'habitMonthSelector',left: 'habitMonthLeft',  right: 'habitMonthRight',  wrap: 'habitMonthWrap'  },
+  ];
+  pairs.forEach(function(p) {
+    var strip = document.getElementById(p.strip);
+    if (!strip) return;
+    // Initial state
+    updateMonthArrows(p.strip, p.left, p.right, p.wrap);
+    // Update on scroll
+    strip.addEventListener('scroll', function() {
+      updateMonthArrows(p.strip, p.left, p.right, p.wrap);
+    });
+  });
+}
+
+// Re-check month arrows on resize too
+window.addEventListener('resize', function() {
+  updateMonthArrows('monthSelector',      'budgetMonthLeft','budgetMonthRight','budgetMonthWrap');
+  updateMonthArrows('habitMonthSelector', 'habitMonthLeft', 'habitMonthRight', 'habitMonthWrap');
+});
+
+// Init — also retry after a short delay so JS-rendered month buttons are in the DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    initMonthArrows();
+    setTimeout(initMonthArrows, 400);
+  });
+} else {
+  initMonthArrows();
+  setTimeout(initMonthArrows, 400);
+}
+
+// Expose a helper so the existing month-rendering JS can call this
+// after it rebuilds the month buttons (renderMonthSelector calls, etc.)
+window.refreshMonthArrows = function() {
+  updateMonthArrows('monthSelector',      'budgetMonthLeft','budgetMonthRight','budgetMonthWrap');
+  updateMonthArrows('habitMonthSelector', 'habitMonthLeft', 'habitMonthRight', 'habitMonthWrap');
+};
+</script>
 
 </head>
 <body>
@@ -1491,19 +2691,38 @@ nav {
       </div>
     </div>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" id="tab-budget" onclick="showPage('budget',this)">Budget</button>
-    <button class="nav-tab" id="tab-habits" onclick="showPage('habits',this)">Habits</button>
-    <button class="nav-tab" id="tab-review" onclick="showPage('review',this)">Review</button>
-    <button class="nav-tab" id="tab-settings" onclick="showPage('settings',this)">⚙</button>
+  <div class="scroll-tab-wrap" id="budgetNavWrap">
+    <button class="scroll-arrow scroll-arrow-left" id="budgetNavLeft" onclick="scrollTabBar('budgetNavTabs',-120)" aria-label="Scroll tabs left">‹</button>
+    <div class="nav-tabs" id="budgetNavTabs">
+      <button class="nav-tab active" id="tab-budget" onclick="showPage('budget',this)">Budget</button>
+      <button class="nav-tab" id="tab-habits" onclick="showPage('habits',this)">Habits</button>
+      <button class="nav-tab" id="tab-review" onclick="showPage('review',this)">Review</button>
+      <button class="nav-tab" id="tab-settings" onclick="showPage('settings',this)">⚙</button>
+    </div>
+    <button class="scroll-arrow scroll-arrow-right" id="budgetNavRight" onclick="scrollTabBar('budgetNavTabs',120)" aria-label="Scroll tabs right">›</button>
   </div>
-  <select class="currency-select" id="currencySelect" onchange="bSetCurrency(this.value)">
-    <option value="$">$ AUD</option>
-    <option value="$">$ USD</option>
-    <option value="£">£ GBP</option>
-    <option value="€">€ EUR</option>
-    <option value="¥">¥ JPY</option>
-  </select>
+  <div style="position:relative;" id="budgetCurrencyDropdown">
+    <button onclick="toggleBudgetCurrencyPicker()" id="budgetCurrencyBtn"
+      style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.25);border-radius:8px;
+             padding:5px 10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;
+             color:white;cursor:pointer;outline:none;white-space:nowrap;">
+      <span id="budgetCurrencyBtnLabel">$ AUD</span> ▾
+    </button>
+    <div id="budgetCurrencyPicker" style="display:none;position:absolute;top:calc(100% + 6px);right:0;
+         background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
+         border:1px solid #ede8e2;overflow:hidden;z-index:999;min-width:120px;">
+      <div style="padding:6px 0;">
+        <div class="curr-opt" onclick="pickBudgetCurrency('AUD','$ AUD','$')">$ AUD</div>
+        <div class="curr-opt" onclick="pickBudgetCurrency('USD','$ USD','$')">$ USD</div>
+        <div class="curr-opt" onclick="pickBudgetCurrency('GBP','£ GBP','£')">£ GBP</div>
+        <div class="curr-opt" onclick="pickBudgetCurrency('EUR','€ EUR','€')">€ EUR</div>
+        <div class="curr-opt" onclick="pickBudgetCurrency('JPY','¥ JPY','¥')">¥ JPY</div>
+        <div class="curr-opt" onclick="pickBudgetCurrency('CAD','C$ CAD','C$')">C$ CAD</div>
+        <div class="curr-opt" onclick="pickBudgetCurrency('NZD','NZ$ NZD','NZ$')">NZ$ NZD</div>
+        <div class="curr-opt" onclick="pickBudgetCurrency('SGD','S$ SGD','S$')">S$ SGD</div>
+      </div>
+    </div>
+  </div>
 </nav>
 
 
@@ -1514,13 +2733,25 @@ nav {
     <div class="hero-month" id="heroMonth">J A N U A R Y</div>
     <div class="hero-sub">· Simple Budget Spreadsheet ·</div>
   </div>
+  <div id="copyLastMonthBar" class="copy-bar">
+    <span style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:var(--mid);">No budget set for this month yet</span>
+    <button onclick="copyLastMonth()" style="background:var(--coral);border:none;border-radius:8px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:white;cursor:pointer;white-space:nowrap;">Copy last month's budget</button>
+  </div>
 
-  <div class="month-selector" id="monthSelector"></div>
+  <div class="month-scroll-wrap" id="budgetMonthWrap">
+    <button class="month-scroll-arrow month-scroll-left" id="budgetMonthLeft" onclick="scrollMonths('monthSelector',-160)" aria-label="Scroll months left">‹</button>
+    <div class="month-selector" id="monthSelector"></div>
+    <button class="month-scroll-arrow month-scroll-right" id="budgetMonthRight" onclick="scrollMonths('monthSelector',160)" aria-label="Scroll months right">›</button>
+  </div>
 
   <div class="left-card">
     <div class="left-label">Amount Left to Spend</div>
     <div class="left-amount zero" id="leftAmount">$0</div>
+    <div class="rollover-badge" id="rolloverBadge" style="display:none"></div>
   </div>
+
+  <!-- SPENDING INSIGHTS -->
+  <div class="insights-bar" id="insightsBar"></div>
 
   <div class="stats-grid">
     <div class="stat-box">
@@ -1571,6 +2802,7 @@ nav {
   <div class="section">
     <div class="section-head">
       <h2>Income Summary</h2>
+      <button onclick="addRow('income')">+ Add</button>
     </div>
     <div class="tracker-row header">
       <span>Source</span><span>Budget</span><span>Actual</span>
@@ -1587,6 +2819,7 @@ nav {
   <div class="section">
     <div class="section-head">
       <h2>Bill Tracker</h2>
+      <button onclick="addRow('bills')">+ Add</button>
     </div>
     <div class="tracker-row header">
       <span>Bill</span><span>Budget</span><span>Actual</span>
@@ -1603,6 +2836,7 @@ nav {
   <div class="section">
     <div class="section-head">
       <h2>Expense Summary</h2>
+      <button onclick="addRow('expenseSummary')">+ Add</button>
     </div>
     <div class="tracker-row header">
       <span>Category</span><span>Budget</span><span>Actual</span>
@@ -1619,6 +2853,7 @@ nav {
   <div class="section">
     <div class="section-head">
       <h2>Savings Tracker</h2>
+      <button onclick="addRow('savings')">+ Add</button>
     </div>
     <div class="tracker-row header">
       <span>Goal</span><span>Budget</span><span>Actual</span>
@@ -1635,6 +2870,7 @@ nav {
   <div class="section">
     <div class="section-head">
       <h2>Debt Tracker</h2>
+      <button onclick="addRow('debt')">+ Add</button>
     </div>
     <div class="tracker-row header">
       <span>Debt</span><span>Budget</span><span>Actual</span>
@@ -1651,17 +2887,7 @@ nav {
   <div class="section">
     <div class="section-head">
       <h2>Expense Tracker</h2>
-    </div>
-    <div class="expense-form" id="expenseForm">
-      <input type="date" id="expDate">
-      <input type="number" id="expAmount" placeholder="Amount" min="0" step="0.01">
-      <select id="expCat">
-        <option value="">Category</option>
-      </select>
-    </div>
-    <div class="expense-form-row2">
-      <input type="text" id="expNote" placeholder="Notes (optional)">
-      <button class="add-expense-btn" onclick="addExpense()">+ Add</button>
+      <button onclick="openExpenseDrawer()">+ Log</button>
     </div>
     <div id="expense-log"></div>
   </div>
@@ -1672,8 +2898,57 @@ nav {
     <div id="breakdown-rows"></div>
   </div>
 
+  <!-- MONTH NOTES -->
+  <div class="month-notes-wrap">
+    <div class="month-notes-label">📝 Month Notes</div>
+    <textarea id="monthNotes" placeholder="Jot anything about this month — a bonus, a big expense, a life event…" oninput="saveMonthNotes(this.value)"></textarea>
+  </div>
+
   <div class="bottom-space"></div>
+</div><!-- end page-budget -->
+
+<!-- ===== LOG EXPENSE DRAWER ===== -->
+<div class="drawer-overlay" id="expenseDrawerOverlay" onclick="closeExpenseDrawer(event)">
+  <div class="expense-drawer" id="expenseDrawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-header">
+      <span class="drawer-title">Log Expense</span>
+      <button class="drawer-close" onclick="closeExpenseDrawer()">×</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-row">
+        <div class="drawer-field">
+          <label>Date</label>
+          <input type="date" id="expDate" class="drawer-input">
+        </div>
+        <div class="drawer-field">
+          <label>Amount</label>
+          <div class="drawer-amount-wrap">
+            <span id="drawerCurrencySym">$</span>
+            <input type="number" id="expAmount" class="drawer-input" placeholder="0.00" min="0" step="0.01" onkeydown="if(event.key==='Enter')addExpense()">
+          </div>
+        </div>
+      </div>
+      <div class="drawer-field" style="margin-top:10px;">
+        <label>Category</label>
+        <select id="expCat" class="drawer-input">
+          <option value="">Select category…</option>
+        </select>
+      </div>
+      <div class="drawer-field" style="margin-top:10px;">
+        <label>Note <span style="font-weight:400;opacity:0.6;">(optional)</span></label>
+        <input type="text" id="expNote" class="drawer-input" placeholder="What was it for?" onkeydown="if(event.key==='Enter')addExpense()">
+      </div>
+      <button class="drawer-submit" onclick="addExpense()">+ Add Expense</button>
+    </div>
+  </div>
 </div>
+
+<!-- FAB -->
+<button class="expense-fab" id="expenseFab" onclick="openExpenseDrawer()" title="Log an expense">
+  <span style="font-size:22px;line-height:1;">+</span>
+  <span class="fab-label">Log Expense</span>
+</button>
 
 <!-- ===================== HABITS PAGE ===================== -->
 <div id="page-habits" class="page">
@@ -1682,8 +2957,16 @@ nav {
     <h1>H A B I T S</h1>
     <p id="habitMonthLabel">· January 2026 ·</p>
   </div>
+  <div id="copyLastHabitsBar" class="copy-bar">
+    <span style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:var(--mid);">No habits set for this month</span>
+    <button onclick="copyLastHabits()" style="background:var(--coral);border:none;border-radius:8px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:white;cursor:pointer;white-space:nowrap;">Copy last month's habits</button>
+  </div>
 
-  <div class="month-selector" id="habitMonthSelector"></div>
+  <div class="month-scroll-wrap" id="habitMonthWrap">
+    <button class="month-scroll-arrow month-scroll-left" id="habitMonthLeft" onclick="scrollMonths('habitMonthSelector',-160)" aria-label="Scroll months left">‹</button>
+    <div class="month-selector" id="habitMonthSelector"></div>
+    <button class="month-scroll-arrow month-scroll-right" id="habitMonthRight" onclick="scrollMonths('habitMonthSelector',160)" aria-label="Scroll months right">›</button>
+  </div>
 
   <div class="habit-stats">
     <div class="habit-stat">
@@ -1698,6 +2981,18 @@ nav {
       <div class="habit-stat-val" id="h-month">0%</div>
       <div class="habit-stat-label">This Month</div>
     </div>
+  </div>
+
+  <!-- HABIT PROGRESS CHART -->
+  <div class="section" style="margin: 0 16px 16px;">
+    <div class="section-head">
+      <h2>Daily Progress</h2>
+      <span id="habitChartSubtitle" style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;color:rgba(255,255,255,0.6);"></span>
+    </div>
+    <div style="padding:14px 16px 10px;position:relative;height:160px;">
+      <canvas id="habitProgressChart"></canvas>
+    </div>
+    <div id="habitChartLegend" style="display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 12px;"></div>
   </div>
 
   <!-- DAILY HABITS CALENDAR -->
@@ -1722,11 +3017,11 @@ nav {
     <h2>Weekly Habits</h2>
   </div>
   <div class="week-tabs" style="background: white; margin: 0 16px; padding: 10px 16px 0;">
-    <button class="week-tab active" onclick="selectWeek(0,this)">Wk 1</button>
-    <button class="week-tab" onclick="selectWeek(1,this)">Wk 2</button>
-    <button class="week-tab" onclick="selectWeek(2,this)">Wk 3</button>
-    <button class="week-tab" onclick="selectWeek(3,this)">Wk 4</button>
-    <button class="week-tab" onclick="selectWeek(4,this)">Wk 5</button>
+    <button class="week-tab active" onclick="selectWeek(0,this)">Wk 1<span class="week-tab-rate" id="wk-rate-0"></span></button>
+    <button class="week-tab" onclick="selectWeek(1,this)">Wk 2<span class="week-tab-rate" id="wk-rate-1"></span></button>
+    <button class="week-tab" onclick="selectWeek(2,this)">Wk 3<span class="week-tab-rate" id="wk-rate-2"></span></button>
+    <button class="week-tab" onclick="selectWeek(3,this)">Wk 4<span class="week-tab-rate" id="wk-rate-3"></span></button>
+    <button class="week-tab" onclick="selectWeek(4,this)">Wk 5<span class="week-tab-rate" id="wk-rate-4"></span></button>
   </div>
   <div class="wm-section" style="border-radius: 0 0 14px 14px; margin-top: 0;">
     <div id="weekly-rows"></div>
@@ -1818,9 +3113,23 @@ nav {
 <!-- SETTINGS PAGE -->
 <div id="page-settings" class="page">
 
-  <div class="review-hero" style="background:var(--coral);">
-    <h1 style="color:var(--dark);letter-spacing:3px;font-size:22px;">S E T T I N G S</h1>
-    <p style="color:rgba(42,37,46,0.6);">· Manage your data ·</p>
+  <div class="review-hero">
+    <h1>S E T T I N G S</h1>
+    <p>· Manage your data ·</p>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Budget Preferences</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Monthly Rollover</div>
+        <div class="settings-row-desc">Carry your leftover balance forward into the next month automatically</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="rolloverToggle" onchange="setRolloverPref(this.checked)" checked>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
   </div>
 
   <div class="settings-section">
@@ -1835,7 +3144,8 @@ nav {
         <div class="settings-row-label">Export Data</div>
         <div class="settings-row-desc">Download all your data as a JSON file backup</div>
       </div>
-      <button class="settings-btn neutral" onclick="exportData()">Export</button>
+      <button class="settings-btn neutral" onclick="exportData()">JSON</button>
+      <button class="settings-btn neutral" onclick="exportCSV()" style="margin-left:4px;">CSV</button>
     </div>
     <div class="settings-row">
       <div class="settings-row-info">
@@ -1855,9 +3165,11 @@ nav {
     <div class="settings-row">
       <div class="settings-row-info">
         <div class="settings-row-label">Reset This Month</div>
-        <div class="settings-row-desc">Clear only the current month's budget data</div>
+        <div class="settings-row-desc">Clear data for <span id="resetMonthLabel">this month</span></div>
       </div>
-      <button class="settings-btn danger" onclick="confirmReset('month')">Reset</button>
+      <button class="settings-btn danger" onclick="confirmReset('month-budget')">Budget</button>
+      <button class="settings-btn danger" onclick="confirmReset('month-habits')" style="margin-left:4px;">Habits</button>
+      <button class="settings-btn danger" onclick="confirmReset('month-both')" style="margin-left:4px;">Both</button>
     </div>
   </div>
 
@@ -1946,35 +3258,47 @@ nav {
 
 
 <div class="market-bar" id="marketBar">
-  <div class="market-pill">
-    <div class="market-pill-dot closed" id="nyse-dot"></div>
-    <span class="market-pill-name">NYSE</span>
-    <span class="market-pill-status closed" id="nyse-status">—</span>
-    <span class="market-pill-time" id="nyse-time"></span>
-  </div>
-  <div class="market-pill">
-    <div class="market-pill-dot closed" id="nasdaq-dot"></div>
-    <span class="market-pill-name">NASDAQ</span>
-    <span class="market-pill-status closed" id="nasdaq-status">—</span>
-    <span class="market-pill-time" id="nasdaq-time"></span>
-  </div>
-  <div class="market-pill">
-    <div class="market-pill-dot closed" id="asx-dot"></div>
-    <span class="market-pill-name">ASX</span>
-    <span class="market-pill-status closed" id="asx-status">—</span>
-    <span class="market-pill-time" id="asx-time"></span>
-  </div>
-  <div class="market-pill" style="margin-left:auto;border-left:1px solid rgba(255,255,255,0.08);padding-left:20px;">
-    <span style="font-size:9px;color:#4b5563;font-family:'Montserrat',sans-serif;">Prices: last close when market closed</span>
+  <div class="market-ticker-track" id="marketTickerTrack">
+    <!-- set A -->
+    <div class="market-ticker-set" id="marketSetA">
+      <div class="market-pill">
+        <div class="market-pill-dot closed" id="nyse-dot"></div>
+        <span class="market-pill-name">NYSE</span>
+        <span class="market-pill-status closed" id="nyse-status">—</span>
+        <span class="market-pill-time" id="nyse-time"></span>
+      </div>
+      <div class="market-pill">
+        <div class="market-pill-dot closed" id="nasdaq-dot"></div>
+        <span class="market-pill-name">NASDAQ</span>
+        <span class="market-pill-status closed" id="nasdaq-status">—</span>
+        <span class="market-pill-time" id="nasdaq-time"></span>
+      </div>
+      <div class="market-pill">
+        <div class="market-pill-dot closed" id="asx-dot"></div>
+        <span class="market-pill-name">ASX</span>
+        <span class="market-pill-status closed" id="asx-status">—</span>
+        <span class="market-pill-time" id="asx-time"></span>
+      </div>
+      <div class="market-pill market-pill-note">
+        <span style="font-size:9px;color:#4b5563;font-family:'Montserrat',sans-serif;">Prices: last close when market closed</span>
+      </div>
+    </div>
+    <!-- set B — JS-cloned duplicate for seamless loop -->
+    <div class="market-ticker-set" id="marketSetB" aria-hidden="true"></div>
   </div>
 </div>
 
-<div class="tab-bar" style="background:var(--navy);">
-  <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
-  <button class="tab-btn" onclick="showTab('holdings',this)">Holdings</button>
-  <button class="tab-btn" onclick="showTab('performance',this)">Performance</button>
-  <button class="tab-btn" onclick="showTab('calculator',this)">Calculator</button>
-  <button class="tab-btn" onclick="showTab('goal',this)">Goal</button>
+<div class="scroll-tab-wrap invest-tab-wrap" id="investTabWrap" style="background:var(--navy);">
+  <button class="scroll-arrow scroll-arrow-left invest-arrow" id="investTabLeft" onclick="scrollTabBar('investTabBar',-120)" aria-label="Scroll tabs left">‹</button>
+  <div class="tab-bar" id="investTabBar" style="background:var(--navy);">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('holdings',this)">Holdings</button>
+    <button class="tab-btn" onclick="showTab('performance',this)">Performance</button>
+    <button class="tab-btn" onclick="showTab('calculator',this)">Calculator</button>
+    <button class="tab-btn" onclick="showTab('goal',this)">Goal</button>
+    <button class="tab-btn" onclick="showTab('invest-settings',this)">⚙ Settings</button>
+  </div>
+  <button class="scroll-arrow scroll-arrow-right invest-arrow" id="investTabRight" onclick="scrollTabBar('investTabBar',120)" aria-label="Scroll tabs right">›</button>
 </div>
 
 <!-- ======= OVERVIEW ======= -->
@@ -1984,6 +3308,10 @@ nav {
     <div class="hero-card full">
       <div class="hero-label">Total Portfolio Value</div>
       <div class="hero-val lg" id="ov-total">$0.00</div>
+      <div style="display:flex;gap:8px;margin-top:6px;align-items:center;flex-wrap:wrap;">
+        <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;opacity:0.5;">Today</span>
+        <div class="hero-badge neutral" id="ov-day-badge">— today's change</div>
+      </div>
       <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
         <div class="hero-badge neutral" id="ov-gain-badge">↑ $0.00 total gain</div>
         <div class="hero-badge neutral" id="ov-gainpct-badge">0.00% return</div>
@@ -2242,12 +3570,16 @@ nav {
 
   <div class="section">
     <div class="section-head"><h2>Yearly Summary</h2></div>
-    <div style="overflow-x:auto;">
-      <table class="port-table">
-        <thead><tr><th style="text-align:left">Year</th><th>End Value</th><th>Total Contributed</th><th>Total Growth</th><th>Annual Return</th></tr></thead>
+    <div style="overflow-x:auto;overflow-y:auto;max-height:280px;">
+      <table class="port-table goal-yearly-table">
+        <thead style="position:sticky;top:0;z-index:1;background:var(--card-bg);">
+          <tr><th style="text-align:left">Year</th><th>End Value</th><th>Total Contributed</th><th>Total Growth</th><th>Annual Return</th></tr>
+        </thead>
         <tbody id="goal-yearly-body"></tbody>
       </table>
     </div>
+    <!-- Goal achievement card sits outside the scroll container -->
+    <div id="goal-achieve-card" style="display:none;padding:0 16px 16px;"></div>
   </div>
 
   <div class="section">
@@ -2260,9 +3592,41 @@ nav {
     </div>
   </div>
 
-  <div class="reset-zone">
-    <button class="reset-btn" onclick="if(confirm('Reset all data?')){localStorage.removeItem('ls_invest_v1');location.reload()}">Reset all data</button>
+</div>
+
+<!-- ======= INVEST SETTINGS ======= -->
+<div id="tab-invest-settings" class="panel">
+
+  <div class="settings-section">
+    <div class="settings-section-title">Data</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Export Holdings</div>
+        <div class="settings-row-desc">Download your portfolio as a JSON backup</div>
+      </div>
+      <button class="settings-btn neutral" onclick="exportInvestData()">Export</button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Import Holdings</div>
+        <div class="settings-row-desc">Restore from a previously exported JSON backup</div>
+      </div>
+      <button class="settings-btn neutral" onclick="document.getElementById('investImportFile').click()">Import</button>
+      <input type="file" id="investImportFile" accept=".json" style="display:none" onchange="importInvestData(this)">
+    </div>
   </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Danger Zone</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Reset All Holdings</div>
+        <div class="settings-row-desc">Delete all holdings and portfolio data. Cannot be undone.</div>
+      </div>
+      <button class="settings-btn danger" onclick="confirmResetInvest()">Reset All</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- INFO POPUP -->
@@ -2378,16 +3742,16 @@ function defaultMonth(m) {
       {name:'Dividends', budget:'', actual:''},
     ],
     bills: [
-      {name:'Rent', budget:'', actual:'', paid:false},
-      {name:'Internet', budget:'', actual:'', paid:false},
-      {name:'Electricity', budget:'', actual:'', paid:false},
-      {name:'Water', budget:'', actual:'', paid:false},
-      {name:'Mobile', budget:'', actual:'', paid:false},
-      {name:'Gym', budget:'', actual:'', paid:false},
-      {name:'Health Insurance', budget:'', actual:'', paid:false},
-      {name:'Gas', budget:'', actual:'', paid:false},
-      {name:'Spotify', budget:'', actual:'', paid:false},
-      {name:'Netflix', budget:'', actual:'', paid:false},
+      {name:'Rent', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Internet', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Electricity', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Water', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Mobile', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Gym', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Health Insurance', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Gas', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Spotify', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Netflix', budget:'', actual:'', paid:false, recurring:false},
     ],
     expenseSummary: [
       {name:'Food', budget:'', actual:0},
@@ -2408,11 +3772,12 @@ function defaultMonth(m) {
       {name:'Emergency Fund', budget:'', actual:''},
     ],
     debt: [
-      {name:'Student Loan', budget:'', actual:'', paid:false},
-      {name:'Credit Card', budget:'', actual:'', paid:false},
+      {name:'Student Loan', budget:'', actual:'', paid:false, recurring:false},
+      {name:'Credit Card', budget:'', actual:'', paid:false, recurring:false},
     ],
     expenses: [], // log entries: {date, amount, category, note}
     rollover: '',
+    notes: '',    // monthly note
   };
 }
 
@@ -2489,11 +3854,56 @@ function showPage(p, btn) {
   if (p === 'habits') renderHabits();
   if (p === 'review') renderReview();
   if (p === 'settings') renderSettings();
+  updateFabVisibility(p);
 }
+
+// Budget currency state (full codes + symbols)
+const BUDGET_CURRENCY_SYMBOLS = {
+  AUD: '$', USD: '$', GBP: '£', EUR: '€',
+  JPY: '¥', CAD: 'C$', NZD: 'NZ$', SGD: 'S$',
+};
+
+// Exchange rates relative to AUD (budget app stores values in user's chosen currency)
+// These are approximate static rates — budget doesn't need live FX like invest does
+const BUDGET_FX_TO_AUD = {
+  AUD: 1, USD: 1.53, GBP: 1.97, EUR: 1.67,
+  JPY: 0.0103, CAD: 1.13, NZD: 0.91, SGD: 1.15,
+};
+
+let budgetCurrencyCode = 'AUD';
+
+function toggleBudgetCurrencyPicker() {
+  const picker = document.getElementById('budgetCurrencyPicker');
+  picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+}
+
+function pickBudgetCurrency(code, label, symbol) {
+  document.getElementById('budgetCurrencyBtnLabel').textContent = label;
+  document.getElementById('budgetCurrencyPicker').style.display = 'none';
+  document.querySelectorAll('#budgetCurrencyPicker .curr-opt').forEach(el => {
+    el.classList.toggle('active', el.textContent.trim() === label.trim());
+  });
+  budgetCurrencyCode = code;
+  currency = BUDGET_CURRENCY_SYMBOLS[code] || '$';
+  bSetCurrency(currency);
+}
+
+// Close budget currency picker on outside click
+document.addEventListener('click', e => {
+  const dd = document.getElementById('budgetCurrencyDropdown');
+  if (dd && !dd.contains(e.target)) {
+    const picker = document.getElementById('budgetCurrencyPicker');
+    if (picker) picker.style.display = 'none';
+  }
+});
 
 function bSetCurrency(v) {
   currency = v;
+  // Update drawer currency symbol if drawer exists
+  const sym = document.getElementById('drawerCurrencySym');
+  if (sym) sym.textContent = v;
   renderBudget();
+  if (typeof renderReview === 'function') renderReview();
 }
 
 // ============================================================
@@ -2505,10 +3915,18 @@ function renderBudget() {
   ms.innerHTML = MONTHS.map((m,i) =>
     `<button class="month-btn ${i===currentBudgetMonth?'active':''}" onclick="selectBudgetMonth(${i})">${m.slice(0,3)}</button>`
   ).join('');
+  requestAnimationFrame(function() {
+    const active = ms.querySelector('.month-btn.active');
+    if (active) active.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+    if (typeof window.refreshMonthArrows === 'function') window.refreshMonthArrows();
+  });
 
   document.getElementById('heroMonth').textContent = MONTHS[currentBudgetMonth].split('').join(' ');
 
   const d = getBudgetMonth(currentBudgetMonth);
+
+  // Apply recurring bill amounts from last month if not yet filled
+  if (applyRecurring(d)) saveBudgetMonth(currentBudgetMonth, d);
 
   // Render sections
   renderTrackerSection('income-rows', d.income, 'income', false);
@@ -2520,6 +3938,7 @@ function renderBudget() {
   renderBreakdown(d);
   updateTotals(d);
   populateCatDropdown(d);
+  updateCopyBar(d);
 }
 
 function selectBudgetMonth(m) {
@@ -2527,26 +3946,135 @@ function selectBudgetMonth(m) {
   renderBudget();
 }
 
+// ── Add a blank row to any section ───────────────────────────
+function addRow(section) {
+  const d = getBudgetMonth(currentBudgetMonth);
+  const hasPaid = section === 'bills' || section === 'debt';
+  const newRow = { name: '', budget: '', actual: '' };
+  if (hasPaid) newRow.paid = false;
+  if (section === 'expenseSummary') newRow.actual = 0;
+  d[section].push(newRow);
+  saveBudgetMonth(currentBudgetMonth, d);
+  renderBudget();
+  // Focus the new row's name input after render
+  requestAnimationFrame(() => {
+    const containerMap = {
+      income: '#income-rows',
+      bills: '#bills-rows',
+      expenseSummary: '#expense-summary-rows',
+      savings: '#savings-rows',
+      debt: '#debt-rows'
+    };
+    const containerId = containerMap[section];
+    if (!containerId) return;
+    const inputs = document.querySelectorAll(containerId + ' .row-name input[type=text]');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+}
+
+// ── Delete a row from any section ────────────────────────────
+function deleteRow(section, i) {
+  const d = getBudgetMonth(currentBudgetMonth);
+  // If deleting an expense category, also clean up any logged expenses in that category
+  if (section === 'expenseSummary') {
+    const catName = d.expenseSummary[i].name;
+    // Don't delete expenses, just unlink them (set category to '')
+    d.expenses.forEach(e => { if (e.category === catName) e.category = ''; });
+  }
+  d[section].splice(i, 1);
+  saveBudgetMonth(currentBudgetMonth, d);
+  renderBudget();
+}
+
+// ── Copy budget amounts from previous month ───────────────────
+function copyLastMonth() {
+  const prevMonth = currentBudgetMonth === 0 ? 11 : currentBudgetMonth - 1;
+  const prevYear = currentBudgetMonth === 0 ? currentYear - 1 : currentYear;
+
+  // Temporarily switch year context to get prev month data
+  const all = getAllState();
+  const prevYearData = all[prevYear] || {};
+  const prevData = (prevYearData.budget || {})[prevMonth];
+
+  if (!prevData) {
+    alert('No data found for ' + MONTHS[prevMonth] + (currentBudgetMonth === 0 ? ' ' + prevYear : '') + '.');
+    return;
+  }
+
+  const cur = getBudgetMonth(currentBudgetMonth);
+
+  // Copy structure and budget amounts (not actuals, not paid status, not expenses, not notes)
+  ['income', 'bills', 'savings', 'debt'].forEach(section => {
+    if (prevData[section]) {
+      cur[section] = prevData[section].map(r => ({
+        name: r.name,
+        budget: r.budget,
+        actual: '',
+        ...(r.paid !== undefined ? { paid: false } : {}),
+        ...(r.recurring !== undefined ? { recurring: r.recurring } : {})
+      }));
+    }
+  });
+  if (prevData.expenseSummary) {
+    cur.expenseSummary = prevData.expenseSummary.map(r => ({
+      name: r.name,
+      budget: r.budget,
+      actual: 0
+    }));
+  }
+
+  saveBudgetMonth(currentBudgetMonth, cur);
+  renderBudget();
+}
+
+// ── Show/hide the "copy last month" helper bar ────────────────
+function updateCopyBar(d) {
+  const bar = document.getElementById('copyLastMonthBar');
+  if (!bar) return;
+  // Show bar if this month has no budgeted amounts set anywhere
+  const hasAnyBudget =
+    [...d.income, ...d.bills, ...d.savings, ...d.debt, ...d.expenseSummary]
+      .some(r => r.budget && parseFloat(r.budget) > 0);
+  const prevMonth = currentBudgetMonth === 0 ? 11 : currentBudgetMonth - 1;
+  const prevYear = currentBudgetMonth === 0 ? currentYear - 1 : currentYear;
+  const all = getAllState();
+  const hasPrevData = !!((all[prevYear] || {}).budget || {})[prevMonth];
+  bar.classList.toggle('visible', !hasAnyBudget && hasPrevData);
+}
+
 function renderTrackerSection(containerId, rows, section, hasPaid) {
   const el = document.getElementById(containerId);
-  el.innerHTML = rows.map((row, i) => `
-    <div class="tracker-row">
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty">No entries — click <strong>+ Add</strong> to add one</div>`;
+    return;
+  }
+  el.innerHTML = rows.map((row, i) => {
+    const b = num(row.budget), a = num(row.actual);
+    const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
+    const overBudget = b > 0 && a > b;
+    const barColor = overBudget ? 'var(--red)' : a > 0 ? 'var(--green)' : 'var(--coral)';
+    const isRecurring = !!row.recurring;
+    return `
+    <div class="tracker-row" style="padding-right:28px;">
       <div class="row-name">
-        ${hasPaid ? `<input type="checkbox" class="paid-checkbox" ${row.paid?'checked':''} onchange="togglePaid('${section}',${i},this.checked)">` : ''}
-        <input type="text" value="${row.name}" onchange="updateName('${section}',${i},this.value)" placeholder="Name">
+        ${hasPaid ? `<input type="checkbox" class="paid-checkbox" ${row.paid?'checked':''} onchange="togglePaid('${section}',${i},this.checked)" title="${row.paid?'Mark unpaid':'Mark paid'}">` : ''}
+        <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('${section}',${i},this.value)" placeholder="Name" style="${row.paid?'text-decoration:line-through;opacity:0.5;':''}" title="Click to rename">
+        ${hasPaid ? `<button class="recurring-btn ${isRecurring?'active':''}" onclick="toggleRecurring('${section}',${i})" title="${isRecurring?'Recurring — click to disable':'Set as recurring (auto-fills actual each month)'}">↻</button>` : ''}
       </div>
       <div class="amount-input">
         <span>${currency}</span>
-        <input type="number" value="${row.budget}" min="0" step="0.01" placeholder="0.00"
-          onchange="updateBudget('${section}',${i},this.value)">
+        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00"
+          onchange="updateBudget('${section}',${i},this.value)" title="Budgeted amount">
       </div>
       <div class="amount-input">
         <span>${currency}</span>
-        <input type="number" value="${row.actual}" min="0" step="0.01" placeholder="0.00"
-          onchange="updateActual('${section}',${i},this.value)">
+        <input type="number" value="${row.actual||''}" min="0" step="0.01" placeholder="0.00"
+          onchange="updateActual('${section}',${i},this.value)" title="Actual amount">
       </div>
+      <button class="row-del" onclick="deleteRow('${section}',${i})" title="Remove row">×</button>
     </div>
-  `).join('') || '<div class="empty">No entries yet</div>';
+    ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
+  `}).join('');
 }
 
 function renderExpenseSummary(d) {
@@ -2555,21 +4083,32 @@ function renderExpenseSummary(d) {
     es.actual = d.expenses.filter(e => e.category === es.name).reduce((a,e) => a + num(e.amount), 0);
   });
   const el = document.getElementById('expense-summary-rows');
-  el.innerHTML = d.expenseSummary.map((row, i) => `
-    <div class="tracker-row">
+  if (!d.expenseSummary.length) {
+    el.innerHTML = `<div class="empty">No categories — click <strong>+ Add</strong> to add one</div>`;
+    return;
+  }
+  el.innerHTML = d.expenseSummary.map((row, i) => {
+    const b = num(row.budget), a = row.actual;
+    const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
+    const overBudget = b > 0 && a > b;
+    const barColor = overBudget ? 'var(--red)' : a > 0 ? 'var(--coral)' : 'var(--coral)';
+    return `
+    <div class="tracker-row" style="padding-right:28px;">
       <div class="row-name">
-        <input type="text" value="${row.name}" onchange="updateName('expenseSummary',${i},this.value)" placeholder="Category">
+        <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('expenseSummary',${i},this.value);renderBudget();" placeholder="Category" title="Click to rename">
       </div>
       <div class="amount-input">
         <span>${currency}</span>
-        <input type="number" value="${row.budget}" min="0" step="0.01" placeholder="0.00"
-          onchange="updateBudget('expenseSummary',${i},this.value)">
+        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00"
+          onchange="updateBudget('expenseSummary',${i},this.value)" title="Budgeted amount">
       </div>
-      <div class="row-total ${row.actual > num(row.budget) && row.budget ? 'red' : ''}" style="color:${row.actual > 0 ? 'var(--red)' : 'var(--mid)'}">
-        ${bFmt(row.actual)}
+      <div class="row-total ${overBudget ? 'red' : ''}" style="color:${a > 0 ? (overBudget ? 'var(--red)' : 'var(--dark)') : 'var(--mid)'}">
+        ${bFmt(a)}${overBudget ? ' <span style="font-size:9px;color:var(--red)">over</span>' : ''}
       </div>
+      <button class="row-del" onclick="deleteRow('expenseSummary',${i})" title="Remove category">×</button>
     </div>
-  `).join('');
+    ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
+  `}).join('');
 }
 
 function renderExpenseLog(d) {
@@ -2622,6 +4161,43 @@ function populateCatDropdown(d) {
     d.expenseSummary.map(es => `<option value="${es.name}" ${cur===es.name?'selected':''}>${es.name}</option>`).join('');
 }
 
+// ── Rollover preference (on by default) ──────────────────────
+function getRolloverPref() {
+  const stored = localStorage.getItem('ls_rollover_enabled');
+  return stored === null ? true : stored === 'true';
+}
+function setRolloverPref(enabled) {
+  localStorage.setItem('ls_rollover_enabled', enabled ? 'true' : 'false');
+  renderBudget(); // refresh immediately so left-to-spend updates
+}
+
+// ── calcRollover: returns the "left to spend" of any past month ──
+// Chains recursively so each month's rollover includes the one before it.
+// depth guard stops at 24 months to prevent runaway recursion.
+function calcRollover(month, year, depth) {
+  depth = depth || 0;
+  // At the top-level call, check if the user has disabled rollover
+  if (depth === 0 && !getRolloverPref()) return 0;
+  if (depth > 24) return 0;
+
+  const all = getAllState();
+  const data = ((all[year] || {}).budget || {})[month];
+  if (!data) return 0;
+
+  const pIn  = Math.max(data.income.reduce((a,r) => a + num(r.actual || r.budget), 0), 0);
+  const pOut = data.bills.reduce((a,r)   => a + num(r.actual || r.budget), 0)
+             + (data.expenses || []).reduce((a,e) => a + num(e.amount), 0)
+             + data.savings.reduce((a,r)  => a + num(r.actual || r.budget), 0)
+             + data.debt.reduce((a,r)     => a + num(r.actual || r.budget), 0);
+
+  // This month's own rollover from the month before it
+  const prevM = month === 0 ? 11 : month - 1;
+  const prevY = month === 0 ? year - 1 : year;
+  const prevRollover = calcRollover(prevM, prevY, depth + 1);
+
+  return pIn + prevRollover - pOut;
+}
+
 function updateTotals(d) {
   // Income
   const ib = d.income.reduce((a,r) => a+num(r.budget), 0);
@@ -2668,12 +4244,124 @@ function updateTotals(d) {
   document.getElementById('alloc-savings').textContent = pct(sa||sb, totalIn);
   document.getElementById('alloc-debt').textContent = pct(da||db, totalIn);
 
-  // Left to spend
-  const left = (ia || ib) - totalOut - num(d.rollover ? -d.rollover : 0);
+  // ── Rollover from previous month ──────────────────────────────
+  // We carry forward the EXACT "left to spend" the previous month showed,
+  // which itself includes that month's rollover — so the chain is correct.
+  const prevMonth = currentBudgetMonth === 0 ? 11 : currentBudgetMonth - 1;
+  const prevYear  = currentBudgetMonth === 0 ? currentYear - 1 : currentYear;
+  const rolloverAmt = calcRollover(prevMonth, prevYear);
+
+  const rolloverEl = document.getElementById('rolloverBadge');
+  if (rolloverEl) {
+    if (rolloverAmt !== 0) {
+      const cls = rolloverAmt > 0 ? 'pos' : 'neg';
+      const sign = rolloverAmt > 0 ? '+' : '';
+      rolloverEl.innerHTML = `Rollover from ${MONTHS[prevMonth].slice(0,3)}: <span class="${cls}">${sign}${bFmt(Math.abs(rolloverAmt))}</span>`;
+      rolloverEl.style.display = 'block';
+    } else {
+      rolloverEl.style.display = 'none';
+    }
+  }
+
+  // Left to spend (include rollover)
+  const left = (ia || ib) + rolloverAmt - totalOut;
   const leftEl = document.getElementById('leftAmount');
   leftEl.textContent = bFmt(Math.abs(left));
   leftEl.className = 'left-amount ' + (left > 0 ? 'positive' : left < 0 ? 'negative' : 'zero');
   if (left < 0) leftEl.textContent = '-' + bFmt(Math.abs(left));
+
+  // ── Spending insights ─────────────────────────────────────────
+  renderInsights(d, totalIn);
+
+  // ── Month notes ───────────────────────────────────────────────
+  const notesEl = document.getElementById('monthNotes');
+  if (notesEl && document.activeElement !== notesEl) {
+    notesEl.value = d.notes || '';
+  }
+}
+
+// ── Recurring bills: toggle ───────────────────────────────────
+function toggleRecurring(section, i) {
+  const d = getBudgetMonth(currentBudgetMonth);
+  d[section][i].recurring = !d[section][i].recurring;
+  saveBudgetMonth(currentBudgetMonth, d);
+  renderBudget();
+}
+
+// ── Apply recurring actuals when loading a month ──────────────
+function applyRecurring(d) {
+  const prevMonth = currentBudgetMonth === 0 ? 11 : currentBudgetMonth - 1;
+  const prevYear  = currentBudgetMonth === 0 ? currentYear - 1 : currentYear;
+  const all = getAllState();
+  const prevData = ((all[prevYear] || {}).budget || {})[prevMonth];
+  if (!prevData) return false;
+  let changed = false;
+  ['bills','debt'].forEach(section => {
+    (d[section] || []).forEach((row, i) => {
+      if (row.recurring && (!row.actual || row.actual === '')) {
+        // Find matching row by name in previous month
+        const prevRow = (prevData[section] || []).find(r => r.name === row.name);
+        if (prevRow && (prevRow.actual || prevRow.budget)) {
+          d[section][i].actual = prevRow.actual || prevRow.budget;
+          changed = true;
+        }
+      }
+    });
+  });
+  return changed;
+}
+
+// ── Month notes save ──────────────────────────────────────────
+function saveMonthNotes(val) {
+  const d = getBudgetMonth(currentBudgetMonth);
+  d.notes = val;
+  saveBudgetMonth(currentBudgetMonth, d);
+}
+
+// ── Spending insights ─────────────────────────────────────────
+function renderInsights(d, totalIn) {
+  const bar = document.getElementById('insightsBar');
+  if (!bar) return;
+  const insights = [];
+
+  // Over-budget categories
+  d.expenseSummary.forEach(es => {
+    const b = num(es.budget), a = es.actual || 0;
+    if (b > 0 && a > b) {
+      const overpct = Math.round((a - b) / b * 100);
+      insights.push(`⚠️ <strong>${es.name}</strong> is ${overpct}% over budget (${bFmt(a)} of ${bFmt(b)})`);
+    }
+  });
+
+  // Over-budget bills
+  d.bills.forEach(r => {
+    const b = num(r.budget), a = num(r.actual);
+    if (b > 0 && a > b) insights.push(`⚠️ <strong>${r.name}</strong> bill exceeded budget by ${bFmt(a-b)}`);
+  });
+
+  // Savings rate warning
+  if (totalIn > 0) {
+    const sa = d.savings.reduce((a,r)=>a+num(r.actual||r.budget),0);
+    const savingsRate = sa / totalIn * 100;
+    if (savingsRate < 10 && savingsRate >= 0 && d.savings.some(r => r.budget)) {
+      insights.push(`💡 Savings rate is ${savingsRate.toFixed(0)}% — aim for at least 20%`);
+    }
+  }
+
+  // Unpaid bills past mid-month
+  const todayNow = new Date();
+  const todayDate = todayNow.getDate();
+  if (todayNow.getMonth() === currentBudgetMonth && todayNow.getFullYear() === currentYear && todayDate > 15) {
+    const unpaid = d.bills.filter(r => r.budget && !r.paid);
+    if (unpaid.length) insights.push(`🗓 ${unpaid.length} bill${unpaid.length>1?'s':''} still unpaid: ${unpaid.map(r=>r.name).join(', ')}`);
+  }
+
+  if (insights.length) {
+    bar.innerHTML = insights.map(t => `<div class="insight-item">${t}</div>`).join('');
+    bar.classList.add('visible');
+  } else {
+    bar.classList.remove('visible');
+  }
 }
 
 function updateName(section, i, val) {
@@ -2704,12 +4392,15 @@ function addExpense() {
   const amount = document.getElementById('expAmount').value;
   const category = document.getElementById('expCat').value;
   const note = document.getElementById('expNote').value;
-  if (!amount) return;
+  if (!amount) { document.getElementById('expAmount').focus(); return; }
   const d = getBudgetMonth(currentBudgetMonth);
   d.expenses.push({ date, amount: parseFloat(amount), category, note });
   saveBudgetMonth(currentBudgetMonth, d);
   document.getElementById('expAmount').value = '';
   document.getElementById('expNote').value = '';
+  // Close drawer
+  const overlay = document.getElementById('expenseDrawerOverlay');
+  if (overlay) overlay.classList.remove('open');
   renderBudget();
 }
 
@@ -2728,6 +4419,11 @@ function renderHabits() {
   ms.innerHTML = MONTHS.map((m,i) =>
     `<button class="month-btn ${i===currentHabitMonth?'active':''}" onclick="selectHabitMonth(${i})">${m.slice(0,3)}</button>`
   ).join('');
+  requestAnimationFrame(function() {
+    const active = ms.querySelector('.month-btn.active');
+    if (active) active.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+    if (typeof window.refreshMonthArrows === 'function') window.refreshMonthArrows();
+  });
 
   document.getElementById('habitMonthLabel').textContent = '· ' + MONTHS[currentHabitMonth] + ' ' + currentYear + ' ·';
 
@@ -2735,6 +4431,13 @@ function renderHabits() {
   renderWeeklyHabits();
   renderMonthlyHabits();
   updateHabitStats();
+  updateHabitsBar();
+  renderHabitProgressChart();
+
+  // Auto-scroll calendar to today after render
+  requestAnimationFrame(function() {
+    scrollCalendarToToday();
+  });
 }
 
 function selectHabitMonth(m) {
@@ -2802,6 +4505,7 @@ function toggleDay(hi, d) {
   saveHabitMonth(currentHabitMonth, h);
   renderCalendar();
   updateHabitStats();
+  renderHabitProgressChart();
 }
 
 function addDailyHabit() {
@@ -2882,6 +4586,8 @@ function selectWeek(w, btn) {
   document.querySelectorAll('.week-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderWeeklyHabits();
+  const h = getHabitMonth(currentHabitMonth);
+  updateWeeklyRates(h);
 }
 
 function renderMonthlyHabits() {
@@ -2930,6 +4636,195 @@ function deleteMonthly(i) {
   renderMonthlyHabits();
 }
 
+// ── Copy habit lists from previous month ─────────────────────
+function copyLastHabits() {
+  const prevMonth = currentHabitMonth === 0 ? 11 : currentHabitMonth - 1;
+  const prevYear = currentHabitMonth === 0 ? currentYear - 1 : currentYear;
+  const all = getAllState();
+  const prevData = ((all[prevYear] || {}).habits || {})[prevMonth];
+  if (!prevData) {
+    alert('No habits found for ' + MONTHS[prevMonth] + '.');
+    return;
+  }
+  const h = getHabitMonth(currentHabitMonth);
+  // Copy habit names only, not check data
+  h.dailyHabits = [...(prevData.dailyHabits || [])];
+  h.weeklyHabits = [...(prevData.weeklyHabits || [])];
+  h.monthlyHabits = [...(prevData.monthlyHabits || [])];
+  saveHabitMonth(currentHabitMonth, h);
+  renderHabits();
+}
+
+function updateHabitsBar() {
+  const bar = document.getElementById('copyLastHabitsBar');
+  if (!bar) return;
+  const h = getHabitMonth(currentHabitMonth);
+  const hasAny = (h.dailyHabits.length + h.weeklyHabits.length + h.monthlyHabits.length) > 0;
+  const prevMonth = currentHabitMonth === 0 ? 11 : currentHabitMonth - 1;
+  const prevYear = currentHabitMonth === 0 ? currentYear - 1 : currentYear;
+  const all = getAllState();
+  const hasPrevData = !!((all[prevYear] || {}).habits || {})[prevMonth];
+  bar.classList.toggle('visible', !hasAny && hasPrevData);
+}
+
+// ── Habit progress line chart ─────────────────────────────────
+let habitProgressChartObj = null;
+
+function renderHabitProgressChart() {
+  const h = getHabitMonth(currentHabitMonth);
+  const today = new Date();
+  const isCurrentMonth = today.getMonth() === currentHabitMonth && today.getFullYear() === currentYear;
+  const todayDay = isCurrentMonth ? today.getDate() : daysInMonth(currentHabitMonth, currentYear);
+  const days = daysInMonth(currentHabitMonth, currentYear);
+  const numHabits = h.dailyHabits.length;
+
+  const canvas = document.getElementById('habitProgressChart');
+  const legendEl = document.getElementById('habitChartLegend');
+  const subtitleEl = document.getElementById('habitChartSubtitle');
+  if (!canvas) return;
+
+  // Destroy previous chart instance
+  if (habitProgressChartObj) { habitProgressChartObj.destroy(); habitProgressChartObj = null; }
+
+  if (!numHabits) {
+    canvas.style.display = 'none';
+    if (legendEl) legendEl.innerHTML = '<span style="font-size:12px;color:var(--mid);font-style:italic;">Add daily habits to see progress</span>';
+    if (subtitleEl) subtitleEl.textContent = '';
+    return;
+  }
+  canvas.style.display = 'block';
+
+  // Build day-by-day overall completion % (all habits combined)
+  const labels = [];
+  const overallData = [];
+  const perHabitData = h.dailyHabits.map(() => []); // one array per habit
+
+  for (let d = 1; d <= todayDay; d++) {
+    labels.push(d);
+    let done = 0;
+    h.dailyHabits.forEach((_, hi) => {
+      const checked = !!h.dailyChecks[hi + '_' + d];
+      if (checked) done++;
+      perHabitData[hi].push(checked ? 100 : 0);
+    });
+    overallData.push(numHabits ? Math.round(done / numHabits * 100) : 0);
+  }
+
+  // 7-day rolling average for smoothing
+  const rollingAvg = overallData.map((_, i) => {
+    const slice = overallData.slice(Math.max(0, i - 6), i + 1);
+    return Math.round(slice.reduce((a, b) => a + b, 0) / slice.length);
+  });
+
+  // Monthly completion so far
+  const avgCompletion = overallData.length
+    ? Math.round(overallData.reduce((a, b) => a + b, 0) / overallData.length)
+    : 0;
+  if (subtitleEl) subtitleEl.textContent = avgCompletion + '% avg this month';
+
+  const HABIT_COLORS = ['#ff6b5b','#4a90d9','#3dbf82','#f59e0b','#8b5cf6','#0097a7','#e85444','#22c55e'];
+
+  const datasets = [
+    {
+      label: 'Daily %',
+      data: overallData,
+      borderColor: 'rgba(255,107,91,0.25)',
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.3,
+      fill: false,
+      order: 2,
+    },
+    {
+      label: '7-day avg',
+      data: rollingAvg,
+      borderColor: '#ff6b5b',
+      backgroundColor: 'rgba(255,107,91,0.08)',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      tension: 0.4,
+      fill: true,
+      order: 1,
+    }
+  ];
+
+  // Legend
+  if (legendEl) {
+    legendEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">
+        <div style="width:20px;height:2.5px;background:#ff6b5b;border-radius:2px;"></div> 7-day rolling avg
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">
+        <div style="width:20px;height:1px;background:rgba(255,107,91,0.35);border-radius:2px;"></div> Daily
+      </div>
+    `;
+  }
+
+  habitProgressChartObj = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => 'Day ' + ctx[0].label,
+            label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%'
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            color: '#6b7a8d',
+            font: { size: 9 },
+            maxTicksLimit: 10,
+            callback: v => v + 1
+          }
+        },
+        y: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: {
+            color: '#6b7a8d',
+            font: { size: 9 },
+            callback: v => v + '%',
+            stepSize: 25,
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Auto-scroll calendar to today's column ────────────────────
+function scrollCalendarToToday() {
+  const today = new Date();
+  const isCurrentMonth = today.getMonth() === currentHabitMonth && today.getFullYear() === currentYear;
+  if (!isCurrentMonth) return; // only scroll for the current month
+
+  const calWrap = document.querySelector('.cal-wrap');
+  const calHeader = document.getElementById('calHeader');
+  if (!calWrap || !calHeader) return;
+
+  // Find the "today" header cell
+  const todayHead = calHeader.querySelector('.cal-day-head.today');
+  if (!todayHead) return;
+
+  // Scroll so today is roughly centred, accounting for the fixed habit name column (160px)
+  const habitColWidth = 160;
+  const cellLeft = todayHead.offsetLeft;
+  const wrapWidth = calWrap.clientWidth;
+  const scrollTarget = cellLeft - habitColWidth - (wrapWidth - habitColWidth) / 2 + todayHead.offsetWidth / 2;
+
+  calWrap.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'smooth' });
+}
+
 function updateHabitStats() {
   const h = getHabitMonth(currentHabitMonth);
   const today = new Date();
@@ -2955,14 +4850,79 @@ function updateHabitStats() {
   }
   document.getElementById('h-month').textContent = possible ? Math.round(total/possible*100) + '%' : '0%';
 
-  // Streak: consecutive days where ALL habits were checked
+  // ── Cross-month streak ────────────────────────────────────────
+  // Walk backwards from today across month boundaries
   let streak = 0;
-  for (let d=todayDay; d>=1; d--) {
-    const allDone = h.dailyHabits.every((_, hi) => h.dailyChecks[hi+'_'+d]);
-    if (allDone) streak++;
-    else break;
+  let checkMonth = currentHabitMonth;
+  let checkYear = currentYear;
+  let checkDay = todayDay;
+
+  outer: for (let safety = 0; safety < 400; safety++) {
+    const hData = getHabitMonthForYear(checkMonth, checkYear);
+    const nH = (hData.dailyHabits || []).length;
+    if (!nH) break;
+    const allDone = hData.dailyHabits.every((_, hi) => hData.dailyChecks && hData.dailyChecks[hi+'_'+checkDay]);
+    if (!allDone) break outer;
+    streak++;
+    checkDay--;
+    if (checkDay < 1) {
+      checkMonth--;
+      if (checkMonth < 0) { checkMonth = 11; checkYear--; }
+      checkDay = daysInMonth(checkMonth, checkYear);
+    }
   }
   document.getElementById('h-streak').textContent = streak;
+
+  // ── Weekly completion rates ───────────────────────────────────
+  updateWeeklyRates(h);
+}
+
+function getHabitMonthForYear(m, y) {
+  const all = getAllState();
+  return ((all[y] || {}).habits || {})[m] || { dailyHabits: [], dailyChecks: {} };
+}
+
+function updateWeeklyRates(h) {
+  // Calculate completion % for each week slot
+  const daysPerWeek = [7, 7, 7, 7, 7]; // up to 5 weeks
+  for (let w = 0; w < 5; w++) {
+    const el = document.getElementById('wk-rate-' + w);
+    if (!el) continue;
+    if (!h.weeklyHabits.length) { el.textContent = ''; continue; }
+    const checked = h.weeklyHabits.filter((_, i) => h.weeklyChecks && h.weeklyChecks[i+'_'+w]).length;
+    const pctW = Math.round(checked / h.weeklyHabits.length * 100);
+    el.textContent = checked > 0 ? ' ' + pctW + '%' : '';
+  }
+}
+
+// ── Expense drawer ────────────────────────────────────────────
+function openExpenseDrawer() {
+  const overlay = document.getElementById('expenseDrawerOverlay');
+  if (overlay) {
+    overlay.classList.add('open');
+    // Focus amount field after animation
+    setTimeout(function() {
+      const amt = document.getElementById('expAmount');
+      if (amt) amt.focus();
+    }, 320);
+  }
+  // Update currency symbol in drawer
+  const sym = document.getElementById('drawerCurrencySym');
+  if (sym) sym.textContent = currency;
+}
+
+function closeExpenseDrawer(e) {
+  // If click came from overlay background (not drawer itself), close
+  if (e && e.target !== document.getElementById('expenseDrawerOverlay')) return;
+  const overlay = document.getElementById('expenseDrawerOverlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+// ── FAB visibility — show only on budget page ─────────────────
+function updateFabVisibility(page) {
+  const fab = document.getElementById('expenseFab');
+  if (!fab) return;
+  fab.classList.toggle('visible', page === 'budget');
 }
 
 // Set default date
@@ -2998,6 +4958,15 @@ function changeReviewYear(delta) {
 // ============================================================
 function renderSettings() {
   document.getElementById('resetYearLabel').textContent = currentYear;
+
+  // Populate month name label in reset row
+  const mLabel = MONTHS[currentBudgetMonth] + ' ' + currentYear;
+  const resetMonthEl = document.getElementById('resetMonthLabel');
+  if (resetMonthEl) resetMonthEl.textContent = mLabel;
+
+  // Sync rollover toggle
+  const toggle = document.getElementById('rolloverToggle');
+  if (toggle) toggle.checked = getRolloverPref();
   const all = getAllState();
   const years = Object.keys(all).filter(k => !isNaN(k)).sort().reverse();
   const el = document.getElementById('year-cards-list');
@@ -3046,12 +5015,33 @@ function confirmDeleteYear(y) {
 }
 
 function confirmReset(type) {
-  if (type === 'month') {
-    const mName = MONTHS[currentBudgetMonth];
-    openModal('Reset ' + mName + '?', 'All budget data for ' + mName + ' ' + currentYear + ' will be cleared.', 'Reset Month', () => {
-      saveBudgetMonth(currentBudgetMonth, defaultMonth(currentBudgetMonth));
-      renderSettings();
-    });
+  const mName = MONTHS[currentBudgetMonth];
+  const mLabel = mName + ' ' + currentYear;
+
+  if (type === 'month-budget') {
+    openModal('Reset ' + mName + ' budget?',
+      'All budget data for ' + mLabel + ' will be cleared. Habit data will be kept.',
+      'Reset Budget', () => {
+        saveBudgetMonth(currentBudgetMonth, defaultMonth(currentBudgetMonth));
+        renderBudget();
+        renderSettings();
+      });
+  } else if (type === 'month-habits') {
+    openModal('Reset ' + mName + ' habits?',
+      'All habit data for ' + mLabel + ' will be cleared. Budget data will be kept.',
+      'Reset Habits', () => {
+        saveHabitMonth(currentHabitMonth, defaultHabitMonth(currentHabitMonth));
+        renderSettings();
+      });
+  } else if (type === 'month-both') {
+    openModal('Reset all of ' + mName + '?',
+      'All budget and habit data for ' + mLabel + ' will be cleared. This cannot be undone.',
+      'Reset Both', () => {
+        saveBudgetMonth(currentBudgetMonth, defaultMonth(currentBudgetMonth));
+        saveHabitMonth(currentHabitMonth, defaultHabitMonth(currentHabitMonth));
+        renderBudget();
+        renderSettings();
+      });
   } else if (type === 'year') {
     openModal('Reset ' + currentYear + '?', 'All budget and habit data for ' + currentYear + ' will be cleared.', 'Reset Year', () => {
       const all = getAllState();
@@ -3073,6 +5063,39 @@ function exportData() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'livesimple-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function exportCSV() {
+  const all = getAllState();
+  const rows = [['Year','Month','Type','Name','Budget','Actual','Paid','Notes']];
+  Object.keys(all).filter(k => !isNaN(k)).sort().forEach(y => {
+    const ys = all[y] || {};
+    MONTHS.forEach((mName, mi) => {
+      const m = (ys.budget || {})[mi];
+      if (!m) return;
+      const note = (m.notes || '').replace(/"/g,'""');
+      const addRows = (type, arr, hasPaid) => {
+        (arr || []).forEach(r => {
+          rows.push([y, mName, type, r.name, r.budget||'', r.actual||'', hasPaid ? (r.paid?'yes':'no') : '', '']);
+        });
+      };
+      addRows('Income', m.income, false);
+      addRows('Bill', m.bills, true);
+      addRows('ExpenseCategory', m.expenseSummary, false);
+      addRows('Savings', m.savings, false);
+      addRows('Debt', m.debt, true);
+      (m.expenses || []).forEach(e => {
+        rows.push([y, mName, 'ExpenseLog', e.note||'', '', e.amount||'', '', e.category||'']);
+      });
+      if (note) rows.push([y, mName, 'Note', note, '', '', '', '']);
+    });
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'livesimple-export-' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
 }
 
@@ -3122,7 +5145,7 @@ function renderReview() {
     totalIncome += inc;
     totalSpent += spent;
     totalSaved += saved;
-    return { name: name.slice(0,3), inc, spent, saved };
+    return { name: name.slice(0,3), inc, spent, saved, notes: m.notes || '' };
   });
 
   // Habit rate across year
@@ -3153,13 +5176,14 @@ function renderReview() {
     const incW = Math.round(m.inc / maxVal * 100);
     const spW = Math.round(m.spent / maxVal * 100);
     const hasData = m.inc > 0 || m.spent > 0;
-    return `<div class="rmb-row">
+    return `<div class="rmb-row" style="flex-wrap:wrap;">
       <span class="rmb-label">${m.name}</span>
       <div class="rmb-bar-wrap" style="position:relative;">
         <div style="position:absolute;top:0;left:0;height:100%;width:${incW}%;background:var(--green);opacity:0.3;border-radius:4px;"></div>
         <div style="height:100%;width:${spW}%;background:var(--coral);opacity:0.7;border-radius:4px;"></div>
       </div>
       <span class="rmb-val">${hasData ? bFmt(m.inc - m.spent) : '—'}</span>
+      ${m.notes ? `<div style="width:100%;padding:2px 0 4px 40px;font-size:11px;color:var(--mid);font-style:italic;">📝 ${m.notes}</div>` : ''}
     </div>`;
   }).join('');
 
@@ -3188,16 +5212,21 @@ function renderReview() {
   if (withData.length >= 2) {
     const ranked = [...withData].sort((a,b) => (b.inc-b.spent)-(a.inc-a.spent));
     const best = ranked[0], worst = ranked[ranked.length-1];
+    const bestNet = best.inc - best.spent;
+    const worstNet = worst.inc - worst.spent;
+    const bestCol = bestNet >= 0 ? 'var(--green)' : 'var(--red)';
+    const worstCol = worstNet >= 0 ? 'var(--green)' : 'var(--red)';
+    const worstIcon = worstNet >= 0 ? '📊' : '📉';
     document.getElementById('rv-bestworst').innerHTML = `
       <div class="tracker-row">
         <div class="row-name">🏆 Best month</div>
         <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;">${best.name}</div>
-        <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;color:var(--green);text-align:right">${bFmt(best.inc - best.spent)}</div>
+        <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;color:${bestCol};text-align:right">${bestNet >= 0 ? '+' : ''}${bFmt(bestNet)}</div>
       </div>
       <div class="tracker-row">
-        <div class="row-name">📉 Hardest month</div>
+        <div class="row-name">${worstIcon} Tightest month</div>
         <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;">${worst.name}</div>
-        <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;color:var(--red);text-align:right">${bFmt(worst.inc - worst.spent)}</div>
+        <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;color:${worstCol};text-align:right">${worstNet >= 0 ? '+' : ''}${bFmt(worstNet)}</div>
       </div>`;
   } else {
     document.getElementById('rv-bestworst').innerHTML = '<div class="empty">Add more months of data to see your best and worst months</div>';
@@ -3205,7 +5234,14 @@ function renderReview() {
 }
 
 // Init
+// Set AUD as default active in budget currency picker
+document.addEventListener('DOMContentLoaded', function() {
+  const opts = document.querySelectorAll('#budgetCurrencyPicker .curr-opt');
+  if (opts.length) opts[0].classList.add('active');
+});
 renderBudget();
+// Show FAB since budget is the default active page
+(function() { var f=document.getElementById('expenseFab'); if(f) f.classList.add('visible'); })();
 </script>
 
 <script>
@@ -3743,13 +5779,26 @@ function calcHolding(h) {
 
 function portfolioTotals() {
   const holdings = getHoldings();
-  let totalCost = 0, totalValue = 0;
+  let totalCost = 0, totalValue = 0, totalDayChange = 0, hasDayChange = false;
   holdings.forEach(h => {
     const c = calcHolding(h);
     totalCost += c.costBasis;
     totalValue += c.marketValue;
+    // dayChange is in native currency — convert to USD then to display
+    if (h.dayChange != null && h.livePrice) {
+      const nativeCurrency = getNativeCurrency(h.ticker);
+      const dayChangeUSD = toUSD(h.dayChange, nativeCurrency) * h.units;
+      totalDayChange += dayChangeUSD;
+      hasDayChange = true;
+    }
   });
-  return { totalCost, totalValue, totalGain: totalValue - totalCost, gainPct: totalCost ? ((totalValue - totalCost) / totalCost) * 100 : 0 };
+  const dayChangePct = totalValue ? (totalDayChange / (totalValue - totalDayChange)) * 100 : 0;
+  return {
+    totalCost, totalValue,
+    totalGain: totalValue - totalCost,
+    gainPct: totalCost ? ((totalValue - totalCost) / totalCost) * 100 : 0,
+    totalDayChange, dayChangePct, hasDayChange
+  };
 }
 
 // ============================================================
@@ -3807,6 +5856,18 @@ function renderOverview() {
   document.getElementById('ov-total').textContent = fmtDisplay(totals.totalValue);
   document.getElementById('ov-cost').textContent = fmtDisplay(totals.totalCost);
   document.getElementById('ov-gain').textContent = fmtDisplay(totals.totalGain);
+
+  // Daily change badge
+  const dayBadge = document.getElementById('ov-day-badge');
+  if (totals.hasDayChange) {
+    const up = totals.totalDayChange >= 0;
+    dayBadge.className = 'hero-badge ' + (up ? 'up' : 'down');
+    dayBadge.textContent = (up ? '▲ +' : '▼ ') + fmtDisplay(Math.abs(totals.totalDayChange))
+      + '  (' + (up ? '+' : '') + totals.dayChangePct.toFixed(2) + '%)';
+  } else {
+    dayBadge.className = 'hero-badge neutral';
+    dayBadge.textContent = '— refresh to load today\'s change';
+  }
 
   const gainBadge = document.getElementById('ov-gain-badge');
   const pctBadge = document.getElementById('ov-gainpct-badge');
@@ -4212,7 +6273,7 @@ function calcUpdate() {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmtCurr(ctx.parsed.y) } } },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, autoSkip: false, maxRotation: 0 } },
+        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, autoSkip: true, maxTicksLimit: Math.min(12, Math.max(6, Math.ceil(years / 5))), maxRotation: 0 } },
         y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7a8d', font: { size: 10 }, callback: v => fmtCurr(v) } }
       }
     }
@@ -4263,26 +6324,43 @@ function updateGoal() {
   let months = 0;
   const projData = [{ month: 0, value: currentUSD, contributions: 0, growth: 0 }];
 
-  while (bal < targetUSD && months < 600) {
+  while (bal < targetUSD && months < 1200) {
     months++;
     bal = bal * (1 + monthlyRate) + contribUSD;
     projData.push({ month: months, value: bal, contributions: contribUSD * months, growth: bal - currentUSD - contribUSD * months });
   }
 
-  if (months < 600) {
+  if (months < 1200) {
     const yrs = Math.floor(months / 12);
     const mths = months % 12;
     document.getElementById('goal-eta').textContent = `At ${fmtDisplay(contribUSD)}/month you'll reach your goal in ${yrs > 0 ? yrs + ' yr' + (yrs>1?'s':'') + ' ' : ''}${mths > 0 ? mths + ' month' + (mths>1?'s':'') : ''}`;
   } else {
-    document.getElementById('goal-eta').textContent = 'Increase contributions to reach this goal within 50 years';
+    document.getElementById('goal-eta').textContent = 'Increase contributions to reach this goal within 100 years';
   }
 
-  const show = projData.filter((_, i) => i % 3 === 0 || i === projData.length - 1).slice(0, 61);
+  // Build chart data — yearly points for goals > 3 years, monthly for short goals
+  const totalYears = months / 12;
+  let show;
+  let labelFn;
+
+  if (totalYears > 3) {
+    // Sample end-of-year values (month 12, 24, 36…) plus Now and the final point
+    const yearlyPoints = projData.filter((d, i) => d.month === 0 || d.month % 12 === 0 || i === projData.length - 1);
+    // Cap at ~20 points for readability; if many years, sample every N years
+    const step = Math.ceil(yearlyPoints.length / 20);
+    show = yearlyPoints.filter((_, i) => i % step === 0 || i === yearlyPoints.length - 1);
+    labelFn = d => d.month === 0 ? 'Now' : `Yr ${Math.round(d.month / 12)}`;
+  } else {
+    // Short goal — use monthly points, sample every 3
+    show = projData.filter((_, i) => i % 3 === 0 || i === projData.length - 1).slice(0, 61);
+    labelFn = d => d.month === 0 ? 'Now' : `M${d.month}`;
+  }
+
   if (goalChartObj) { goalChartObj.destroy(); }
   goalChartObj = new Chart(document.getElementById('goalChart'), {
     type: 'line',
     data: {
-      labels: show.map(d => d.month === 0 ? 'Now' : `M${d.month}`),
+      labels: show.map(labelFn),
       datasets: [
         { label: 'Portfolio Value', data: show.map(d => fromUSD(d.value)), borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.08)', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true },
         { label: 'Target', data: show.map(() => fromUSD(targetUSD)), borderColor: '#22c55e', borderDash: [6,4], borderWidth: 1.5, pointRadius: 0 },
@@ -4292,7 +6370,7 @@ function updateGoal() {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmtKDisplay(ctx.parsed.y / (FX_RATES[displayCurrency]||1)) } } },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 9 }, maxTicksLimit: 10 } },
+        x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 9 }, autoSkip: true, maxTicksLimit: 8, maxRotation: 0 } },
         y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7a8d', font: { size: 10 }, callback: v => fmtKDisplay(v / (FX_RATES[displayCurrency]||1)) } }
       }
     }
@@ -4311,8 +6389,9 @@ function updateGoal() {
   // Calculate goal achieved date
   const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const now = new Date();
-  let goalRow = '';
-  if (months < 600 && targetUSD > 0) {
+  const goalCard = document.getElementById('goal-achieve-card');
+
+  if (months < 1200 && targetUSD > 0) {
     const achieveDate = new Date(now.getFullYear(), now.getMonth() + months, 1);
     const achieveMonth = MONTH_NAMES[achieveDate.getMonth()];
     const achieveYear = achieveDate.getFullYear();
@@ -4321,19 +6400,44 @@ function updateGoal() {
     const finalContrib = finalPoint.contributions || 0;
     const finalGrowth = finalPoint.growth || 0;
     const totalReturn = currentUSD ? ((finalValue - currentUSD) / currentUSD * 100) : 0;
-    goalRow = `
-      <tr style="background:#e8eef2;outline:2px solid #004562;outline-offset:-1px;">
-        <td style="text-align:left;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:#004562;border-top:2px solid #004562;border-bottom:2px solid #004562;border-left:2px solid #004562;">🎯 ${achieveMonth} ${achieveYear}</td>
-        <td class="mono" style="color:#004562;font-weight:700;border-top:2px solid #004562;border-bottom:2px solid #004562;">${fmtDisplay(finalValue)}</td>
-        <td class="mono" style="color:#004562;border-top:2px solid #004562;border-bottom:2px solid #004562;">${fmtDisplay(finalContrib)}</td>
-        <td class="mono up-val" style="border-top:2px solid #004562;border-bottom:2px solid #004562;">+${fmtDisplay(finalGrowth)}</td>
-        <td class="mono up-val" style="border-top:2px solid #004562;border-bottom:2px solid #004562;border-right:2px solid #004562;">+${totalReturn.toFixed(1)}%</td>
-      </tr>`;
-  } else if (months >= 600) {
-    goalRow = `<tr style="background:#fff8f8;border-top:2px solid var(--red);"><td colspan="5" style="text-align:center;font-size:12px;color:var(--red);padding:12px;font-family:'Montserrat',sans-serif;font-weight:600;">Goal not reachable within 50 years — increase contributions</td></tr>`;
+
+    if (goalCard) {
+      goalCard.style.display = 'block';
+      goalCard.innerHTML = `
+        <div class="goal-achieve-card-inner">
+          <div class="goal-achieve-label">🎯 ${achieveMonth} ${achieveYear}</div>
+          <div class="goal-achieve-stats">
+            <div class="goal-achieve-stat">
+              <span class="goal-achieve-stat-label">End Value</span>
+              <span class="goal-achieve-stat-val" style="color:#004562;font-weight:700;">${fmtDisplay(finalValue)}</span>
+            </div>
+            <div class="goal-achieve-stat">
+              <span class="goal-achieve-stat-label">Contributed</span>
+              <span class="goal-achieve-stat-val" style="color:#004562;">${fmtDisplay(finalContrib)}</span>
+            </div>
+            <div class="goal-achieve-stat">
+              <span class="goal-achieve-stat-label">Growth</span>
+              <span class="goal-achieve-stat-val" style="color:var(--green);">+${fmtDisplay(finalGrowth)}</span>
+            </div>
+            <div class="goal-achieve-stat">
+              <span class="goal-achieve-stat-label">Total Return</span>
+              <span class="goal-achieve-stat-val" style="color:var(--green);font-weight:700;">+${totalReturn.toFixed(1)}%</span>
+            </div>
+          </div>
+        </div>`;
+    }
+  } else {
+    if (goalCard) {
+      if (months >= 1200 && targetUSD > 0) {
+        goalCard.style.display = 'block';
+        goalCard.innerHTML = `<div style="background:#fff8f8;border:2px solid var(--red);border-radius:10px;padding:12px 16px;text-align:center;font-size:12px;color:var(--red);font-family:'Montserrat',sans-serif;font-weight:600;">Goal not reachable within 100 years — increase contributions</div>`;
+      } else {
+        goalCard.style.display = 'none';
+      }
+    }
   }
 
-  yearlyBody.innerHTML = (yearlyData.length ? yearlyData.map(d => {
+  yearlyBody.innerHTML = yearlyData.length ? yearlyData.map(d => {
     const up = d.annualReturn >= 0;
     return `<tr>
       <td style="text-align:left;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;">Year ${d.year}</td>
@@ -4342,7 +6446,7 @@ function updateGoal() {
       <td class="mono up-val">+${fmtDisplay(d.growth)}</td>
       <td class="mono ${up ? 'up-val' : 'down-val'}">${up ? '+' : ''}${d.annualReturn.toFixed(1)}%</td>
     </tr>`;
-  }).join('') : '') + goalRow || '<tr><td colspan="5" class="empty-state">Enter a target above</td></tr>';
+  }).join('') : '<tr><td colspan="5" class="empty-state">Enter a target above</td></tr>';
 
   // Monthly table
   const tbody = document.getElementById('goal-table-body');
@@ -4404,6 +6508,49 @@ function showTab(id, btn) {
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'performance') renderPerformance();
+}
+
+// ── Invest settings functions ─────────────────────────────────
+function exportInvestData() {
+  const s = getState();
+  const blob = new Blob([JSON.stringify(s, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'livesimple-invest-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+}
+
+function importInvestData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.holdings) { alert('Invalid file — no holdings data found.'); return; }
+      const s = getState();
+      Object.assign(s, data);
+      saveState(s);
+      historyCache = null;
+      renderAll();
+      alert('Holdings imported successfully.');
+    } catch (err) {
+      alert('Invalid file. Please use a Live Simple Invest backup JSON file.');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function confirmResetInvest() {
+  if (confirm('Reset all holdings and portfolio data? This cannot be undone.')) {
+    localStorage.removeItem('ls_invest_v1');
+    historyCache = null;
+    renderAll();
+    // Switch back to overview tab
+    const overviewBtn = document.querySelector('.tab-btn');
+    if (overviewBtn) showTab('overview', overviewBtn);
+  }
 }
 
 // ============================================================
