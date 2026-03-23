@@ -3378,6 +3378,27 @@ window.refreshMonthArrows = function() {
     </div>
   </div>
 
+  <!-- REALISED GAINS CARD -->
+  <div class="section" id="ov-realised-card" style="display:none;">
+    <div class="section-head"><h2>Realised Returns</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:0;">
+      <div style="padding:16px;border-right:1px solid var(--border);text-align:center;">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Total Realised</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;" id="ov-realised-total">$0.00</div>
+      </div>
+      <div style="padding:16px;border-right:1px solid var(--border);text-align:center;">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Sales P&amp;L</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;" id="ov-realised-sales">$0.00</div>
+        <div style="font-size:10px;color:var(--mid);margin-top:2px;" id="ov-realised-sales-count"></div>
+      </div>
+      <div style="padding:16px;text-align:center;">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Dividends</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;color:var(--green);" id="ov-realised-divs">$0.00</div>
+        <div style="font-size:10px;color:var(--mid);margin-top:2px;" id="ov-realised-divs-count"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ALLOCATION DONUT -->
   <div class="section">
     <div class="section-head"><h2>Allocation</h2></div>
@@ -3540,7 +3561,7 @@ window.refreshMonthArrows = function() {
     <!-- CHART 1: Real portfolio value over time -->
     <div class="section">
       <div class="section-head"><h2>Real Portfolio Value</h2></div>
-      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">Actual value of your holdings over the past 12 months</div>
+      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">Your portfolio's actual value since you started tracking</div>
       <div class="perf-legend" id="perf-real-legend">
         <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#ff6b5b;height:3px;width:20px;"></div> Your Portfolio</div>
         <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#bdc2d2;height:2px;width:20px;border-top:1px dashed #aaa;"></div> S&amp;P 500 (scaled)</div>
@@ -3550,10 +3571,10 @@ window.refreshMonthArrows = function() {
       <div style="padding:0 16px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="perf-real-summary"></div>
     </div>
 
-    <!-- CHART 2: Indexed comparison — "if you held 1 year ago" -->
+    <!-- CHART 2: Hypothetical 1-year indexed comparison -->
     <div class="section">
-      <div class="section-head"><h2>1-Year Indexed Comparison</h2></div>
-      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">If you held these stocks 1 year ago — growth indexed to 100 at start</div>
+      <div class="section-head"><h2>Historic Return</h2></div>
+      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">If you held your current portfolio units from 1 year ago today — indexed to 100 vs global markets</div>
       <div class="perf-legend">
         <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#ff6b5b;height:3px;width:20px;"></div> Your Portfolio</div>
         <div class="perf-legend-item"><div class="perf-legend-dot" style="background:#bdc2d2;height:2px;width:20px;border-top:1px dashed #aaa;"></div> S&amp;P 500</div>
@@ -3566,7 +3587,7 @@ window.refreshMonthArrows = function() {
     <!-- CHART 3: Monthly returns -->
     <div class="section">
       <div class="section-head"><h2>Monthly Returns</h2></div>
-      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">Month-by-month portfolio performance over the past year</div>
+      <div style="padding:8px 16px 4px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">Month-by-month performance since you added your first holding</div>
       <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
     </div>
 
@@ -5491,8 +5512,9 @@ function getHoldings() {
     { ticker: 'IVV.AX', units: 4, buyPrice: 30.00, livePrice: null, currency: 'AUD', isCustom: false },
     { ticker: 'GOOGL', units: 12, buyPrice: 220.00, livePrice: null, currency: 'USD', isCustom: false },
   ];
-  // Ensure any previously saved holdings without isCustom don't break
-  s.holdings = s.holdings.map(h => ({ isCustom: false, ...h }));
+  const today = new Date().toISOString().slice(0, 10);
+  // Backfill dateAdded for any existing holding that doesn't have one
+  s.holdings = s.holdings.map(h => ({ isCustom: false, dateAdded: today, ...h }));
   return s.holdings;
 }
 function saveHoldings(h) { const s = getState(); s.holdings = h; saveState(s); historyCache = null; }
@@ -6065,7 +6087,6 @@ function renderAll() {
   renderDividends();
   renderWatchlist();
   updateGoal();
-  // Performance is async — only renders when tab is opened
 }
 
 function renderOverview() {
@@ -6176,17 +6197,26 @@ function renderOverview() {
   // Target allocation drift
   renderTargetAllocDrift();
 
-  // Total return including dividends
-  const divs = getDividends();
-  const totalDivs = divs.reduce((a, d) => a + d.amount, 0);
-  if (totalDivs > 0) {
-    const gainEl = document.getElementById('ov-gain-badge');
-    if (gainEl) {
-      const totals = portfolioTotals();
-      const totalReturn = totals.totalGain + totalDivs;
-      const up = totalReturn >= 0;
-      gainEl.className = 'hero-badge ' + (up ? 'up' : 'down');
-      gainEl.textContent = (up ? '↑ ' : '↓ ') + fmtDisplay(Math.abs(totalReturn)) + ' total return (incl. dividends)';
+  // Realised returns card
+  const trades   = getRealisedTrades();
+  const divs     = getDividends();
+  const salesPnl = trades.reduce((a, t) => a + t.pnl, 0);
+  const totalDiv = divs.reduce((a, d) => a + d.amount, 0);
+  const grand    = salesPnl + totalDiv;
+  const card     = document.getElementById('ov-realised-card');
+  if (card) {
+    const hasAny = trades.length > 0 || divs.length > 0;
+    card.style.display = hasAny ? 'block' : 'none';
+    if (hasAny) {
+      const grandUp = grand >= 0;
+      const salesUp = salesPnl >= 0;
+      document.getElementById('ov-realised-total').textContent = (grandUp?'+':'') + fmtDisplay(grand);
+      document.getElementById('ov-realised-total').style.color = grandUp ? 'var(--green)' : 'var(--red)';
+      document.getElementById('ov-realised-sales').textContent = (salesUp?'+':'') + fmtDisplay(salesPnl);
+      document.getElementById('ov-realised-sales').style.color = salesUp ? 'var(--green)' : 'var(--red)';
+      document.getElementById('ov-realised-sales-count').textContent = trades.length + ' sale' + (trades.length !== 1 ? 's' : '');
+      document.getElementById('ov-realised-divs').textContent = '+' + fmtDisplay(totalDiv);
+      document.getElementById('ov-realised-divs-count').textContent = divs.length + ' payment' + (divs.length !== 1 ? 's' : '');
     }
   }
 }
@@ -6302,115 +6332,110 @@ async function renderPerformance() {
     return;
   }
 
-  // Fetch if not cached
+  // Find the earliest date any holding was added
+  const earliestDate = holdings
+    .map(h => h.dateAdded || '9999-99-99')
+    .sort()[0];
+
   if (!historyCache) {
-    document.getElementById('perf-loading').textContent = 'Fetching 1 year of historical data...';
+    document.getElementById('perf-loading').textContent = 'Fetching historical data...';
     historyCache = await fetchHistory();
   }
-
   if (!historyCache) {
     document.getElementById('perf-loading').textContent = 'Could not load historical data — tap refresh to retry.';
     return;
   }
 
-  // Build unified month list from S&P 500 data (most complete)
-  const sp500Data = historyCache['^GSPC'] || [];
-  const nasdaqData = historyCache['^NDX'] || [];
+  const sp500Data  = historyCache['^GSPC'] || [];
+  const nasdaqData = historyCache['^NDX']  || [];
   if (!sp500Data.length) {
     document.getElementById('perf-loading').textContent = 'No historical data available.';
     return;
   }
 
-  // Get all months we have data for
-  const months = sp500Data.map(d => d.date);
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  // For each holding, build a map of date -> close price
+  // Build price maps per holding
   const holdingPrices = {};
   for (const h of holdings) {
-    const history = historyCache[h.ticker] || [];
     holdingPrices[h.ticker] = {};
-    for (const point of history) {
-      holdingPrices[h.ticker][point.date] = point.close;
+    for (const pt of (historyCache[h.ticker] || [])) {
+      holdingPrices[h.ticker][pt.date] = pt.close;
     }
   }
 
-  // Calculate portfolio value each month
-  // Use the user's actual units and cost basis
-  // Index everything to 100 at the start of the period
-  const portfolioValues = [];
-  for (const month of months) {
-    let totalValue = 0;
+  // Calculate portfolio value for each available month
+  const allMonths = sp500Data.map(d => d.date);
+  const portfolioValues = allMonths.map(month => {
+    let val = 0;
     for (const h of holdings) {
       const price = holdingPrices[h.ticker]?.[month];
       if (!price) continue;
-      // Convert AUD to USD if needed
-      const isAUD = h.ticker.endsWith('.AX');
-      const priceUSD = isAUD ? price * fxRate : price;
-      totalValue += priceUSD * h.units;
+      const nativeCur = getNativeCurrency(h.ticker);
+      val += toUSD(price, nativeCur) * h.units;
     }
-    portfolioValues.push(totalValue);
-  }
+    return val;
+  });
 
-  // Filter out months where we have no portfolio data
-  const validIndices = portfolioValues.map((v, i) => v > 0 ? i : -1).filter(i => i >= 0);
-  if (!validIndices.length) {
+  // ── CHART 1: Real portfolio value — only from when user added their first stock ──
+  // Filter to months >= earliest dateAdded
+  const realIndices = allMonths
+    .map((date, i) => ({ date, i }))
+    .filter(({ date, i }) => date >= earliestDate && portfolioValues[i] > 0)
+    .map(({ i }) => i);
+
+  // ── CHART 2: Hypothetical — full 1-year history (all available data) ──
+  const hypoIndices = portfolioValues
+    .map((v, i) => v > 0 ? i : -1)
+    .filter(i => i >= 0);
+
+  if (!hypoIndices.length) {
     document.getElementById('perf-loading').textContent = 'Not enough historical data for your holdings.';
     return;
   }
 
-  const firstIdx = validIndices[0];
-  const firstPortfolioVal = portfolioValues[firstIdx];
-  const firstSP = sp500Data[firstIdx]?.close || 1;
-  const firstNQ = nasdaqData[firstIdx]?.close || 1;
-
-  // Build indexed series (start = 100)
-  const perfData = validIndices.map(i => {
-    const date = months[i];
-    const [year, month] = date.split('-');
-    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const label = `${monthNames[parseInt(month)-1]} ${year.slice(2)}`;
-    return {
-      label,
-      portfolio: portfolioValues[i] ? parseFloat(((portfolioValues[i] / firstPortfolioVal) * 100).toFixed(2)) : null,
-      sp500: sp500Data[i] ? parseFloat(((sp500Data[i].close / firstSP) * 100).toFixed(2)) : null,
-      nasdaq: nasdaqData[i] ? parseFloat(((nasdaqData[i].close / firstNQ) * 100).toFixed(2)) : null,
-    };
-  });
-
-  // Show the content
   document.getElementById('perf-loading').style.display = 'none';
   document.getElementById('perf-content').style.display = 'block';
 
-  const labels = perfData.map(d => d.label);
+  // ── REAL CHART data ────────────────────────────────────────────
+  const useRealIndices = realIndices.length >= 2 ? realIndices : hypoIndices;
+  const realFirstIdx = useRealIndices[0];
+  const realFirstVal  = portfolioValues[realFirstIdx];
+  const realFirstSP   = sp500Data[realFirstIdx]?.close  || 1;
+  const realFirstNQ   = nasdaqData[realFirstIdx]?.close || 1;
 
-  // ── CHART 1: Real portfolio value (in display currency) ────────
-  // Scale S&P 500 and NASDAQ to start at the same $ value as portfolio for visual comparison
-  const firstRealPortfolio = firstPortfolioVal * (fromUSD(1));
-  const realPortfolioValues = validIndices.map(i =>
-    portfolioValues[i] ? parseFloat((portfolioValues[i] * fromUSD(1)).toFixed(2)) : null
-  );
-  const spScale = firstRealPortfolio / (firstSP || 1);
-  const nqScale = firstRealPortfolio / (firstNQ || 1);
-  const realSP = validIndices.map(i => sp500Data[i] ? parseFloat((sp500Data[i].close * spScale).toFixed(2)) : null);
-  const realNQ = validIndices.map(i => nasdaqData[i] ? parseFloat((nasdaqData[i].close * nqScale).toFixed(2)) : null);
+  const realLabels = useRealIndices.map(i => {
+    const [yr, mo] = allMonths[i].split('-');
+    return monthNames[parseInt(mo)-1] + ' ' + yr.slice(2);
+  });
+  const realPortVals  = useRealIndices.map(i => portfolioValues[i] ? parseFloat((portfolioValues[i] * fromUSD(1)).toFixed(2)) : null);
+  const realSPScaled  = useRealIndices.map(i => sp500Data[i]  ? parseFloat((sp500Data[i].close  / realFirstSP  * realFirstVal * fromUSD(1)).toFixed(2)) : null);
+  const realNQScaled  = useRealIndices.map(i => nasdaqData[i] ? parseFloat((nasdaqData[i].close / realFirstNQ * realFirstVal * fromUSD(1)).toFixed(2)) : null);
+
+  // Date range label for subtitle
+  const realStartLabel = realLabels[0] || '';
+  const realEndLabel   = realLabels[realLabels.length - 1] || 'Now';
+  const hasRealHistory = realIndices.length >= 2;
+  const realSubtitle   = hasRealHistory
+    ? `Your portfolio value from ${realStartLabel} to ${realEndLabel}`
+    : `Based on your current holdings priced historically (add date may be recent)`;
+
+  document.querySelector('#perf-content .section:nth-child(1) div[style*="font-size:11px"]').textContent = realSubtitle;
 
   if (realPerfChartObj) { realPerfChartObj.destroy(); }
   realPerfChartObj = new Chart(document.getElementById('realPerfChart'), {
     type: 'line',
     data: {
-      labels,
+      labels: realLabels,
       datasets: [
-        { label: 'Your Portfolio', data: realPortfolioValues, borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.1)', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
-        { label: 'S&P 500 (scaled)', data: realSP, borderColor: '#bdc2d2', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-        { label: 'NASDAQ 100 (scaled)', data: realNQ, borderColor: '#0097a7', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+        { label: 'Your Portfolio', data: realPortVals, borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.1)', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
+        { label: 'S&P 500 (scaled)', data: realSPScaled, borderColor: '#bdc2d2', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+        { label: 'NASDAQ 100 (scaled)', data: realNQScaled, borderColor: '#0097a7', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmtDisplay(ctx.parsed.y) } }
-      },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmtDisplay(ctx.parsed.y) } } },
       scales: {
         x: { grid: { display: false }, ticks: { color: '#6b7a8d', font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 } },
         y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7a8d', font: { size: 10 }, callback: v => fmtKDisplay(v / (FX_RATES[displayCurrency] || 1)) } }
@@ -6418,38 +6443,52 @@ async function renderPerformance() {
     }
   });
 
-  // Real summary: actual gain/loss in $ and %
-  const firstReal = realPortfolioValues[0] || 0;
-  const lastReal = realPortfolioValues[realPortfolioValues.length - 1] || firstReal;
-  const realGain = lastReal - firstReal;
-  const realGainPct = firstReal ? (realGain / firstReal * 100) : 0;
-  const lastRealSP = realSP[realSP.length - 1] || firstRealPortfolio;
-  const lastRealNQ = realNQ[realNQ.length - 1] || firstRealPortfolio;
-  const spGainPct = firstRealPortfolio ? ((lastRealSP - firstRealPortfolio) / firstRealPortfolio * 100) : 0;
-  const nqGainPct = firstRealPortfolio ? ((lastRealNQ - firstRealPortfolio) / firstRealPortfolio * 100) : 0;
+  // Real summary cards
+  const firstRealDisp = realPortVals[0]  || 0;
+  const lastRealDisp  = realPortVals[realPortVals.length - 1] || firstRealDisp;
+  const realGain      = lastRealDisp - firstRealDisp;
+  const realGainPct   = firstRealDisp ? (realGain / firstRealDisp * 100) : 0;
+  const lastSPDisp    = realSPScaled[realSPScaled.length - 1]   || firstRealDisp;
+  const lastNQDisp    = realNQScaled[realNQScaled.length - 1]   || firstRealDisp;
+  const spGainPct     = firstRealDisp ? ((lastSPDisp - firstRealDisp) / firstRealDisp * 100) : 0;
+  const nqGainPct     = firstRealDisp ? ((lastNQDisp - firstRealDisp) / firstRealDisp * 100) : 0;
 
   document.getElementById('perf-real-summary').innerHTML = [
     { label: 'Your Portfolio', val: (realGain >= 0 ? '+' : '') + fmtDisplay(realGain), sub: (realGainPct >= 0 ? '+' : '') + realGainPct.toFixed(2) + '%', up: realGain >= 0 },
-    { label: 'S&P 500', val: (spGainPct >= 0 ? '+' : '') + spGainPct.toFixed(2) + '%', sub: 'if started same value', up: spGainPct >= 0 },
-    { label: 'NASDAQ 100', val: (nqGainPct >= 0 ? '+' : '') + nqGainPct.toFixed(2) + '%', sub: 'if started same value', up: nqGainPct >= 0 },
+    { label: 'S&P 500 (same start)', val: (spGainPct >= 0 ? '+' : '') + spGainPct.toFixed(2) + '%', sub: 'same period', up: spGainPct >= 0 },
+    { label: 'NASDAQ 100 (same start)', val: (nqGainPct >= 0 ? '+' : '') + nqGainPct.toFixed(2) + '%', sub: 'same period', up: nqGainPct >= 0 },
   ].map(c => `
     <div class="calc-result-card">
       <div class="calc-result-label">${c.label}</div>
       <div class="calc-result-val" style="color:${c.up ? 'var(--green)' : 'var(--red)'};font-size:16px;">${c.val}</div>
       <div style="font-size:10px;color:var(--mid);margin-top:2px;">${c.sub}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 
-  // ── CHART 2: Indexed comparison (if held 1 year ago) ──────────
+  // ── CHART 2: Hypothetical full 1-year indexed comparison ──────
+  const hypoFirstIdx = hypoIndices[0];
+  const hypoFirstVal = portfolioValues[hypoFirstIdx];
+  const hypoFirstSP  = sp500Data[hypoFirstIdx]?.close  || 1;
+  const hypoFirstNQ  = nasdaqData[hypoFirstIdx]?.close || 1;
+
+  const hypoData = hypoIndices.map(i => {
+    const [yr, mo] = allMonths[i].split('-');
+    return {
+      label: monthNames[parseInt(mo)-1] + ' ' + yr.slice(2),
+      portfolio: portfolioValues[i] ? parseFloat(((portfolioValues[i] / hypoFirstVal) * 100).toFixed(2)) : null,
+      sp500:     sp500Data[i]  ? parseFloat(((sp500Data[i].close  / hypoFirstSP)  * 100).toFixed(2)) : null,
+      nasdaq:    nasdaqData[i] ? parseFloat(((nasdaqData[i].close / hypoFirstNQ) * 100).toFixed(2)) : null,
+    };
+  });
+
   if (perfChartObj) { perfChartObj.destroy(); }
   perfChartObj = new Chart(document.getElementById('perfChart'), {
     type: 'line',
     data: {
-      labels,
+      labels: hypoData.map(d => d.label),
       datasets: [
-        { label: 'Your Portfolio', data: perfData.map(d => d.portfolio), borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.08)', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
-        { label: 'S&P 500', data: perfData.map(d => d.sp500), borderColor: '#bdc2d2', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-        { label: 'NASDAQ 100', data: perfData.map(d => d.nasdaq), borderColor: '#0097a7', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+        { label: 'Your Portfolio', data: hypoData.map(d => d.portfolio), borderColor: '#ff6b5b', backgroundColor: 'rgba(255,107,91,0.08)', borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: true },
+        { label: 'S&P 500', data: hypoData.map(d => d.sp500), borderColor: '#bdc2d2', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+        { label: 'NASDAQ 100', data: hypoData.map(d => d.nasdaq), borderColor: '#0097a7', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
       ]
     },
     options: {
@@ -6462,41 +6501,43 @@ async function renderPerformance() {
     }
   });
 
-  // Indexed summary
-  const lastPortfolio = perfData[perfData.length-1].portfolio || 100;
-  const lastSP = perfData[perfData.length-1].sp500 || 100;
-  const lastNQ = perfData[perfData.length-1].nasdaq || 100;
-  const portfolioReturn = lastPortfolio - 100;
-  const sp500Return = lastSP - 100;
-  const nasdaqReturn = lastNQ - 100;
+  // Hypothetical summary
+  const lastH = hypoData[hypoData.length - 1];
+  const portRet = (lastH.portfolio || 100) - 100;
+  const spRet   = (lastH.sp500    || 100) - 100;
+  const nqRet   = (lastH.nasdaq   || 100) - 100;
 
   document.getElementById('perf-summary').innerHTML = [
-    { label: 'Your Portfolio', val: (portfolioReturn >= 0 ? '+' : '') + portfolioReturn.toFixed(2) + '%', up: portfolioReturn >= 0 },
-    { label: 'S&P 500', val: (sp500Return >= 0 ? '+' : '') + sp500Return.toFixed(2) + '%', up: sp500Return >= 0 },
-    { label: 'NASDAQ 100', val: (nasdaqReturn >= 0 ? '+' : '') + nasdaqReturn.toFixed(2) + '%', up: nasdaqReturn >= 0 },
+    { label: 'Your Portfolio', val: (portRet >= 0 ? '+' : '') + portRet.toFixed(2) + '%', up: portRet >= 0 },
+    { label: 'S&P 500',       val: (spRet   >= 0 ? '+' : '') + spRet.toFixed(2)   + '%', up: spRet   >= 0 },
+    { label: 'NASDAQ 100',    val: (nqRet   >= 0 ? '+' : '') + nqRet.toFixed(2)   + '%', up: nqRet   >= 0 },
   ].map(c => `
     <div class="calc-result-card">
       <div class="calc-result-label">${c.label}</div>
       <div class="calc-result-val" style="color:${c.up ? 'var(--green)' : 'var(--red)'}">${c.val}</div>
       <div style="font-size:10px;color:var(--mid);margin-top:2px;">1 year indexed</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 
-  // ── CHART 3: Monthly returns ────────────────────────────────────
-  const returns = perfData.slice(1).map((d, i) => {
-    const prev = perfData[i].portfolio;
-    if (!prev || !d.portfolio) return 0;
-    return parseFloat(((d.portfolio - prev) / prev * 100).toFixed(2));
+  // ── CHART 3: Monthly returns — only since first holding added ──
+  const realReturns = useRealIndices.slice(1).map((idx, i) => {
+    const prev = portfolioValues[useRealIndices[i]];
+    const cur  = portfolioValues[idx];
+    if (!prev || !cur) return 0;
+    return parseFloat(((cur - prev) / prev * 100).toFixed(2));
+  });
+  const realReturnLabels = useRealIndices.slice(1).map(i => {
+    const [yr, mo] = allMonths[i].split('-');
+    return monthNames[parseInt(mo)-1] + ' ' + yr.slice(2);
   });
 
   if (monthlyChartObj) { monthlyChartObj.destroy(); }
   monthlyChartObj = new Chart(document.getElementById('monthlyChart'), {
     type: 'bar',
     data: {
-      labels: perfData.slice(1).map(d => d.label),
+      labels: realReturnLabels,
       datasets: [{
-        data: returns,
-        backgroundColor: returns.map(r => r >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)'),
+        data: realReturns,
+        backgroundColor: realReturns.map(r => r >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)'),
         borderRadius: 4,
       }]
     },
@@ -6510,8 +6551,29 @@ async function renderPerformance() {
     }
   });
 
-  // Monthly P&L heatmap calendar
-  renderMonthlyCalendar(perfData);
+  // Monthly P&L heatmap — only from earliest holding date
+  // Pass a trimmed perfData-like array for the heatmap
+  const heatmapData = [null, ...useRealIndices.slice(1).map((idx, i) => {
+    const prev = portfolioValues[useRealIndices[i]];
+    const cur  = portfolioValues[idx];
+    const [yr, mo] = allMonths[idx].split('-');
+    return {
+      label: monthNames[parseInt(mo)-1] + ' ' + yr.slice(2),
+      portfolio: prev && cur ? parseFloat(((cur / prev) * 100).toFixed(2)) : null,
+      _prevPortfolio: 100,
+    };
+  })];
+  // Build a format compatible with renderMonthlyCalendar
+  const calPerfData = useRealIndices.map((idx, i) => {
+    const [yr, mo] = allMonths[idx].split('-');
+    const val = portfolioValues[idx];
+    const firstVal = portfolioValues[useRealIndices[0]];
+    return {
+      label: monthNames[parseInt(mo)-1] + ' ' + yr.slice(2),
+      portfolio: firstVal ? parseFloat(((val / firstVal) * 100).toFixed(2)) : 100,
+    };
+  });
+  renderMonthlyCalendar(calPerfData);
 }
 
 // ============================================================
@@ -6783,6 +6845,7 @@ function addHolding() {
     ticker, units, buyPrice: price,
     livePrice: null, currency: getNativeCurrency(ticker),
     isCustom,
+    dateAdded: new Date().toISOString().slice(0, 10),
   });
   saveHoldings(holdings);
   document.getElementById('inp-ticker').value = '';
@@ -6813,25 +6876,36 @@ function openAddUnits(i) {
   _drawerHoldingIdx = i;
   const h = getHoldings()[i];
   const c = calcHolding(h);
+  const sym = CURRENCY_SYMBOLS[c.nativeCurrency] || '$';
+  const curPrice = h.livePrice || h.manualPrice || '';
+
   document.getElementById('addUnitsTitle').textContent = 'Add More ' + h.ticker;
+  // Plain text info — no HTML tags
   document.getElementById('addUnitsCurrentInfo').textContent =
-    'Currently: ' + h.units + ' units @ ' + fmtNative(h.buyPrice, c.nativeCurrency) + ' avg';
+    'Currently: ' + h.units + ' units @ ' + sym + h.buyPrice.toFixed(2) + ' avg'
+    + (c.nativeCurrency !== 'USD' ? ' (' + c.nativeCurrency + ')' : '');
+
   document.getElementById('add-units-qty').value = '';
-  document.getElementById('add-units-price').value = '';
-  document.getElementById('addUnitsPreview').textContent = 'Enter units and price to preview new average';
+  // Default price = current live price
+  document.getElementById('add-units-price').value = curPrice ? parseFloat(curPrice).toFixed(2) : '';
+  document.getElementById('addUnitsPreview').textContent = curPrice
+    ? 'Price pre-filled from current market price — change if needed'
+    : 'Enter units and price to preview new average';
   document.getElementById('addUnitsOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('add-units-qty').focus(), 320);
 
   // Live preview
   ['add-units-qty','add-units-price'].forEach(id => {
     document.getElementById(id).oninput = function() {
-      const addQty = parseFloat(document.getElementById('add-units-qty').value) || 0;
+      const addQty   = parseFloat(document.getElementById('add-units-qty').value)   || 0;
       const addPrice = parseFloat(document.getElementById('add-units-price').value) || 0;
       if (!addQty || !addPrice) { document.getElementById('addUnitsPreview').textContent = ''; return; }
       const newUnits = h.units + addQty;
-      const newAvg = ((h.units * h.buyPrice) + (addQty * addPrice)) / newUnits;
-      document.getElementById('addUnitsPreview').innerHTML =
-        '<strong>New average:</strong> ' + fmtNative(newAvg, c.nativeCurrency) +
-        ' &nbsp;|&nbsp; <strong>Total units:</strong> ' + newUnits.toFixed(4).replace(/\.?0+$/,'');
+      const newAvg   = ((h.units * h.buyPrice) + (addQty * addPrice)) / newUnits;
+      document.getElementById('addUnitsPreview').textContent =
+        'New average: ' + sym + newAvg.toFixed(2)
+        + (c.nativeCurrency !== 'USD' ? ' ' + c.nativeCurrency : '')
+        + '  |  Total units: ' + newUnits.toFixed(4).replace(/\.?0+$/,'');
     };
   });
 }
@@ -6850,24 +6924,34 @@ function confirmAddUnits() {
   renderAll();
 }
 
-// ── Sell ──────────────────────────────────────────────────────
 function openSell(i) {
   _drawerHoldingIdx = i;
   const h = getHoldings()[i];
   const c = calcHolding(h);
+  const sym     = CURRENCY_SYMBOLS[c.nativeCurrency] || '$';
+  const curPrice = h.livePrice || h.manualPrice || '';
+
   document.getElementById('sellDrawerTitle').textContent = 'Sell ' + h.ticker;
+  // Plain text — no HTML spans
   document.getElementById('sellCurrentInfo').textContent =
-    h.units + ' units held · Avg cost: ' + fmtNative(h.buyPrice, c.nativeCurrency) +
-    (h.livePrice ? ' · Current: ' + fmtNative(h.livePrice, c.nativeCurrency) : '');
+    h.units + ' units held'
+    + '  ·  Avg cost: ' + sym + h.buyPrice.toFixed(2)
+    + (c.nativeCurrency !== 'USD' ? ' ' + c.nativeCurrency : '')
+    + (curPrice ? '  ·  Current: ' + sym + parseFloat(curPrice).toFixed(2) : '');
+
   document.getElementById('sell-units').value = '';
-  document.getElementById('sell-price').value = h.livePrice ? h.livePrice.toFixed(2) : '';
+  // Default to current live price
+  document.getElementById('sell-price').value = curPrice ? parseFloat(curPrice).toFixed(2) : '';
   document.getElementById('sell-date').valueAsDate = new Date();
-  document.getElementById('sellPreview').textContent = '';
+  document.getElementById('sellPreview').textContent = curPrice
+    ? 'Price pre-filled from current market price — change if needed'
+    : '';
   document.getElementById('sellDrawerOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('sell-units').focus(), 320);
 
   ['sell-units','sell-price'].forEach(id => {
     document.getElementById(id).oninput = function() {
-      const qty   = parseFloat(document.getElementById('sell-units').value) || 0;
+      const qty   = parseFloat(document.getElementById('sell-units').value)  || 0;
       const price = parseFloat(document.getElementById('sell-price').value) || 0;
       if (!qty || !price) { document.getElementById('sellPreview').textContent = ''; return; }
       const nativeCur = c.nativeCurrency;
@@ -6877,9 +6961,9 @@ function openSell(i) {
       const pnlPct    = costBasis ? (pnl / costBasis * 100) : 0;
       const sign      = pnl >= 0 ? '+' : '';
       document.getElementById('sellPreview').innerHTML =
-        '<strong>P&amp;L:</strong> ' + sign + fmtDisplay(pnl) +
-        ' (' + sign + pnlPct.toFixed(2) + '%)' +
-        '&nbsp;|&nbsp;<strong>Proceeds:</strong> ' + fmtDisplay(proceeds);
+        '<strong>P&amp;L:</strong> <span style="color:' + (pnl>=0?'var(--green)':'var(--red)') + '">'
+        + sign + fmtDisplay(pnl) + ' (' + sign + pnlPct.toFixed(2) + '%)</span>'
+        + '&nbsp;&nbsp;<strong>Proceeds:</strong> ' + fmtDisplay(proceeds);
     };
   });
 }
@@ -7208,6 +7292,79 @@ function showTab(id, btn) {
   if (id === 'performance') renderPerformance();
   if (id === 'watchlist') { renderWatchlist(); fetchWatchlistPrices(); }
   if (id === 'invest-settings') renderTargetAllocInputs();
+}
+
+// ── Realised Gains tab ────────────────────────────────────────
+function renderRealisedTab() {
+  const trades = getRealisedTrades();
+  const divs   = getDividends();
+
+  const totalSalesPnl = trades.reduce((a, t) => a + t.pnl, 0);
+  const totalDivs     = divs.reduce((a, d) => a + d.amount, 0);
+  const grandTotal    = totalSalesPnl + totalDivs;
+
+  // Hero cards
+  const grandUp    = grandTotal >= 0;
+  const salesUp    = totalSalesPnl >= 0;
+  const totalEl    = document.getElementById('rg-total');
+  const salesEl    = document.getElementById('rg-sales-total');
+  const divEl      = document.getElementById('rg-div-total');
+  const salesBadge = document.getElementById('rg-sales-badge');
+  const divBadge   = document.getElementById('rg-div-badge');
+
+  if (totalEl) {
+    totalEl.textContent = (grandUp ? '+' : '') + fmtDisplay(grandTotal);
+    totalEl.style.color = grandUp ? 'var(--green)' : 'var(--red)';
+  }
+  if (salesEl) {
+    salesEl.textContent = (salesUp ? '+' : '') + fmtDisplay(totalSalesPnl);
+    salesEl.style.color = salesUp ? 'var(--green)' : 'var(--red)';
+  }
+  if (divEl) {
+    divEl.textContent = fmtDisplay(totalDivs);
+    divEl.style.color = 'var(--green)';
+  }
+  if (salesBadge) {
+    salesBadge.className = 'hero-badge ' + (salesUp ? 'up' : 'down');
+    salesBadge.textContent = (salesUp ? '+' : '') + fmtDisplay(totalSalesPnl) + ' from sales';
+  }
+  if (divBadge) {
+    divBadge.className = 'hero-badge up';
+    divBadge.textContent = fmtDisplay(totalDivs) + ' from dividends';
+  }
+
+  // Sales table
+  const salesBody = document.getElementById('rg-sales-body');
+  if (salesBody) {
+    salesBody.innerHTML = trades.length ? trades.map((t, i) => {
+      const up  = t.pnl >= 0;
+      const sym = CURRENCY_SYMBOLS[t.nativeCur] || '$';
+      return `<tr>
+        <td><div class="ticker-badge" style="background:var(--navy);color:white;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;padding:3px 7px;border-radius:6px;display:inline-block;">${t.ticker}</div></td>
+        <td class="mono" style="color:var(--mid);font-size:11px;">${t.date || '—'}</td>
+        <td class="mono">${t.units}</td>
+        <td class="mono">${sym}${parseFloat(t.sellPrice).toFixed(2)}</td>
+        <td class="mono">${sym}${parseFloat(t.avgCost).toFixed(2)}</td>
+        <td class="mono">${fmtDisplay(t.proceeds)}</td>
+        <td class="mono ${up?'up-val':'down-val'}">${up?'+':''}${fmtDisplay(t.pnl)}</td>
+        <td class="mono ${up?'up-val':'down-val'}">${up?'+':''}${t.pnlPct.toFixed(2)}%</td>
+        <td><button class="act-btn del" onclick="deleteRealisedTrade(${i});renderRealisedTab()">×</button></td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="9" class="empty-state">No sales recorded yet</td></tr>';
+  }
+
+  // Dividends table
+  const divBody = document.getElementById('rg-div-body');
+  if (divBody) {
+    divBody.innerHTML = divs.length ? divs.map((d, i) => `
+      <tr>
+        <td><div class="ticker-badge" style="background:var(--navy);color:white;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;padding:3px 7px;border-radius:6px;display:inline-block;">${d.ticker}</div></td>
+        <td class="mono" style="color:var(--mid);font-size:11px;">${d.date || '—'}</td>
+        <td class="mono up-val">+${fmtDisplay(d.amount)}</td>
+        <td style="font-size:12px;color:var(--mid);">${d.note || ''}</td>
+        <td><button class="act-btn del" onclick="deleteDividend(${i});renderRealisedTab()">×</button></td>
+      </tr>`).join('') : '<tr><td colspan="5" class="empty-state">No dividends logged yet</td></tr>';
+  }
 }
 
 // ── Invest settings functions ─────────────────────────────────
