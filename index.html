@@ -297,12 +297,11 @@ nav {
   overflow: hidden;
 }
 .section-head {
-  background: white;
+  background: var(--navy);
   padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 2px solid var(--navy);
 }
 .section-head h2 {
   font-family: 'Montserrat', sans-serif;
@@ -310,10 +309,10 @@ nav {
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--navy);
+  color: white;
 }
 .section-head button {
-  background: var(--navy);
+  background: rgba(255,255,255,0.2);
   border: none;
   border-radius: 20px;
   padding: 3px 10px;
@@ -324,7 +323,10 @@ nav {
   cursor: pointer;
   transition: background 0.15s;
 }
-.section-head button:hover { background: var(--coral); }
+.section-head button:hover { background: rgba(255,255,255,0.32); }
+
+/* Budget app uses coral section headers */
+#app-budget .section-head { background: var(--coral); }
 
 /* TABLE ROWS */
 .tracker-row {
@@ -1630,13 +1632,11 @@ input, select, textarea, button, canvas, img,
 [data-theme="dark"] .settings-section-title { background: #0a1628; color: #94a3b8; border-bottom: 1px solid #1e2d3d; }
 
 /* Section heads — unified navy border for both apps */
-[data-theme="dark"] .section-head { background: #162030; border-bottom: 2px solid #2a4060; }
-[data-theme="dark"] .section-head h2 { color: #93c5fd; }
-[data-theme="dark"] #app-budget .section-head h2 { color: #fda4af; }
-[data-theme="dark"] #app-budget .section-head { border-bottom-color: rgba(255,107,91,0.4); }
-[data-theme="dark"] #app-budget .section-head button { background: var(--coral); color: white; }
-[data-theme="dark"] #app-invest .section-head button { background: #2a4060; color: #cbd5e1; }
-[data-theme="dark"] #app-invest .section-head button:hover { background: #344d6e; }
+[data-theme="dark"] .section-head { background: #0a1628; border-bottom: none; }
+[data-theme="dark"] #app-budget .section-head { background: #c0392b; }
+[data-theme="dark"] .section-head h2 { color: white; }
+[data-theme="dark"] .section-head button { background: rgba(255,255,255,0.15); color: white; }
+[data-theme="dark"] .section-head button:hover { background: rgba(255,255,255,0.25); }
 
 /* ── DARK MODE TOGGLE BUTTON ─────────────────────────────────── */
 .dark-toggle {
@@ -1743,17 +1743,16 @@ nav {
 /* SECTION */
 .section { background: var(--white); border-radius: 14px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 .section-head {
-  background: var(--white); padding: 10px 16px;
+  background: var(--navy); padding: 10px 16px;
   display: flex; align-items: center; justify-content: space-between;
-  border-bottom: 2px solid var(--coral);
 }
-.section-head h2 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--dark); }
+.section-head h2 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: white; }
 .section-head button {
-  background: var(--navy); border: none; border-radius: 20px;
+  background: rgba(255,255,255,0.18); border: none; border-radius: 20px;
   padding: 3px 12px; font-family: 'Montserrat', sans-serif; font-weight: 700;
   font-size: 10px; color: white; cursor: pointer; transition: background 0.2s;
 }
-.section-head button:hover { background: var(--navy-light); }
+.section-head button:hover { background: rgba(255,255,255,0.3); }
 
 /* PORTFOLIO TABLE */
 .port-table { width: 100%; border-collapse: collapse; }
