@@ -1057,6 +1057,47 @@ nav {
   transition: width 0.3s ease;
 }
 
+/* ── REALISED RETURNS CARD ───────────────────────────────────── */
+.realised-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.realised-card-cell {
+  padding: 14px 16px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.realised-card-cell:last-child { border-right: none; }
+.realised-card-full {
+  grid-column: 1 / -1;
+  border-right: none;
+  border-bottom: 1px solid var(--border);
+}
+.realised-card-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--mid);
+  margin-bottom: 5px;
+}
+.realised-card-val {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1;
+  word-break: break-all;
+}
+.realised-card-sub {
+  font-size: 10px;
+  color: var(--mid);
+  margin-top: 3px;
+}
+[data-theme="dark"] .realised-card-cell { border-color: #1e2d3d; }
+[data-theme="dark"] .realised-card-full { border-color: #1e2d3d; }
+
 /* Goal yearly table needs separate borders so border-radius works on tds */
 .goal-yearly-table { border-collapse: collapse; }
 
@@ -3723,20 +3764,20 @@ window.refreshMonthArrows = function() {
   <!-- REALISED GAINS CARD -->
   <div class="section" id="ov-realised-card" style="display:none;">
     <div class="section-head"><h2>Realised Returns</h2></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:0;">
-      <div style="padding:16px;border-right:1px solid var(--border);text-align:center;">
-        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Total Realised</div>
-        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;" id="ov-realised-total">$0.00</div>
+    <div class="realised-card-grid">
+      <div class="realised-card-cell realised-card-full">
+        <div class="realised-card-label">Total Realised</div>
+        <div class="realised-card-val" id="ov-realised-total">$0.00</div>
       </div>
-      <div style="padding:16px;border-right:1px solid var(--border);text-align:center;">
-        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Sales P&amp;L</div>
-        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;" id="ov-realised-sales">$0.00</div>
-        <div style="font-size:10px;color:var(--mid);margin-top:2px;" id="ov-realised-sales-count"></div>
+      <div class="realised-card-cell" style="border-top:1px solid var(--border);">
+        <div class="realised-card-label">Sales P&amp;L</div>
+        <div class="realised-card-val" id="ov-realised-sales">$0.00</div>
+        <div class="realised-card-sub" id="ov-realised-sales-count"></div>
       </div>
-      <div style="padding:16px;text-align:center;">
-        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Dividends</div>
-        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;color:var(--green);" id="ov-realised-divs">$0.00</div>
-        <div style="font-size:10px;color:var(--mid);margin-top:2px;" id="ov-realised-divs-count"></div>
+      <div class="realised-card-cell" style="border-top:1px solid var(--border);">
+        <div class="realised-card-label">Dividends</div>
+        <div class="realised-card-val" style="color:var(--green);" id="ov-realised-divs">$0.00</div>
+        <div class="realised-card-sub" id="ov-realised-divs-count"></div>
       </div>
     </div>
   </div>
