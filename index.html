@@ -116,11 +116,18 @@
   --blue: #4a90d9;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: 'Lora', Georgia, serif;
   background: var(--light);
   color: var(--dark);
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: none;
 }
 
 /* NAV */
