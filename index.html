@@ -130,6 +130,28 @@ body {
   overscroll-behavior: none;
 }
 
+/* Scrollbar always on top */
+::-webkit-scrollbar {
+  width: 6px;
+  z-index: 9999;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.18);
+  border-radius: 3px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.18);
+}
+
+/* Prevent cards/tables from creating stacking context over the scrollbar */
+.left-card, .stat-box, .card, .section-card, .port-table, .table-wrap {
+  isolation: auto;
+  transform: none;
+}
+
 /* NAV */
 nav {
   background: var(--navy);
@@ -2101,24 +2123,43 @@ nav {
   background: var(--coral);
   border: none;
   border-radius: 30px;
-  padding: 0 20px 0 14px;
+  padding: 0 14px;
   height: 52px;
-  display: none; /* shown by JS when budget page is active */
+  width: 52px;
+  display: none;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 0px;
   color: white;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(255,107,91,0.45);
   z-index: 300;
-  transition: transform 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.35s cubic-bezier(0.4,0,0.2,1), gap 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s ease, transform 0.2s ease;
 }
-.expense-fab:hover { transform: scale(1.04); box-shadow: 0 6px 24px rgba(255,107,91,0.55); }
+.expense-fab:hover, .expense-fab:focus-visible {
+  width: 160px;
+  padding: 0 20px 0 14px;
+  gap: 8px;
+  transform: scale(1.04);
+  box-shadow: 0 6px 24px rgba(255,107,91,0.55);
+}
+.expense-fab:hover .fab-label, .expense-fab:focus-visible .fab-label {
+  opacity: 1;
+  max-width: 120px;
+  transition: opacity 0.25s ease 0.15s, max-width 0.35s cubic-bezier(0.4,0,0.2,1);
+}
 .expense-fab.visible { display: flex; }
 .fab-label {
   font-size: 13px;
   letter-spacing: 0.2px;
+  opacity: 0;
+  max-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.1s ease, max-width 0.35s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ── DRAWER OVERLAY ──────────────────────────────────────────── */
@@ -4091,7 +4132,7 @@ window.refreshMonthArrows = function() {
     <div class="section-head"><h2>Yearly Summary</h2></div>
     <div style="overflow-x:auto;overflow-y:auto;max-height:280px;">
       <table class="port-table goal-yearly-table">
-        <thead style="position:sticky;top:0;z-index:1;background:var(--card-bg);">
+        <thead style="position:sticky;top:0;z-index:2;background:var(--card-bg);">
           <tr><th style="text-align:left">Year</th><th>End Value</th><th>Total Contributed</th><th>Total Growth</th><th>Annual Return</th></tr>
         </thead>
         <tbody id="goal-yearly-body"></tbody>
