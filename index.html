@@ -8,7 +8,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
 <style>
-/* ===== APP SWITCHER SHELL ===== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 .app-wrapper { display: none; }
@@ -1537,6 +1536,11 @@ input, select, textarea, button, canvas, img,
 [data-theme="dark"] .port-table th { background: #0f1923; }
 [data-theme="dark"] .port-table tr:hover td { background: rgba(255,255,255,0.03); }
 [data-theme="dark"] .port-table td { border-bottom-color: #1e2d3d; }
+[data-theme="dark"] .ov-filter-btn { border-color: #2a4060; color: #8a97a8; }
+[data-theme="dark"] .ov-filter-btn:hover { border-color: var(--coral); color: var(--coral); }
+[data-theme="dark"] .ov-filter-btn.active { background: var(--coral); border-color: var(--coral); color: white; }
+[data-theme="dark"] #ov-filter-panel { background: #0f1923; border-bottom-color: #1e2d3d; }
+[data-theme="dark"] #ov-filter-toggle.panel-open { background: #1a2d45; }
 
 /* Inputs & forms */
 [data-theme="dark"] input,
@@ -1826,6 +1830,26 @@ nav {
 
 /* PORTFOLIO TABLE */
 .port-table { width: 100%; border-collapse: collapse; }
+.ov-filter-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--mid);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.ov-filter-btn:hover { border-color: var(--coral); color: var(--coral); }
+.ov-filter-btn.active { background: var(--coral); border-color: var(--coral); color: white; }
+#ov-filter-toggle.panel-open { border-color: var(--coral); color: var(--coral); background: #fff5f0; }
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .port-table th {
   background: var(--card-bg); padding: 8px 12px;
   font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 9px;
@@ -3845,7 +3869,39 @@ window.refreshMonthArrows = function() {
 
   <!-- SUMMARY TABLE -->
   <div class="section">
-    <div class="section-head"><h2>Holdings Summary</h2></div>
+    <div class="section-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <h2>Holdings Summary</h2>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="ov-filter-badge" style="display:none;font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;background:var(--coral);color:white;padding:2px 8px;border-radius:20px;"></span>
+        <button id="ov-filter-toggle" onclick="toggleOvFilter()" style="display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:var(--mid);cursor:pointer;transition:all 0.15s;">
+          Filter
+        </button>
+      </div>
+    </div>
+    <div id="ov-filter-panel" style="display:none;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);animation:fadeSlideDown 0.2s ease;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Show only</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="ov-filter-btn" data-filter="winners" onclick="toggleOvFilterBtn(this)">Winners</button>
+            <button class="ov-filter-btn" data-filter="losers" onclick="toggleOvFilterBtn(this)">Losers</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mid);margin-bottom:6px;">Sort by</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="ov-filter-btn" data-filter="alpha" onclick="toggleOvFilterBtn(this)">A–Z</button>
+            <button class="ov-filter-btn" data-filter="value" onclick="toggleOvFilterBtn(this)">Value</button>
+            <button class="ov-filter-btn" data-filter="weight" onclick="toggleOvFilterBtn(this)">Weight</button>
+            <button class="ov-filter-btn" data-filter="gain" onclick="toggleOvFilterBtn(this)">Gain $</button>
+            <button class="ov-filter-btn" data-filter="gainpct" onclick="toggleOvFilterBtn(this)">Gain %</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button onclick="resetOvFilters()" style="background:none;border:none;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:var(--mid);cursor:pointer;text-decoration:underline;padding:0;">Reset filters</button>
+        </div>
+      </div>
+    </div>
     <div style="overflow-x:auto;">
       <table class="port-table">
         <thead>
@@ -6514,6 +6570,68 @@ function renderAll() {
   updateGoal();
 }
 
+let ovActiveFilters = new Set();
+
+function toggleOvFilter() {
+  const panel = document.getElementById('ov-filter-panel');
+  const btn = document.getElementById('ov-filter-toggle');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  btn.classList.toggle('panel-open', !isOpen);
+}
+
+function toggleOvFilterBtn(btn) {
+  const filter = btn.dataset.filter;
+  const sortFilters = ['alpha','value','weight','gain','gainpct'];
+  const narrowFilters = ['winners','losers'];
+
+  // If clicking a sort, deselect other sorts (only one sort at a time)
+  if (sortFilters.includes(filter)) {
+    if (ovActiveFilters.has(filter)) {
+      ovActiveFilters.delete(filter);
+    } else {
+      sortFilters.forEach(f => ovActiveFilters.delete(f));
+      ovActiveFilters.add(filter);
+    }
+  }
+  // If clicking a narrow filter, deselect the opposite
+  if (narrowFilters.includes(filter)) {
+    if (ovActiveFilters.has(filter)) {
+      ovActiveFilters.delete(filter);
+    } else {
+      const opposite = filter === 'winners' ? 'losers' : 'winners';
+      ovActiveFilters.delete(opposite);
+      ovActiveFilters.add(filter);
+    }
+  }
+
+  // Sync button states
+  document.querySelectorAll('.ov-filter-btn').forEach(b => {
+    b.classList.toggle('active', ovActiveFilters.has(b.dataset.filter));
+  });
+
+  updateOvFilterBadge();
+  renderOverview();
+}
+
+function resetOvFilters() {
+  ovActiveFilters.clear();
+  document.querySelectorAll('.ov-filter-btn').forEach(b => b.classList.remove('active'));
+  updateOvFilterBadge();
+  renderOverview();
+}
+
+function updateOvFilterBadge() {
+  const badge = document.getElementById('ov-filter-badge');
+  const count = ovActiveFilters.size;
+  if (count > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent = count + ' active';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 function renderOverview() {
   const holdings = getHoldings();
   const totals = portfolioTotals();
@@ -6588,11 +6706,27 @@ function renderOverview() {
     tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No holdings yet</td></tr>';
     return;
   }
-  tbody.innerHTML = holdings.map((h, i) => {
+
+  // Build enriched list for filtering/sorting
+  let rows = holdings.map((h, i) => {
     const c = calcHolding(h);
-    const weight = total ? ((c.marketValue / total) * 100).toFixed(1) : '0';
+    const weight = total ? (c.marketValue / total) * 100 : 0;
+    return { h, c, i, weight };
+  });
+
+  // Step 1: Narrow (filter) — winners/losers
+  if (ovActiveFilters.has('winners')) rows = rows.filter(r => r.c.gainLoss >= 0);
+  if (ovActiveFilters.has('losers'))  rows = rows.filter(r => r.c.gainLoss < 0);
+
+  // Step 2: Sort
+  if (ovActiveFilters.has('alpha'))   rows.sort((a, b) => a.h.ticker.localeCompare(b.h.ticker));
+  if (ovActiveFilters.has('value'))   rows.sort((a, b) => b.c.marketValue - a.c.marketValue);
+  if (ovActiveFilters.has('weight'))  rows.sort((a, b) => b.weight - a.weight);
+  if (ovActiveFilters.has('gain'))    rows.sort((a, b) => b.c.gainLoss - a.c.gainLoss);
+  if (ovActiveFilters.has('gainpct')) rows.sort((a, b) => b.c.gainPct - a.c.gainPct);
+
+  tbody.innerHTML = rows.map(({ h, c, i, weight }) => {
     const upDown = c.gainLoss >= 0;
-    // Show price in native currency for the price column
     const priceDisplay = c.nativePrice
       ? (c.isAUD ? `A$${c.nativePrice.toFixed(2)}` : fmtDisplay(c.nativePrice))
       : '<span style="color:#6b7a8d;font-size:11px;">↻ refresh</span>';
@@ -6604,7 +6738,7 @@ function renderOverview() {
       <td class="mono">${fmtDisplay(c.marketValue)}</td>
       <td class="mono ${upDown ? 'up-val' : 'down-val'}">${c.priceSource==='none' ? '—' : (upDown?'+':'') + fmtDisplay(c.gainLoss)}</td>
       <td class="mono ${upDown ? 'up-val' : 'down-val'}">${c.priceSource==='none' ? '—' : (upDown?'+':'') + c.gainPct.toFixed(2) + '%'}</td>
-      <td class="mono">${weight}%</td>
+      <td class="mono">${weight.toFixed(1)}%</td>
     </tr>`;
   }).join('');
 
