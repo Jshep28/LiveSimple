@@ -1,0 +1,225 @@
+/* ── INVEST APP – SPECIFIC STYLES ───────────────────────────────── */
+/* These styles only apply to the Investment Tracker (#app-invest)  */
+
+/* ── REALISED RETURNS CARD ───────────────────────────────────── */
+.realised-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.realised-card-cell {
+  padding: 14px 16px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.realised-card-cell:last-child { border-right: none; }
+.realised-card-full {
+  grid-column: 1 / -1;
+  border-right: none;
+  border-bottom: 1px solid var(--border);
+}
+.realised-card-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--mid);
+  margin-bottom: 5px;
+}
+.realised-card-val {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1;
+  word-break: break-all;
+}
+.realised-card-sub {
+  font-size: 10px;
+  color: var(--mid);
+  margin-top: 3px;
+}
+[data-theme="dark"] .realised-card-cell { border-color: #1e2d3d; }
+[data-theme="dark"] .realised-card-full { border-color: #1e2d3d; }
+
+/* Goal yearly table needs separate borders so border-radius works on tds */
+.goal-yearly-table { border-collapse: collapse; }
+
+/* ── HOLDING ACTION BUTTONS ──────────────────────────────────── */
+.holding-actions { display:flex; gap:4px; align-items:center; flex-wrap:nowrap; }
+.act-btn {
+  font-family:'Montserrat',sans-serif; font-weight:700; font-size:9px;
+  border:none; border-radius:5px; padding:3px 7px; cursor:pointer;
+  white-space:nowrap; transition:opacity 0.15s;
+}
+.act-btn:hover { opacity:0.75; }
+.act-btn.add  { background:rgba(0,69,98,0.12); color:var(--navy); }
+.act-btn.sell { background:rgba(239,68,68,0.12); color:var(--red); }
+.act-btn.div  { background:rgba(34,197,94,0.12); color:var(--green); }
+.act-btn.del  { background:rgba(239,68,68,0.08); color:#9ca3af; }
+
+/* ── MONTHLY HEATMAP ─────────────────────────────────────────── */
+.month-heatmap { display:flex; flex-direction:column; gap:6px; }
+.heatmap-year-row { display:flex; align-items:center; gap:4px; flex-wrap:nowrap; }
+.heatmap-year-label { font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; color:var(--mid); width:36px; flex-shrink:0; }
+.heatmap-cell {
+  width:44px; height:36px; border-radius:6px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Montserrat',sans-serif; font-weight:700; font-size:9px;
+  color:white; cursor:default; transition:transform 0.1s;
+}
+.heatmap-cell:hover { transform:scale(1.08); }
+.heatmap-cell.empty { background:var(--border); color:var(--mid); }
+.heatmap-month-labels { display:flex; gap:4px; padding-left:40px; margin-bottom:4px; }
+.heatmap-month-label { width:44px; text-align:center; font-family:'Montserrat',sans-serif; font-weight:700; font-size:9px; color:var(--mid); flex-shrink:0; }
+
+/* ── TARGET ALLOCATION DRIFT ─────────────────────────────────── */
+.alloc-drift-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+.alloc-drift-label { font-family:'Montserrat',sans-serif; font-weight:700; font-size:11px; color:var(--dark); width:90px; flex-shrink:0; }
+.alloc-drift-bar-wrap { flex:1; min-width:100px; height:8px; background:var(--border); border-radius:4px; position:relative; }
+.alloc-drift-bar-actual { height:100%; border-radius:4px; transition:width 0.4s; }
+.alloc-drift-target-line { position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--dark); border-radius:1px; }
+[data-theme="dark"] .alloc-drift-target-line { background: #e0e8f0; }
+.alloc-drift-pcts { font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; white-space:nowrap; }
+.alloc-target-input { width:52px; border:1px solid var(--border); border-radius:6px; padding:5px 6px; font-family:'Montserrat',sans-serif; font-weight:700; font-size:12px; text-align:center; outline:none; }
+.alloc-target-input:focus { border-color:var(--navy); }
+
+/* ── INVEST ACTION DRAWERS ───────────────────────────────────── */
+.invest-drawer-overlay { display:none; position:fixed; inset:0; background:rgba(26,35,50,0.55); z-index:500; align-items:flex-end; justify-content:center; }
+.invest-drawer-overlay.open { display:flex; }
+.invest-drawer { background:white; border-radius:20px 20px 0 0; width:100%; max-width:480px; padding:0 0 32px; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0,0.15,1); box-shadow:0 -4px 32px rgba(0,0,0,0.18); }
+.invest-drawer-overlay.open .invest-drawer { transform:translateY(0); }
+.invest-drawer-title { font-family:'Montserrat',sans-serif; font-weight:900; font-size:16px; color:var(--dark); }
+.invest-drawer-body { padding:16px 20px 0; }
+.invest-drawer-field { margin-bottom:12px; }
+.invest-drawer-field label { display:block; font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--mid); margin-bottom:5px; }
+.invest-drawer-input { width:100%; border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-family:'Lora',serif; font-size:15px; color:var(--dark); background:var(--light); outline:none; }
+.invest-drawer-input:focus { border-color:var(--navy); background:white; }
+.invest-drawer-submit { margin-top:14px; width:100%; background:var(--navy); border:none; border-radius:12px; padding:13px; font-family:'Montserrat',sans-serif; font-weight:700; font-size:14px; color:white; cursor:pointer; }
+.invest-drawer-submit:hover { background:var(--navy-light); }
+
+/* ── GOAL ACHIEVE CARD ───────────────────────────────────────── */
+.goal-achieve-card-inner {
+  background: #e8eef2;
+  border: 2px solid #004562;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+.goal-achieve-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  color: #004562;
+  margin-bottom: 10px;
+}
+.goal-achieve-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.goal-achieve-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.goal-achieve-stat-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--mid);
+}
+.goal-achieve-stat-val {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+}
+@media (max-width: 480px) {
+  .goal-achieve-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── INVEST APP COMPREHENSIVE MOBILE ────────────────────────────
+   Targets the invest panel, tables, grids at small viewports     */
+@media (max-width: 600px) {
+  /* Panel */
+  #app-invest .panel {
+    padding: 10px 8px 60px;
+  }
+
+  /* Hero cards — single column */
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  .hero-card.full { grid-column: 1 !important; }
+  .hero-val.lg { font-size: 26px; }
+  .hero-val { font-size: 20px; }
+
+  /* Section */
+  #app-invest .section { border-radius: 10px; }
+
+  /* Holdings add form */
+  .add-form {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px;
+  }
+  .add-form .form-group:first-child { grid-column: 1 / -1; }
+  .add-btn { grid-column: 1 / -1; }
+
+  /* All port-tables: allow horizontal scroll, don't overflow page */
+  .port-table th, .port-table td {
+    padding: 8px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* Allocation row: stack chart above legend */
+  .alloc-wrap-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  /* Breakdown grid: single column */
+  .breakdown-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .breakdown-col + .breakdown-col {
+    border-left: none !important;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Calculator */
+  .calc-grid {
+    grid-template-columns: 1fr !important;
+    padding: 12px;
+  }
+  .calc-input-group.half { grid-column: auto; }
+  .calc-result-grid {
+    grid-template-columns: 1fr 1fr !important;
+    padding: 0 12px 12px;
+  }
+  .calc-result-val { font-size: 14px; }
+
+  /* Goal grid */
+  .goal-grid {
+    grid-template-columns: 1fr !important;
+    padding: 12px;
+  }
+
+  /* Performance legend */
+  .perf-legend {
+    gap: 10px;
+    padding: 0 12px 8px;
+  }
+
+  /* Invest settings */
+  #tab-invest-settings .settings-section { margin: 8px; }
+  #tab-invest-settings .settings-row { flex-wrap: wrap; gap: 6px; }
+}
+
