@@ -519,7 +519,13 @@ function updateMarketStatus() {
       state = 'closed'; label = 'Closed';
     }
 
-    timeLabel = localTime;
+    // Show local market time in 12-hour format with AM/PM for clarity
+    timeLabel = now.toLocaleTimeString('en-US', {
+      timeZone: mkt.tz,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
 
     const dot = document.getElementById(mkt.id + '-dot');
     const statusEl = document.getElementById(mkt.id + '-status');
@@ -528,6 +534,11 @@ function updateMarketStatus() {
     if (statusEl) { statusEl.className = 'market-pill-status ' + state; statusEl.textContent = label; }
     if (timeEl) { timeEl.textContent = timeLabel; }
   });
+
+  // Re-clone the ticker so all copies show updated status/times
+  if (typeof window.reinitMarquee === 'function') {
+    setTimeout(window.reinitMarquee, 50);
+  }
 }
 
 // ============================================================

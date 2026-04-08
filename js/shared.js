@@ -2,27 +2,47 @@
 (function() {
   function initMarquee() {
     var setA = document.getElementById('marketSetA');
-    var setB = document.getElementById('marketSetB');
     var track = document.getElementById('marketTickerTrack');
-    if (!setA || !setB || !track) return;
+    if (!setA || !track) return;
 
-    // Clone set A content into set B for seamless loop
-    setB.innerHTML = setA.innerHTML;
-
-    // Calculate scroll distance = width of one set (including its padding)
+    // Measure one set's width
     var setWidth = setA.offsetWidth;
     if (setWidth === 0) {
       requestAnimationFrame(initMarquee);
       return;
     }
 
-    // Speed: pixels per second — comfortable reading pace
+    // Remove all previously cloned sets (keep only setA)
+    var existing = track.querySelectorAll('.market-ticker-set:not(#marketSetA)');
+    existing.forEach(function(el) { el.parentNode.removeChild(el); });
+
+    // Work out how many copies fill at least 3× the container width for a gap-free loop
+    var containerWidth = track.parentElement.offsetWidth || window.innerWidth;
+    var minFill = Math.max(containerWidth * 3, setWidth * 3);
+    var copies = Math.ceil(minFill / setWidth);
+
+    // Append copies of set A
+    for (var i = 0; i < copies; i++) {
+      var clone = setA.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.setAttribute('aria-hidden', 'true');
+      track.appendChild(clone);
+    }
+
+    // The animation scrolls exactly one set-width, then loops seamlessly
     var pxPerSec = 48;
     var duration = setWidth / pxPerSec;
 
     track.style.setProperty('--market-scroll-dist', '-' + setWidth + 'px');
+    // Reset then reapply so the animation restarts cleanly
+    track.style.animation = 'none';
+    // Force reflow so the browser registers the reset
+    void track.offsetWidth;
     track.style.animation = 'marketScroll ' + duration + 's linear infinite';
   }
+
+  // Expose globally so invest.js can call it after price/status updates
+  window.reinitMarquee = initMarquee;
 
   // Run after layout
   if (document.readyState === 'loading') {
@@ -31,7 +51,7 @@
     setTimeout(initMarquee, 150);
   }
 
-  // Re-init on resize so duration stays correct if window width changes
+  // Re-init on resize
   window.addEventListener('resize', function() {
     var track = document.getElementById('marketTickerTrack');
     if (track) track.style.animation = '';

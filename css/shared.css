@@ -1599,8 +1599,8 @@ html, body {
   border-left: none;
   padding-left: 0;
 }
-/* set B always visible for seamless loop */
-#marketSetB { display: flex; }
+/* cloned sets always visible for seamless loop */
+.market-ticker-set { display: flex; }
 
 /* pause on tap/hover */
 .market-ticker-track:hover,
