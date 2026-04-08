@@ -1020,7 +1020,7 @@ nav {
 #app-invest nav { position: sticky; top: 0; z-index: 200; }
 /* tab-bar stickiness is handled by mobile fix CSS */
 #app-invest .invest-tab-wrap { position: sticky; top: 56px; z-index: 199; }
-#app-invest .tab-bar { position: static; justify-content: center; }
+#app-invest .tab-bar { position: static; flex: 1; justify-content: center; }
 @media (max-width: 540px) {
   /* On mobile the nav wraps and is taller; let tab-bar stack naturally below it */
   #app-invest .invest-tab-wrap { position: sticky; top: 0; z-index: 199; }
