@@ -648,6 +648,8 @@ nav {
 .market-pill-time { font-size: 9px; color: #4b5563; font-family: 'Montserrat', sans-serif; }
 
 .empty-state { padding: 30px; text-align: center; color: var(--mid); font-size: 13px; font-style: italic; }
+.empty { padding: 20px 16px; text-align: center; color: var(--mid); font-size: 13px; font-style: italic; }
+[data-theme="dark"] .empty { color: #8a97a8; }
 
 /* CURRENCY PICKER DROPDOWN */
 .currency-picker-dropdown {
@@ -1018,7 +1020,7 @@ nav {
 #app-invest nav { position: sticky; top: 0; z-index: 200; }
 /* tab-bar stickiness is handled by mobile fix CSS */
 #app-invest .invest-tab-wrap { position: sticky; top: 56px; z-index: 199; }
-#app-invest .tab-bar { position: static; }
+#app-invest .tab-bar { position: static; justify-content: center; }
 @media (max-width: 540px) {
   /* On mobile the nav wraps and is taller; let tab-bar stack naturally below it */
   #app-invest .invest-tab-wrap { position: sticky; top: 0; z-index: 199; }
