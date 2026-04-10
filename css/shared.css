@@ -1292,11 +1292,10 @@ html, body {
     margin-right: 10px;
   }
 
-  /* Year-in-review hero */
+  /* Year-in-review hero — scale font, keep letter-spacing tight */
   .review-hero h1 {
-    font-size: 14px;
-    letter-spacing: 1px;
-    white-space: nowrap;
+    font-size: clamp(13px, 4.5vw, 22px);
+    letter-spacing: clamp(2px, 1vw, 5px);
   }
   .review-big-num {
     font-size: 32px;
@@ -1620,4 +1619,14 @@ html, body {
     grid-template-columns: 1fr;
     gap: 10px;
   }
+}
+
+/* ── DATE INPUT — constrain height on iOS/mobile ─────────────── */
+input[type="date"].drawer-input {
+  height: 46px;
+  line-height: 46px;
+  padding-top: 0;
+  padding-bottom: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }

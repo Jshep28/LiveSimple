@@ -1086,7 +1086,7 @@ nav {
 .modal-btn.cancel { background: var(--light); color: var(--mid); }
 .modal-btn.confirm { background: var(--red); color: white; }
 .review-hero { background: var(--coral); padding: 16px 20px; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
-.review-hero h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: 4px; color: white; }
+.review-hero h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: 6px; text-transform: uppercase; color: white; }
 .review-hero p { font-size: 11px; font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.65); margin-top: 4px; }
 .review-big-stat { background: white; margin: 16px 16px 0; border-radius: 16px; padding: 20px; text-align: center; }
 .review-big-label { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--mid); margin-bottom: 6px; }
