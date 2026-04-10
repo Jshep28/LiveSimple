@@ -1612,3 +1612,32 @@ html, body {
   from { transform: translateX(0); }
   to   { transform: translateX(var(--market-scroll-dist)); }
 }
+
+/* ── YEAR IN REVIEW — mobile title fix ───────────────────────── */
+@media (max-width: 480px) {
+  .review-hero h1 {
+    font-size: 18px;
+    letter-spacing: 6px;   /* more breathing room between letters/words */
+  }
+}
+@media (max-width: 360px) {
+  .review-hero h1 {
+    font-size: 15px;
+    letter-spacing: 5px;
+  }
+}
+
+/* ── EXPENSE DRAWER — date & amount gap on mobile ────────────── */
+@media (max-width: 480px) {
+  .drawer-row {
+    gap: 10px;
+  }
+  .drawer-input {
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+  /* Date field: shrink slightly so it doesn't crowd the amount */
+  .drawer-row .drawer-field:first-child .drawer-input {
+    padding-right: 6px;
+  }
+}
