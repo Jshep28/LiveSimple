@@ -773,7 +773,7 @@ function renderOverview() {
   // Summary table
   const tbody = document.getElementById('ov-holdings-body');
   if (!holdings.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No holdings yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No holdings yet</td></tr>';
     return;
   }
 
@@ -797,6 +797,12 @@ function renderOverview() {
 
   tbody.innerHTML = rows.map(({ h, c, i, weight }) => {
     const upDown = c.gainLoss >= 0;
+    const dayUp = (h.dayChange || 0) >= 0;
+    const nativeSym = CURRENCY_SYMBOLS[c.nativeCurrency] || '$';
+    const dayDecimals = c.nativeCurrency === 'JPY' ? 0 : 2;
+    const todayCell = h.livePrice && h.dayChange !== undefined
+      ? `<span class="mono" style="color:${dayUp?'var(--green)':'var(--red)'};font-size:11px;white-space:nowrap;">${dayUp?'+':''}${nativeSym}${Math.abs(h.dayChange).toFixed(dayDecimals)}<br><span style="font-size:10px;">(${dayUp?'+':''}${(h.dayChangePct||0).toFixed(2)}%)</span></span>`
+      : '<span style="color:#6b7a8d;font-size:11px;">—</span>';
     const priceDisplay = c.nativePrice
       ? (c.isAUD ? `A$${c.nativePrice.toFixed(2)}` : fmtDisplay(c.nativePrice))
       : '<span style="color:#6b7a8d;font-size:11px;">↻ refresh</span>';
@@ -804,6 +810,7 @@ function renderOverview() {
       <td><div class="ticker-cell">
         <div class="ticker-badge" style="background:${COLORS[i%COLORS.length]}">${h.ticker}</div>
       </div></td>
+      <td>${todayCell}</td>
       <td class="mono">${priceDisplay}</td>
       <td class="mono">${fmtDisplay(c.marketValue)}</td>
       <td class="mono ${upDown ? 'up-val' : 'down-val'}">${c.priceSource==='none' ? '—' : (upDown?'+':'') + fmtDisplay(c.gainLoss)}</td>
@@ -854,7 +861,7 @@ function renderHoldings() {
   const holdings = getHoldings();
   const tbody = document.getElementById('holdings-body');
   if (!holdings.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No holdings — add one below</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No holdings — add one below</td></tr>';
     return;
   }
   tbody.innerHTML = holdings.map((h, i) => {
@@ -906,11 +913,17 @@ function renderHoldings() {
            onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--border)'">`
       : '<span style="color:#d1d5db;font-size:11px;">—</span>';
 
+    // Today's gain/loss cell — in native currency
+    const todayHoldCell = h.livePrice && h.dayChange !== undefined
+      ? `<span class="mono" style="color:${dayUp?'var(--green)':'var(--red)'};font-size:11px;white-space:nowrap;">${dayUp?'+':''}${nativeSym}${Math.abs(h.dayChange).toFixed(dayDecimals)}<br><span style="font-size:10px;">(${dayUp?'+':''}${(h.dayChangePct||0).toFixed(2)}%)</span></span>`
+      : '<span style="color:#6b7a8d;font-size:11px;">—</span>';
+
     return `<tr>
       <td><div class="ticker-cell">
         <div class="ticker-badge" style="background:${COLORS[i%COLORS.length]}">${h.ticker}</div>
         ${h.isCustom ? '<span style="font-size:9px;color:#6b7a8d;margin-left:4px;">custom</span>' : ''}
       </div></td>
+      <td>${todayHoldCell}</td>
       <td class="mono hide-mobile">${h.units}</td>
       <td class="mono hide-mobile">${avgBuyFmt}</td>
       <td class="mono hide-mobile">${fmtDisplay(c.costBasis)}</td>
@@ -1663,7 +1676,7 @@ function renderWatchlist() {
   const tbody = document.getElementById('watchlist-body');
   if (!tbody) return;
   if (!wl.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Add tickers you\'re watching below</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Add tickers you\'re watching below</td></tr>';
     return;
   }
   tbody.innerHTML = wl.map((w, i) => {
