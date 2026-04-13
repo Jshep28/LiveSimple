@@ -1621,6 +1621,31 @@ html, body {
   }
 }
 
+/* ── MOBILE BOTTOM CLEARANCE — lifts content above browser chrome ─
+   Wix sub-browser + Safari address bar eat ~80-90px at the bottom.
+   Increase panel scroll space and raise all fixed bottom elements.  */
+@media (max-width: 540px) {
+  /* Extra scroll room so last content isn't hidden behind browser bar */
+  .panel {
+    padding-bottom: 150px !important;
+  }
+
+  /* Raise the expense FAB (+ Add Expense button) */
+  .expense-fab {
+    bottom: 90px;
+  }
+
+  /* Raise the info FAB (ⓘ button on invest) */
+  .info-fab {
+    bottom: 90px;
+  }
+
+  /* Raise the info popup (stale price warning banner) */
+  .info-popup {
+    bottom: 90px;
+  }
+}
+
 /* ── DATE INPUT — constrain height on iOS/mobile ─────────────── */
 input[type="date"].drawer-input {
   height: 46px;
