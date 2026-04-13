@@ -81,6 +81,33 @@ function getAllState() {
 function saveAllState(s) {
   localStorage.setItem('livesimple_v2', JSON.stringify(s));
 }
+// ── TAX / PROJECTION STATE ────────────────────────────────────
+function getTaxPrefs() {
+  const s = getAllState();
+  return s._taxPrefs || { on: false, rate: 19 };
+}
+function saveTaxPrefs(p) {
+  const s = getAllState();
+  s._taxPrefs = p;
+  saveAllState(s);
+}
+function toggleTax() {
+  const p = getTaxPrefs();
+  p.on = !p.on;
+  saveTaxPrefs(p);
+  renderReview();
+}
+function setTaxRate(r) {
+  const p = getTaxPrefs();
+  p.rate = r;
+  saveTaxPrefs(p);
+  renderReview();
+}
+function focusTaxCustom() {
+  const input = document.getElementById('taxCustomInput');
+  if (input) { input.focus(); input.select(); }
+}
+
 function getYearState(y) {
   const all = getAllState();
   if (!all[y]) all[y] = { budget: {}, habits: {} };
@@ -1686,6 +1713,120 @@ function renderReview() {
   document.getElementById('rv-spent').textContent = bFmt(totalSpent);
   document.getElementById('rv-saved').textContent = bFmt(totalSaved);
   document.getElementById('rv-habit').textContent = habitRate + '%';
+
+  // ── PROJECTED TAKE-HOME ──────────────────────────────────────
+  const taxPrefs = getTaxPrefs();
+  const taxOn = taxPrefs.on;
+  const taxRate = parseFloat(taxPrefs.rate) || 0;
+
+  // Toggle UI
+  const taxTrack = document.getElementById('taxToggleTrack');
+  if (taxTrack) taxTrack.classList.toggle('on', taxOn);
+  const taxStrip = document.getElementById('taxRateStrip');
+  if (taxStrip) taxStrip.classList.toggle('visible', taxOn);
+
+  // Highlight active tax rate button
+  document.querySelectorAll('.tax-rate-btn:not(.tax-rate-custom)').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.rate) === taxRate);
+  });
+
+  // Months with actual income data
+  const activeMonths = monthlyData.filter(m => m.inc > 0);
+  const avgMonthlyIncome = activeMonths.length
+    ? activeMonths.reduce((a, m) => a + m.inc, 0) / activeMonths.length
+    : 0;
+  const avgMonthlySpent = activeMonths.length
+    ? activeMonths.reduce((a, m) => a + m.spent, 0) / activeMonths.length
+    : 0;
+
+  // Monthly take-home after tax
+  const taxAmount = avgMonthlyIncome * (taxRate / 100);
+  const monthlyTakeHome = avgMonthlyIncome - taxAmount - avgMonthlySpent;
+  const annualTakeHome = monthlyTakeHome * 12;
+
+  const projNumEl = document.getElementById('rv-proj-num');
+  const projSubEl = document.getElementById('rv-proj-sub');
+
+  if (avgMonthlyIncome === 0) {
+    projNumEl.textContent = '—';
+    projNumEl.className = 'proj-big-num';
+    projSubEl.textContent = 'No income data for ' + reviewYear;
+  } else {
+    projNumEl.textContent = (annualTakeHome >= 0 ? '+' : '') + bFmt(annualTakeHome);
+    projNumEl.className = 'proj-big-num' + (annualTakeHome < 0 ? ' negative' : '');
+    const monthCount = activeMonths.length;
+    const baseLabel = monthCount === 1
+      ? 'Based on 1 month · projected annually'
+      : 'Avg of ' + monthCount + ' months · projected annually';
+    projSubEl.textContent = taxOn
+      ? baseLabel + ' · after ' + taxRate + '% tax'
+      : baseLabel + ' · pre-tax';
+  }
+
+  // Small projection chart (12 monthly bars)
+  const projLabels = MONTHS.map(m => m.slice(0,3));
+  const projTakeHome = projLabels.map(() => Math.max(monthlyTakeHome, 0));
+  const projTax      = projLabels.map(() => taxOn ? taxAmount : 0);
+  const projNeg      = projLabels.map(() => monthlyTakeHome < 0 ? Math.abs(monthlyTakeHome) : 0);
+
+  const projCanvas = document.getElementById('projChart');
+  if (projCanvas) {
+    if (window._projChartInstance) { window._projChartInstance.destroy(); }
+    window._projChartInstance = new Chart(projCanvas, {
+      type: 'bar',
+      data: {
+        labels: projLabels,
+        datasets: [
+          {
+            label: 'Take-home',
+            data: projTakeHome,
+            backgroundColor: 'rgba(34,197,94,0.7)',
+            borderRadius: 4,
+            stack: 'proj',
+          },
+          {
+            label: 'Tax',
+            data: projTax,
+            backgroundColor: 'rgba(239,68,68,0.45)',
+            borderRadius: 4,
+            stack: 'proj',
+          },
+          {
+            label: 'Deficit',
+            data: projNeg,
+            backgroundColor: 'rgba(239,68,68,0.7)',
+            borderRadius: 4,
+            stack: 'proj',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 300 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' ' + ctx.dataset.label + ': ' + bFmt(ctx.parsed.y)
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { display: false },
+            ticks: { font: { family: 'Montserrat', size: 9 }, color: '#6b7a8d' }
+          },
+          y: {
+            stacked: true,
+            display: false,
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
 
   // Monthly bars
   const maxVal = Math.max(...monthlyData.map(m => Math.max(m.inc, m.spent)), 1);

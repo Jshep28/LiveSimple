@@ -449,6 +449,51 @@
     </div>
   </div>
 
+  <!-- PROJECTED TAKE-HOME SECTION -->
+  <div class="section" style="margin:0 16px 16px;">
+    <div class="section-head">
+      <h2>Projected Annual Take-Home</h2>
+      <label class="tax-toggle-wrap">
+        <span class="tax-toggle-label">Tax</span>
+        <div class="toggle-track" id="taxToggleTrack" onclick="toggleTax()">
+          <div class="toggle-thumb" id="taxToggleThumb"></div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Big projected number -->
+    <div style="padding:14px 16px 4px;">
+      <div class="proj-big-num" id="rv-proj-num">—</div>
+      <div class="proj-sub" id="rv-proj-sub">Enable data to see projection</div>
+    </div>
+
+    <!-- Tax rate horizontal scroll strip (shown only when tax on) -->
+    <div class="tax-rate-strip" id="taxRateStrip">
+      <div class="tax-rate-label">Tax rate:</div>
+      <div class="tax-rate-scroll">
+        <button class="tax-rate-btn" data-rate="0"    onclick="setTaxRate(0)">0%</button>
+        <button class="tax-rate-btn" data-rate="10"   onclick="setTaxRate(10)">10%</button>
+        <button class="tax-rate-btn" data-rate="15"   onclick="setTaxRate(15)">15%</button>
+        <button class="tax-rate-btn" data-rate="19"   onclick="setTaxRate(19)">19%</button>
+        <button class="tax-rate-btn" data-rate="25"   onclick="setTaxRate(25)">25%</button>
+        <button class="tax-rate-btn" data-rate="32"   onclick="setTaxRate(32)">32%</button>
+        <button class="tax-rate-btn" data-rate="37"   onclick="setTaxRate(37)">37%</button>
+        <button class="tax-rate-btn" data-rate="45"   onclick="setTaxRate(45)">45%</button>
+        <button class="tax-rate-btn tax-rate-custom" data-rate="custom" onclick="focusTaxCustom()">Custom</button>
+        <input type="number" id="taxCustomInput" class="tax-custom-input" min="0" max="99" step="1" placeholder="%" oninput="setTaxRate(parseFloat(this.value)||0)">
+      </div>
+    </div>
+
+    <!-- Small projection bar chart -->
+    <div class="proj-chart-wrap">
+      <canvas id="projChart" height="80"></canvas>
+    </div>
+    <div style="padding:0 16px 14px;display:flex;gap:16px;justify-content:center;">
+      <span class="proj-legend-dot" style="background:var(--green);"></span><span class="proj-legend-txt">Projected take-home</span>
+      <span class="proj-legend-dot" style="background:rgba(239,68,68,0.5);"></span><span class="proj-legend-txt">Tax withheld</span>
+    </div>
+  </div>
+
   <div class="section" style="margin:0 16px 16px;">
     <div class="section-head"><h2>Monthly Income vs Spending</h2></div>
     <div class="review-month-bars" id="rv-bars"></div>
