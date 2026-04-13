@@ -1630,6 +1630,11 @@ html, body {
     padding-bottom: 150px !important;
   }
 
+  /* Budget app — give the bottom spacer height so notes aren't cut off */
+  .bottom-space {
+    height: 150px;
+  }
+
   /* Raise the expense FAB (+ Add Expense button) */
   .expense-fab {
     bottom: 90px;
