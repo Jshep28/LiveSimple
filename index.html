@@ -90,7 +90,8 @@
   </div>
   <div id="copyLastMonthBar" class="copy-bar">
     <span style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:var(--mid);">No budget set for this month yet</span>
-    <button onclick="copyLastMonth()" style="background:var(--coral);border:none;border-radius:8px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:white;cursor:pointer;white-space:nowrap;">Copy last month's budget</button>
+    <button onclick="copyLastMonth(false)" style="background:var(--coral);border:none;border-radius:8px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:white;cursor:pointer;white-space:nowrap;">Copy budget</button>
+    <button onclick="copyLastMonth(true)" style="background:var(--navy);border:none;border-radius:8px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:white;cursor:pointer;white-space:nowrap;">Copy budget + actuals</button>
   </div>
 
   <div class="month-scroll-wrap" id="budgetMonthWrap">
@@ -465,6 +466,7 @@
     <div style="padding:14px 16px 4px;">
       <div class="proj-big-num" id="rv-proj-num">—</div>
       <div class="proj-sub" id="rv-proj-sub">Enable data to see projection</div>
+      <div class="proj-tax-line" id="rv-proj-tax" style="display:none;"></div>
     </div>
 
     <!-- Tax rate horizontal scroll strip (shown only when tax on) -->

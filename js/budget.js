@@ -321,7 +321,9 @@ function renderSectionWithPeriods(section, d) {
       const prorated = mb > 0 ? (mb / periods_count) : 0;
       const over   = prorated > 0 && pa > prorated;
       const pctFill = prorated > 0 ? Math.min(pa / prorated * 100, 100) : 0;
-      const barColor = over ? 'var(--red)' : pa > 0 ? 'var(--green)' : 'var(--coral)';
+      // Income: going over prorated amount is GOOD (green). Bills: red when over.
+      const periodOverIsGood = section === 'income';
+      const barColor = over ? (periodOverIsGood ? 'var(--green)' : 'var(--red)') : pa > 0 ? 'var(--green)' : 'var(--coral)';
       const paidHtml = hasPaid
         ? `<input type="checkbox" class="paid-checkbox" ${pRow.paid ? 'checked' : ''}
              onchange="togglePeriodPaid('${section}',${tab},${i},this.checked)"
@@ -341,7 +343,7 @@ function renderSectionWithPeriods(section, d) {
           <div class="amount-input">
             <span>${currency}</span>
             <input type="number" value="${pRow.actual||''}" min="0" step="0.01" placeholder="0.00"
-              onchange="updatePeriodActual('${section}',${tab},${i},this.value)" title="Amount this period">
+              oninput="updatePeriodActual('${section}',${tab},${i},this.value)" title="Amount this period">
           </div>
           <span style="width:28px;display:inline-block;"></span>
         </div>
@@ -530,8 +532,8 @@ function deleteRow(section, i) {
   renderBudget();
 }
 
-// ── Copy budget amounts from previous month ───────────────────
-function copyLastMonth() {
+// ── Copy budget amounts (and optionally actuals) from previous month ───────────────────
+function copyLastMonth(includeActuals) {
   const prevMonth = currentBudgetMonth === 0 ? 11 : currentBudgetMonth - 1;
   const prevYear = currentBudgetMonth === 0 ? currentYear - 1 : currentYear;
 
@@ -547,18 +549,30 @@ function copyLastMonth() {
 
   const cur = getBudgetMonth(currentBudgetMonth);
 
-  // Copy structure and budget amounts (not actuals, not paid status, not expenses, not notes)
+  // Copy structure, budget amounts, and optionally actuals + paid status
   ['income', 'bills', 'savings', 'debt'].forEach(section => {
     if (prevData[section]) {
       cur[section] = prevData[section].map(r => ({
         name: r.name,
         budget: r.budget,
-        actual: '',
-        ...(r.paid !== undefined ? { paid: false } : {}),
+        actual: includeActuals ? (r.actual || '') : '',
+        ...(r.paid !== undefined ? { paid: includeActuals ? !!r.paid : false } : {}),
         ...(r.recurring !== undefined ? { recurring: r.recurring } : {})
       }));
     }
   });
+
+  // Copy period data (weekly/fortnightly rows) if includeActuals
+  if (includeActuals) {
+    ['incomePeriods', 'billsPeriods'].forEach(key => {
+      if (prevData[key]) {
+        cur[key] = JSON.parse(JSON.stringify(prevData[key]));
+      }
+    });
+    if (prevData.incomePeriodMode) cur.incomePeriodMode = prevData.incomePeriodMode;
+    if (prevData.billsPeriodMode)  cur.billsPeriodMode  = prevData.billsPeriodMode;
+  }
+
   if (prevData.expenseSummary) {
     cur.expenseSummary = prevData.expenseSummary.map(r => ({
       name: r.name,
@@ -592,11 +606,15 @@ function renderTrackerSection(containerId, rows, section, hasPaid) {
     el.innerHTML = `<div class="empty">No entries — click <strong>+ Add</strong> to add one</div>`;
     return;
   }
+  // For income, savings, and debt: going over budget is GOOD (green). Bills only: red when over.
+  const overIsGood = section === 'income' || section === 'savings' || section === 'debt';
   el.innerHTML = rows.map((row, i) => {
     const b = num(row.budget), a = num(row.actual);
     const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
     const overBudget = b > 0 && a > b;
-    const barColor = overBudget ? 'var(--red)' : a > 0 ? 'var(--green)' : 'var(--coral)';
+    const barColor = overBudget
+      ? (overIsGood ? 'var(--green)' : 'var(--red)')
+      : a > 0 ? 'var(--green)' : 'var(--coral)';
     const isRecurring = !!row.recurring;
     return `
     <div class="tracker-row" style="padding-right:28px;">
@@ -613,7 +631,7 @@ function renderTrackerSection(containerId, rows, section, hasPaid) {
       <div class="amount-input">
         <span>${currency}</span>
         <input type="number" value="${row.actual||''}" min="0" step="0.01" placeholder="0.00"
-          onchange="updateActual('${section}',${i},this.value)" title="Actual amount">
+          oninput="updateActual('${section}',${i},this.value)" title="Actual amount">
       </div>
       <button class="row-del" onclick="deleteRow('${section}',${i})" title="Remove row">×</button>
     </div>
@@ -1746,11 +1764,13 @@ function renderReview() {
 
   const projNumEl = document.getElementById('rv-proj-num');
   const projSubEl = document.getElementById('rv-proj-sub');
+  const projTaxEl = document.getElementById('rv-proj-tax');
 
   if (avgMonthlyIncome === 0) {
     projNumEl.textContent = '—';
     projNumEl.className = 'proj-big-num';
     projSubEl.textContent = 'No income data for ' + reviewYear;
+    if (projTaxEl) projTaxEl.style.display = 'none';
   } else {
     projNumEl.textContent = (annualTakeHome >= 0 ? '+' : '') + bFmt(annualTakeHome);
     projNumEl.className = 'proj-big-num' + (annualTakeHome < 0 ? ' negative' : '');
@@ -1761,6 +1781,16 @@ function renderReview() {
     projSubEl.textContent = taxOn
       ? baseLabel + ' · after ' + taxRate + '% tax'
       : baseLabel + ' · pre-tax';
+    // Show annual tax amount if tax is on
+    if (projTaxEl) {
+      if (taxOn && taxAmount > 0) {
+        const annualTax = taxAmount * 12;
+        projTaxEl.innerHTML = '−' + bFmt(annualTax) + '/yr in tax';
+        projTaxEl.style.display = 'block';
+      } else {
+        projTaxEl.style.display = 'none';
+      }
+    }
   }
 
   // Small projection chart (12 monthly bars)
