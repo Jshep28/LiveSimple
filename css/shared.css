@@ -1640,6 +1640,11 @@ html, body {
     bottom: 90px;
   }
 
+  /* Expense drawer — extra bottom padding so the Add button clears browser chrome */
+  .expense-drawer {
+    padding-bottom: 90px;
+  }
+
   /* Raise the info FAB (ⓘ button on invest) */
   .info-fab {
     bottom: 90px;
