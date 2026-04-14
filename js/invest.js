@@ -43,7 +43,14 @@ const COLORS = ['#004562','#ff6b5b','#0097a7','#f59e0b','#8b5cf6','#22c55e','#ef
 function getState() {
   try { return JSON.parse(localStorage.getItem('ls_invest_v1') || '{}'); } catch(e) { return {}; }
 }
-function saveState(s) { localStorage.setItem('ls_invest_v1', JSON.stringify(s)); }
+function saveState(s) {
+  try {
+    localStorage.setItem('ls_invest_v1', JSON.stringify(s));
+  } catch(e) {
+    // Storage blocked (e.g. third-party iframe) — budget.js will show the warning
+    if (typeof showStorageWarning === 'function') showStorageWarning();
+  }
+}
 function getHoldings() {
   const s = getState();
   if (!s.holdings) s.holdings = [

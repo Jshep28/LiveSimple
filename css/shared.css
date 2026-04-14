@@ -1635,24 +1635,9 @@ html, body {
     height: 150px;
   }
 
-  /* Raise the expense FAB (+ Add Expense button) */
-  .expense-fab {
-    bottom: 90px;
-  }
-
-  /* Expense drawer — extra bottom padding so the Add button clears browser chrome */
+  /* Expense drawer — extra bottom padding so content clears mobile browser chrome */
   .expense-drawer {
-    padding-bottom: 90px;
-  }
-
-  /* Raise the info FAB (ⓘ button on invest) */
-  .info-fab {
-    bottom: 90px;
-  }
-
-  /* Raise the info popup (stale price warning banner) */
-  .info-popup {
-    bottom: 90px;
+    padding-bottom: 20px;
   }
 }
 

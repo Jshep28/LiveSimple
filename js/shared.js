@@ -1,4 +1,37 @@
 
+// ============================================================
+//  IFRAME DETECTION — warn user if storage may be blocked
+// ============================================================
+(function() {
+  try {
+    if (window.self !== window.top) {
+      // We're inside an iframe — storage is likely blocked on Safari/Chrome
+      // Show a persistent banner prompting the user to open the app directly
+      document.addEventListener('DOMContentLoaded', function() {
+        var banner = document.createElement('div');
+        banner.id = 'iframeWarningBanner';
+        banner.style.cssText = [
+          'position:fixed','top:0','left:0','right:0','z-index:9998',
+          'background:#1a2332','color:white',
+          'font-family:Montserrat,sans-serif','font-size:12px','font-weight:600',
+          'padding:10px 14px','display:flex','align-items:center',
+          'justify-content:space-between','gap:10px','flex-wrap:wrap'
+        ].join(';');
+        banner.innerHTML =
+          '<span>💾 For data to save between sessions, open Live Simple in its own tab.</span>' +
+          '<a href="' + window.location.href + '" target="_blank" ' +
+          'style="background:var(--coral,#f97316);color:white;border:none;border-radius:6px;' +
+          'padding:5px 12px;font-family:Montserrat,sans-serif;font-weight:700;font-size:11px;' +
+          'text-decoration:none;white-space:nowrap;cursor:pointer;">Open in new tab →</a>';
+        document.body.prepend(banner);
+      });
+    }
+  } catch(e) {
+    // Cross-origin frame — definitely blocked, but we can't read window.top
+    // The storage write will fail and showStorageWarning() will catch it
+  }
+})();
+
 (function() {
   function initMarquee() {
     var setA = document.getElementById('marketSetA');

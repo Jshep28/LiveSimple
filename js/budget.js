@@ -74,12 +74,41 @@ function defaultHabitMonth(m) {
   };
 }
 
+// ── Storage availability check ────────────────────────────────
+let _storageAvailable = null;
+function checkStorageAvailable() {
+  if (_storageAvailable !== null) return _storageAvailable;
+  try {
+    const key = '__ls_test__';
+    localStorage.setItem(key, '1');
+    localStorage.removeItem(key);
+    _storageAvailable = true;
+  } catch(e) {
+    _storageAvailable = false;
+  }
+  return _storageAvailable;
+}
+
 // Load / save
 function getAllState() {
   try { return JSON.parse(localStorage.getItem('livesimple_v2') || '{}'); } catch(e) { return {}; }
 }
 function saveAllState(s) {
-  localStorage.setItem('livesimple_v2', JSON.stringify(s));
+  try {
+    localStorage.setItem('livesimple_v2', JSON.stringify(s));
+  } catch(e) {
+    showStorageWarning();
+  }
+}
+
+function showStorageWarning() {
+  let warn = document.getElementById('storageWarningBanner');
+  if (warn) return; // already shown
+  warn = document.createElement('div');
+  warn.id = 'storageWarningBanner';
+  warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#ef4444;color:white;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;padding:10px 16px;text-align:center;';
+  warn.innerHTML = '⚠️ Storage is blocked — your data won\'t be saved. Open this app directly (not inside another site) or use Export/Import in Settings to back up your data. <button onclick="this.parentNode.remove()" style="margin-left:12px;background:rgba(255,255,255,0.25);border:none;border-radius:4px;color:white;font-weight:700;padding:2px 8px;cursor:pointer;">✕</button>';
+  document.body.prepend(warn);
 }
 // ── TAX / PROJECTION STATE ────────────────────────────────────
 function getTaxPrefs() {
@@ -214,6 +243,36 @@ function updatePeriodActual(section, periodIdx, rowIdx, val) {
   aggregatePeriods(d, section);
   saveBudgetMonth(currentBudgetMonth, d);
   updateTotals(d);
+  // Update the progress bar for this specific period row in real-time
+  updatePeriodRowBar(section, periodIdx, rowIdx, d);
+}
+
+function updatePeriodRowBar(section, periodIdx, rowIdx, d) {
+  const rowsId = section + '-period-rows-' + periodIdx;
+  const container = document.getElementById(rowsId);
+  if (!container) return;
+  const rows = container.querySelectorAll('.tracker-row');
+  const row = rows[rowIdx];
+  if (!row) return;
+  const bar = row.nextElementSibling;
+  if (!bar || !bar.classList.contains('row-progress')) return;
+  const fill = bar.querySelector('.row-progress-fill');
+  if (!fill) return;
+  const mode = section === 'income' ? (d.incomePeriodMode || 'monthly') : (d.billsPeriodMode || 'monthly');
+  const periods = getPeriodsForMonth(currentBudgetMonth, currentYear, mode);
+  const pRows = ensurePeriodRows(d, section, periodIdx);
+  const monthRow = (d[section] || [])[rowIdx] || {};
+  const pRow = pRows[rowIdx] || { actual: '' };
+  const mb = num(monthRow.budget);
+  const pa = num(pRow.actual);
+  const periods_count = periods.length;
+  const prorated = mb > 0 ? (mb / periods_count) : 0;
+  const pctFill = prorated > 0 ? Math.min(pa / prorated * 100, 100) : 0;
+  const over = prorated > 0 && pa > prorated;
+  const periodOverIsGood = section === 'income';
+  const barColor = over ? (periodOverIsGood ? 'var(--green)' : 'var(--red)') : pa > 0 ? 'var(--green)' : 'var(--coral)';
+  fill.style.width = pctFill + '%';
+  fill.style.background = barColor;
 }
 
 function togglePeriodPaid(section, periodIdx, rowIdx, checked) {
@@ -942,6 +1001,32 @@ function updateActual(section, i, val) {
   d[section][i].actual = val;
   saveBudgetMonth(currentBudgetMonth, d);
   updateTotals(d);
+  // Update the progress bar for this specific row in real-time
+  updateRowBar(section, i, d);
+}
+
+function updateRowBar(section, i, d) {
+  // section IDs: income-rows, bills-rows, savings-rows, debt-rows
+  const containerId = section + '-rows';
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const rows = container.querySelectorAll('.tracker-row');
+  const row = rows[i];
+  if (!row) return;
+  const bar = row.nextElementSibling;
+  if (!bar || !bar.classList.contains('row-progress')) return;
+  const fill = bar.querySelector('.row-progress-fill');
+  if (!fill) return;
+  const r = d[section][i];
+  const b = num(r.budget), a = num(r.actual);
+  const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
+  const overBudget = b > 0 && a > b;
+  const overIsGood = section === 'income' || section === 'savings' || section === 'debt';
+  const barColor = overBudget
+    ? (overIsGood ? 'var(--green)' : 'var(--red)')
+    : a > 0 ? 'var(--green)' : 'var(--coral)';
+  fill.style.width = pctFill + '%';
+  fill.style.background = barColor;
 }
 function togglePaid(section, i, checked) {
   const d = getBudgetMonth(currentBudgetMonth);
@@ -1519,6 +1604,24 @@ function changeReviewYear(delta) {
 //  SETTINGS
 // ============================================================
 function renderSettings() {
+  // Storage status badge
+  const ok = checkStorageAvailable();
+  const lbl = document.getElementById('storageStatusLabel');
+  const desc = document.getElementById('storageStatusDesc');
+  const badge = document.getElementById('storageStatusBadge');
+  if (lbl && desc && badge) {
+    if (ok) {
+      lbl.textContent = 'Local storage active';
+      desc.textContent = 'Your data is saved on this device and persists when you close the browser';
+      badge.textContent = '✅';
+    } else {
+      lbl.textContent = 'Storage blocked';
+      desc.textContent = 'Data cannot be saved — open the app directly (not inside another website), or use Export/Import to back up manually';
+      badge.textContent = '⚠️';
+      badge.style.fontSize = '22px';
+    }
+  }
+
   document.getElementById('resetYearLabel').textContent = currentYear;
 
   // Populate month name label in reset row
@@ -1926,6 +2029,10 @@ function renderReview() {
 document.addEventListener('DOMContentLoaded', function() {
   const opts = document.querySelectorAll('#budgetCurrencyPicker .curr-opt');
   if (opts.length) opts[0].classList.add('active');
+  // Check storage on load and warn immediately if blocked
+  if (!checkStorageAvailable()) {
+    showStorageWarning();
+  }
 });
 renderBudget();
 // Show FAB since budget is the default active page

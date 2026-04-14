@@ -930,8 +930,10 @@ nav {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .copy-bar.visible { display: flex; }
+[data-theme="dark"] .copy-bar { background: #1e2a3a; }
 
 /* TRACKER ROW DELETE BUTTON */
 .tracker-row { position: relative; }
@@ -1122,6 +1124,14 @@ nav {
   font-size: 11px;
   color: var(--mid);
   margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+.proj-tax-line {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 2px;
   letter-spacing: 0.3px;
 }
 

@@ -3,5 +3,16 @@
     "api/*.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "storage-access=(self)"
+        }
+      ]
+    }
+  ]
 }
