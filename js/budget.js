@@ -455,6 +455,8 @@ function renderBudget() {
   updateTotals(d);
   populateCatDropdown(d);
   updateCopyBar(d);
+  // Restore active section pill (re-apply after render)
+  selectBudgetSection(_activeBudgetSection);
 }
 
 function selectBudgetMonth(m) {
@@ -462,6 +464,22 @@ function selectBudgetMonth(m) {
   incomePeriodTab = 'overview';
   billsPeriodTab  = 'overview';
   renderBudget();
+}
+
+let _activeBudgetSection = 'income';
+
+function selectBudgetSection(section) {
+  _activeBudgetSection = section;
+  // Toggle pills
+  ['income','bills','expense','savings','debt'].forEach(s => {
+    const pill = document.getElementById('pill-' + s);
+    if (pill) pill.classList.toggle('active', s === section);
+  });
+  // Show/hide panels
+  ['income','bills','expense','savings','debt'].forEach(s => {
+    const panel = document.getElementById('panel-' + s);
+    if (panel) panel.style.display = s === section ? '' : 'none';
+  });
 }
 
 // ── Add a blank row to any section ───────────────────────────

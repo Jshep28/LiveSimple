@@ -329,6 +329,50 @@ nav {
   color: var(--dark);
 }
 
+/* ── BUDGET SECTION PILL BAR ─────────────────────────────────── */
+.budget-pill-bar {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.budget-pill-bar::-webkit-scrollbar { display: none; }
+.budget-pill {
+  flex-shrink: 0;
+  background: var(--light);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--mid);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.budget-pill.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: white;
+}
+.budget-pill:not(.active):hover {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+[data-theme="dark"] .budget-pill {
+  background: #1e2d3d;
+  border-color: #2a3a4d;
+  color: #6b7a8d;
+}
+[data-theme="dark"] .budget-pill.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: white;
+}
+
 .section-footer {
   display: grid;
   grid-template-columns: 1fr 90px 90px;

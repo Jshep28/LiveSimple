@@ -154,8 +154,17 @@
     </div>
   </div>
 
+  <!-- SECTION PILL TABS -->
+  <div class="budget-pill-bar">
+    <button class="budget-pill active" id="pill-income"  onclick="selectBudgetSection('income')">Income</button>
+    <button class="budget-pill"        id="pill-bills"   onclick="selectBudgetSection('bills')">Bills</button>
+    <button class="budget-pill"        id="pill-expense" onclick="selectBudgetSection('expense')">Expenses</button>
+    <button class="budget-pill"        id="pill-savings" onclick="selectBudgetSection('savings')">Savings</button>
+    <button class="budget-pill"        id="pill-debt"    onclick="selectBudgetSection('debt')">Debt</button>
+  </div>
+
   <!-- INCOME -->
-  <div class="section">
+  <div class="section budget-section-panel" id="panel-income">
     <div class="section-head">
       <h2>Income Summary</h2>
       <button id="income-add-btn" onclick="addRow('income')">+ Add</button>
@@ -173,7 +182,7 @@
   </div>
 
   <!-- BILLS -->
-  <div class="section">
+  <div class="section budget-section-panel" id="panel-bills" style="display:none">
     <div class="section-head">
       <h2>Bill Tracker</h2>
       <button id="bills-add-btn" onclick="addRow('bills')">+ Add</button>
@@ -191,7 +200,7 @@
   </div>
 
   <!-- EXPENSES -->
-  <div class="section">
+  <div class="section budget-section-panel" id="panel-expense" style="display:none">
     <div class="section-head">
       <h2>Expense Summary</h2>
       <button onclick="addRow('expenseSummary')">+ Add</button>
@@ -208,7 +217,7 @@
   </div>
 
   <!-- SAVINGS -->
-  <div class="section">
+  <div class="section budget-section-panel" id="panel-savings" style="display:none">
     <div class="section-head">
       <h2>Savings Tracker</h2>
       <button onclick="addRow('savings')">+ Add</button>
@@ -225,7 +234,7 @@
   </div>
 
   <!-- DEBT -->
-  <div class="section">
+  <div class="section budget-section-panel" id="panel-debt" style="display:none">
     <div class="section-head">
       <h2>Debt Tracker</h2>
       <button onclick="addRow('debt')">+ Add</button>
