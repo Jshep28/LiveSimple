@@ -671,10 +671,13 @@ function renderExpenseSummary(d) {
   `}).join('');
 }
 
+// Store flattened transaction list for popup lookups
+let _txnList = [];
+
 function renderTransactionLog(d) {
   const el = document.getElementById('expense-log');
 
-  // Build a unified list of all transactions with type tags
+  // Build unified list
   const all = [];
   (d.incomeLog || []).forEach((e, i) => all.push({ ...e, _type: 'income',  _key: 'incomeLog',  _i: i }));
   (d.expenses   || []).forEach((e, i) => all.push({ ...e, _type: 'spend',   _key: 'expenses',   _i: i }));
@@ -684,38 +687,95 @@ function renderTransactionLog(d) {
 
   if (!all.length) {
     el.innerHTML = '<div class="empty">No entries logged yet — tap + to log income or expenses</div>';
+    _txnList = [];
     return;
   }
 
-  // Sort newest first
   all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  _txnList = all;
 
   const typeStyles = {
-    income:  { label: 'Income',  color: 'var(--green)',  sign: '+' },
-    spend:   { label: 'Spend',   color: 'var(--coral)',  sign: '-' },
-    bill:    { label: 'Bill',    color: 'var(--red)',    sign: '-' },
-    savings: { label: 'Savings', color: 'var(--navy)',   sign: '-' },
-    debt:    { label: 'Debt',    color: '#8b5cf6',       sign: '-' },
+    income:  { label: 'Income',  color: 'var(--green)', sign: '+' },
+    spend:   { label: 'Spend',   color: 'var(--coral)', sign: '-' },
+    bill:    { label: 'Bill',    color: 'var(--red)',   sign: '-' },
+    savings: { label: 'Savings', color: 'var(--navy)',  sign: '-' },
+    debt:    { label: 'Debt',    color: '#8b5cf6',      sign: '-' },
   };
 
-  // Group by date for income expandable rows
-  el.innerHTML = all.map(e => {
-    const ts = typeStyles[e._type];
+  el.innerHTML = all.map((e, idx) => {
+    const ts  = typeStyles[e._type];
     const cat = e.category || e.source || e.name || '—';
-    const deleteCall = e._key === 'expenses'
-      ? `deleteExpense(${e._i})`
-      : `deleteLogEntry('${e._key}',${e._i})`;
     const freqBadge = e._type === 'income' && e.freq && e.freq !== 'monthly'
       ? `<span class="log-freq-badge">${e.freq.slice(0,4)}</span>` : '';
-    return `<div class="expense-row">
+    return `<div class="expense-row" onclick="openTxnPopup(${idx})">
       <span class="expense-date">${e.date ? e.date.slice(5) : '—'}</span>
       <span class="expense-amount" style="color:${ts.color}">${ts.sign}${bFmt(e.amount)}</span>
       <span class="expense-cat">${cat}${freqBadge}</span>
       <span class="log-type-badge" style="background:${ts.color}20;color:${ts.color}">${ts.label}</span>
-      <span class="expense-note">${e.note || ''}</span>
-      <button class="delete-btn" onclick="${deleteCall}">×</button>
+      <button class="delete-btn" onclick="event.stopPropagation();deleteTxn(${idx})">×</button>
     </div>`;
   }).join('');
+}
+
+function openTxnPopup(idx) {
+  const e = _txnList[idx];
+  if (!e) return;
+  const typeStyles = {
+    income:  { label: 'Income',  color: 'var(--green)', sign: '+' },
+    spend:   { label: 'Spend',   color: 'var(--coral)', sign: '-' },
+    bill:    { label: 'Bill',    color: 'var(--red)',   sign: '-' },
+    savings: { label: 'Savings', color: 'var(--navy)',  sign: '-' },
+    debt:    { label: 'Debt',    color: '#8b5cf6',      sign: '-' },
+  };
+  const ts  = typeStyles[e._type];
+  const cat = e.category || e.source || e.name || '—';
+
+  document.getElementById('txnPopupAmount').textContent = ts.sign + bFmt(e.amount);
+  document.getElementById('txnPopupAmount').style.color = ts.color;
+  document.getElementById('txnPopupCat').textContent = cat;
+  document.getElementById('txnPopupDate').textContent = e.date
+    ? new Date(e.date + 'T00:00:00').toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' })
+    : '—';
+  document.getElementById('txnPopupType').textContent = ts.label;
+
+  const freqRow = document.getElementById('txnPopupFreqRow');
+  if (e._type === 'income' && e.freq) {
+    freqRow.style.display = '';
+    document.getElementById('txnPopupFreq').textContent =
+      e.freq.charAt(0).toUpperCase() + e.freq.slice(1);
+  } else {
+    freqRow.style.display = 'none';
+  }
+
+  const noteRow = document.getElementById('txnPopupNoteRow');
+  const noteEl  = document.getElementById('txnPopupNote');
+  if (e.note) {
+    noteRow.style.display = '';
+    noteEl.textContent = e.note;
+  } else {
+    noteRow.style.display = 'none';
+  }
+
+  document.getElementById('txnPopupDelete').onclick = function() { deleteTxn(idx); closeTxnPopup(); };
+  document.getElementById('txnPopupOverlay').classList.add('open');
+}
+
+function closeTxnPopup(e) {
+  if (e && e.target !== document.getElementById('txnPopupOverlay')) return;
+  document.getElementById('txnPopupOverlay').classList.remove('open');
+}
+
+function deleteTxn(idx) {
+  const e = _txnList[idx];
+  if (!e) return;
+  const d = getBudgetMonth(currentBudgetMonth);
+  if (e._key === 'expenses') {
+    d.expenses.splice(e._i, 1);
+  } else {
+    if (d[e._key]) d[e._key].splice(e._i, 1);
+  }
+  saveBudgetMonth(currentBudgetMonth, d);
+  renderBudget();
 }
 
 function renderBreakdown(d) {

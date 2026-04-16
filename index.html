@@ -274,6 +274,28 @@
   <div class="bottom-space"></div>
 </div><!-- end page-budget -->
 
+<!-- ===== TRANSACTION DETAIL POPUP ===== -->
+<div class="txn-popup-overlay" id="txnPopupOverlay" onclick="closeTxnPopup(event)">
+  <div class="txn-popup" id="txnPopup">
+    <button class="txn-popup-close" onclick="closeTxnPopup()">×</button>
+    <div class="txn-popup-amount" id="txnPopupAmount"></div>
+    <div class="txn-popup-cat" id="txnPopupCat"></div>
+    <div class="txn-popup-rows">
+      <div class="txn-popup-row">
+        <div><div class="txn-popup-label">Date</div><div class="txn-popup-val" id="txnPopupDate"></div></div>
+        <div><div class="txn-popup-label">Type</div><div class="txn-popup-val" id="txnPopupType"></div></div>
+      </div>
+      <div class="txn-popup-row" id="txnPopupFreqRow" style="display:none">
+        <div><div class="txn-popup-label">Frequency</div><div class="txn-popup-val" id="txnPopupFreq"></div></div>
+      </div>
+      <div class="txn-popup-row" id="txnPopupNoteRow">
+        <div><div class="txn-popup-label">Note</div><div class="txn-popup-val txn-popup-note" id="txnPopupNote"></div></div>
+      </div>
+    </div>
+    <button class="txn-popup-delete" id="txnPopupDelete">Delete transaction</button>
+  </div>
+</div>
+
 <!-- ===== LOG DRAWER ===== -->
 <div class="drawer-overlay" id="expenseDrawerOverlay" onclick="closeExpenseDrawer(event)">
   <div class="expense-drawer" id="expenseDrawer">
