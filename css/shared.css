@@ -943,6 +943,67 @@ nav {
 .drawer-submit:hover { background: var(--coral-dark); }
 .drawer-submit:active { transform: scale(0.98); }
 
+/* ── DRAWER TOP TABS (Income / Expense) ──────────────────────── */
+.drawer-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  margin: 10px 20px 0;
+  gap: 0;
+}
+.drawer-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--mid);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.drawer-tab.active {
+  color: var(--coral);
+  border-bottom-color: var(--coral);
+}
+.drawer-tab:not(.active):hover { color: var(--dark); }
+
+/* ── DRAWER SUB TABS (Weekly / Fortnightly / Monthly, Spend / Bill etc) ── */
+.drawer-sub-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.drawer-sub-tab {
+  flex: 1;
+  background: var(--light);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--mid);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.drawer-sub-tab.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: white;
+}
+.drawer-sub-tab:not(.active):hover { border-color: var(--navy); color: var(--navy); }
+
+/* Dark mode */
+[data-theme="dark"] .drawer-tab { color: #6b7a8d; }
+[data-theme="dark"] .drawer-tab.active { color: var(--coral); }
+[data-theme="dark"] .drawer-sub-tab { background: #1e2d3d; border-color: #2a3a4d; color: #6b7a8d; }
+[data-theme="dark"] .drawer-sub-tab.active { background: var(--navy-light); border-color: var(--navy-light); color: white; }
+
 /* TOGGLE SWITCH */
 .toggle-switch {
   position: relative;

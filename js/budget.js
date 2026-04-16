@@ -13,6 +13,11 @@ let selectedWeek = 0;
 let incomePeriodTab = 'overview'; // 'overview' | 0 | 1 | 2 ...
 let billsPeriodTab  = 'overview';
 
+// Drawer state
+let _drawerTab      = 'income';   // 'income' | 'expense'
+let _expenseType    = 'spend';    // 'spend' | 'bill' | 'debt' | 'savings'
+let _incomeFreq     = 'monthly';  // 'weekly' | 'fortnightly' | 'monthly'
+
 // Default data structure per month
 function defaultMonth(m) {
   return {
@@ -57,9 +62,13 @@ function defaultMonth(m) {
       {name:'Student Loan', budget:'', actual:'', paid:false, recurring:false},
       {name:'Credit Card', budget:'', actual:'', paid:false, recurring:false},
     ],
-    expenses: [], // log entries: {date, amount, category, note}
+    expenses: [],     // spend log: {date, amount, category, note}
+    incomeLog: [],    // income log: {date, amount, source, note, freq} freq=weekly|fortnightly|monthly
+    billsLog: [],     // bills log:   {date, amount, name, note}
+    savingsLog: [],   // savings log: {date, amount, name, note}
+    debtLog: [],      // debt log:    {date, amount, name, note}
     rollover: '',
-    notes: '',    // monthly note
+    notes: '',        // monthly note
   };
 }
 
@@ -517,10 +526,31 @@ function renderBudget() {
 
   const d = getBudgetMonth(currentBudgetMonth);
 
+  // ── Compute actuals from logs ─────────────────────────────────
+  // Income: sum incomeLog entries by source name
+  const incLog = d.incomeLog || [];
+  d.income.forEach(r => {
+    r.actual = incLog.filter(e => e.source === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
+  });
+  // Bills: sum billsLog entries by name
+  const blLog = d.billsLog || [];
+  d.bills.forEach(r => {
+    r.actual = blLog.filter(e => e.name === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
+  });
+  // Savings: sum savingsLog entries by name
+  const svLog = d.savingsLog || [];
+  d.savings.forEach(r => {
+    r.actual = svLog.filter(e => e.name === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
+  });
+  // Debt: sum debtLog entries by name
+  const dtLog = d.debtLog || [];
+  d.debt.forEach(r => {
+    r.actual = dtLog.filter(e => e.name === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
+  });
+
   // Aggregate period data into monthly rows before rendering
   aggregatePeriods(d, 'income');
   aggregatePeriods(d, 'bills');
-
 
   // Render income and bills with section-level period controls
   renderSectionWithPeriods('income', d);
@@ -530,7 +560,7 @@ function renderBudget() {
   renderExpenseSummary(d);
   renderTrackerSection('savings-rows', d.savings, 'savings', false);
   renderTrackerSection('debt-rows', d.debt, 'debt', true);
-  renderExpenseLog(d);
+  renderTransactionLog(d);
   renderBreakdown(d);
   updateTotals(d);
   populateCatDropdown(d);
@@ -573,11 +603,18 @@ function addRow(section) {
 // ── Delete a row from any section ────────────────────────────
 function deleteRow(section, i) {
   const d = getBudgetMonth(currentBudgetMonth);
-  // If deleting an expense category, also clean up any logged expenses in that category
   if (section === 'expenseSummary') {
     const catName = d.expenseSummary[i].name;
-    // Don't delete expenses, just unlink them (set category to '')
     d.expenses.forEach(e => { if (e.category === catName) e.category = ''; });
+  }
+  // Unlink log entries when a named row is deleted
+  const logMap = { income: 'incomeLog', bills: 'billsLog', savings: 'savingsLog', debt: 'debtLog' };
+  if (logMap[section] && d[section][i]) {
+    const rowName = d[section][i].name;
+    const key = logMap[section];
+    if (d[key]) d[key].forEach(e => {
+      if ((e.source || e.name) === rowName) { e.source = ''; e.name = ''; }
+    });
   }
   d[section].splice(i, 1);
   // Also trim period data to stay in sync
@@ -606,25 +643,25 @@ function copyLastMonth(includeActuals) {
 
   const cur = getBudgetMonth(currentBudgetMonth);
 
-  // Copy structure, budget amounts, and optionally actuals + paid status
+  // Copy structure and budget amounts
   ['income', 'bills', 'savings', 'debt'].forEach(section => {
     if (prevData[section]) {
       cur[section] = prevData[section].map(r => ({
         name: r.name,
         budget: r.budget,
-        actual: includeActuals ? (r.actual || '') : '',
-        ...(r.paid !== undefined ? { paid: includeActuals ? !!r.paid : false } : {}),
-        ...(r.recurring !== undefined ? { recurring: r.recurring } : {})
+        actual: '',
+        ...(r.paid !== undefined ? { paid: false } : {}),
       }));
     }
   });
 
-  // Copy period data (weekly/fortnightly rows) if includeActuals
+  // Copy log entries and period data if includeActuals
   if (includeActuals) {
+    ['incomeLog', 'billsLog', 'savingsLog', 'debtLog', 'expenses'].forEach(key => {
+      if (prevData[key]) cur[key] = JSON.parse(JSON.stringify(prevData[key]));
+    });
     ['incomePeriods', 'billsPeriods'].forEach(key => {
-      if (prevData[key]) {
-        cur[key] = JSON.parse(JSON.stringify(prevData[key]));
-      }
+      if (prevData[key]) cur[key] = JSON.parse(JSON.stringify(prevData[key]));
     });
     if (prevData.incomePeriodMode) cur.incomePeriodMode = prevData.incomePeriodMode;
     if (prevData.billsPeriodMode)  cur.billsPeriodMode  = prevData.billsPeriodMode;
@@ -683,10 +720,8 @@ function renderTrackerSection(containerId, rows, section, hasPaid) {
         <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00"
           onchange="updateBudget('${section}',${i},this.value)" title="Budgeted amount">
       </div>
-      <div class="amount-input">
-        <span>${currency}</span>
-        <input type="number" value="${row.actual||''}" min="0" step="0.01" placeholder="0.00"
-          oninput="updateActual('${section}',${i},this.value)" title="Actual amount">
+      <div class="row-total ${overBudget && !overIsGood ? 'red' : ''}" style="color:${a > 0 ? (overBudget && !overIsGood ? 'var(--red)' : overBudget && overIsGood ? 'var(--green)' : 'var(--dark)') : 'var(--mid)'}">
+        ${a > 0 ? bFmt(a) : '—'}${overBudget && !overIsGood ? ' <span style="font-size:9px;color:var(--red)">over</span>' : overBudget && overIsGood ? ' <span style="font-size:9px;color:var(--green)">↑</span>' : ''}
       </div>
       <button class="row-del" onclick="deleteRow('${section}',${i})" title="Remove row">×</button>
     </div>
@@ -728,20 +763,49 @@ function renderExpenseSummary(d) {
   `}).join('');
 }
 
-function renderExpenseLog(d) {
+function renderTransactionLog(d) {
   const el = document.getElementById('expense-log');
-  if (!d.expenses.length) {
-    el.innerHTML = '<div class="empty">No expenses logged yet</div>';
+
+  // Build a unified list of all transactions with type tags
+  const all = [];
+  (d.incomeLog || []).forEach((e, i) => all.push({ ...e, _type: 'income',  _key: 'incomeLog',  _i: i }));
+  (d.expenses   || []).forEach((e, i) => all.push({ ...e, _type: 'spend',   _key: 'expenses',   _i: i }));
+  (d.billsLog   || []).forEach((e, i) => all.push({ ...e, _type: 'bill',    _key: 'billsLog',   _i: i }));
+  (d.savingsLog || []).forEach((e, i) => all.push({ ...e, _type: 'savings', _key: 'savingsLog', _i: i }));
+  (d.debtLog    || []).forEach((e, i) => all.push({ ...e, _type: 'debt',    _key: 'debtLog',    _i: i }));
+
+  if (!all.length) {
+    el.innerHTML = '<div class="empty">No entries logged yet — tap + to log income or expenses</div>';
     return;
   }
-  el.innerHTML = [...d.expenses].reverse().map((e, ri) => {
-    const i = d.expenses.length - 1 - ri;
+
+  // Sort newest first
+  all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const typeStyles = {
+    income:  { label: 'Income',  color: 'var(--green)',  sign: '+' },
+    spend:   { label: 'Spend',   color: 'var(--coral)',  sign: '-' },
+    bill:    { label: 'Bill',    color: 'var(--red)',    sign: '-' },
+    savings: { label: 'Savings', color: 'var(--navy)',   sign: '-' },
+    debt:    { label: 'Debt',    color: '#8b5cf6',       sign: '-' },
+  };
+
+  // Group by date for income expandable rows
+  el.innerHTML = all.map(e => {
+    const ts = typeStyles[e._type];
+    const cat = e.category || e.source || e.name || '—';
+    const deleteCall = e._key === 'expenses'
+      ? `deleteExpense(${e._i})`
+      : `deleteLogEntry('${e._key}',${e._i})`;
+    const freqBadge = e._type === 'income' && e.freq && e.freq !== 'monthly'
+      ? `<span class="log-freq-badge">${e.freq.slice(0,4)}</span>` : '';
     return `<div class="expense-row">
       <span class="expense-date">${e.date ? e.date.slice(5) : '—'}</span>
-      <span class="expense-amount">-${bFmt(e.amount)}</span>
-      <span class="expense-cat">${e.category || '—'}</span>
+      <span class="expense-amount" style="color:${ts.color}">${ts.sign}${bFmt(e.amount)}</span>
+      <span class="expense-cat">${cat}${freqBadge}</span>
+      <span class="log-type-badge" style="background:${ts.color}20;color:${ts.color}">${ts.label}</span>
       <span class="expense-note">${e.note || ''}</span>
-      <button class="delete-btn" onclick="deleteExpense(${i})">×</button>
+      <button class="delete-btn" onclick="${deleteCall}">×</button>
     </div>`;
   }).join('');
 }
@@ -772,10 +836,9 @@ function renderBreakdown(d) {
 }
 
 function populateCatDropdown(d) {
-  const sel = document.getElementById('expCat');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Category</option>' +
-    d.expenseSummary.map(es => `<option value="${es.name}" ${cur===es.name?'selected':''}>${es.name}</option>`).join('');
+  // Refresh both drawer dropdowns based on current type state
+  populateIncomeSourceDropdown();
+  populateExpenseCatDropdown();
 }
 
 // ── Rollover preference (on by default) ──────────────────────
@@ -801,11 +864,25 @@ function calcRollover(month, year, depth) {
   const data = ((all[year] || {}).budget || {})[month];
   if (!data) return 0;
 
-  const pIn  = Math.max(data.income.reduce((a,r) => a + num(r.actual || r.budget), 0), 0);
-  const pOut = data.bills.reduce((a,r)   => a + num(r.actual || r.budget), 0)
+  // Compute actuals from logs (same logic as renderBudget)
+  const incLog = data.incomeLog  || [];
+  const blLog  = data.billsLog   || [];
+  const svLog  = data.savingsLog || [];
+  const dtLog  = data.debtLog    || [];
+  const incActual = data.income.reduce((a,r) =>
+    a + incLog.filter(e => e.source === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
+  const blActual  = data.bills.reduce((a,r) =>
+    a + blLog.filter(e => e.name === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
+  const svActual  = data.savings.reduce((a,r) =>
+    a + svLog.filter(e => e.name === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
+  const dtActual  = data.debt.reduce((a,r) =>
+    a + dtLog.filter(e => e.name === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
+
+  const pIn  = Math.max(incActual || data.income.reduce((a,r) => a + num(r.budget), 0), 0);
+  const pOut = (blActual  || data.bills.reduce((a,r) => a + num(r.budget), 0))
              + (data.expenses || []).reduce((a,e) => a + num(e.amount), 0)
-             + data.savings.reduce((a,r)  => a + num(r.actual || r.budget), 0)
-             + data.debt.reduce((a,r)     => a + num(r.actual || r.budget), 0);
+             + (svActual  || data.savings.reduce((a,r) => a + num(r.budget), 0))
+             + (dtActual  || data.debt.reduce((a,r) => a + num(r.budget), 0));
 
   // This month's own rollover from the month before it
   const prevM = month === 0 ? 11 : month - 1;
@@ -963,56 +1040,126 @@ function updateBudget(section, i, val) {
   saveBudgetMonth(currentBudgetMonth, d);
   updateTotals(d);
 }
-function updateActual(section, i, val) {
-  const d = getBudgetMonth(currentBudgetMonth);
-  d[section][i].actual = val;
-  saveBudgetMonth(currentBudgetMonth, d);
-  updateTotals(d);
-  // Update the progress bar for this specific row in real-time
-  updateRowBar(section, i, d);
-}
-
-function updateRowBar(section, i, d) {
-  // section IDs: income-rows, bills-rows, savings-rows, debt-rows
-  const containerId = section + '-rows';
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  const rows = container.querySelectorAll('.tracker-row');
-  const row = rows[i];
-  if (!row) return;
-  const bar = row.nextElementSibling;
-  if (!bar || !bar.classList.contains('row-progress')) return;
-  const fill = bar.querySelector('.row-progress-fill');
-  if (!fill) return;
-  const r = d[section][i];
-  const b = num(r.budget), a = num(r.actual);
-  const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
-  const overBudget = b > 0 && a > b;
-  const overIsGood = section === 'income' || section === 'savings' || section === 'debt';
-  const barColor = overBudget
-    ? (overIsGood ? 'var(--green)' : 'var(--red)')
-    : a > 0 ? 'var(--green)' : 'var(--coral)';
-  fill.style.width = pctFill + '%';
-  fill.style.background = barColor;
-}
 function togglePaid(section, i, checked) {
   const d = getBudgetMonth(currentBudgetMonth);
   d[section][i].paid = checked;
   saveBudgetMonth(currentBudgetMonth, d);
 }
 
+// ── Drawer tab / type switching ───────────────────────────────
+function switchDrawerTab(tab) {
+  _drawerTab = tab;
+  document.getElementById('drawerTabIncome').classList.toggle('active', tab === 'income');
+  document.getElementById('drawerTabExpense').classList.toggle('active', tab === 'expense');
+  document.getElementById('drawerPanelIncome').style.display  = tab === 'income'  ? '' : 'none';
+  document.getElementById('drawerPanelExpense').style.display = tab === 'expense' ? '' : 'none';
+  if (tab === 'income')  populateIncomeSourceDropdown();
+  if (tab === 'expense') populateExpenseCatDropdown();
+}
+
+function switchExpenseType(type) {
+  _expenseType = type;
+  ['spend','bill','debt','savings'].forEach(t => {
+    document.getElementById('expType' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === type);
+  });
+  // Update category label and repopulate dropdown
+  const labels = { spend:'Category', bill:'Bill', debt:'Debt', savings:'Savings Goal' };
+  document.getElementById('expCatLabel').textContent = labels[type];
+  populateExpenseCatDropdown();
+}
+
+function switchIncomeFreq(freq) {
+  _incomeFreq = freq;
+  ['weekly','fortnightly','monthly'].forEach(f => {
+    const ids = { weekly:'incFreqWeekly', fortnightly:'incFreqFort', monthly:'incFreqMonthly' };
+    document.getElementById(ids[f]).classList.toggle('active', f === freq);
+  });
+}
+
+// ── Populate dropdowns ────────────────────────────────────────
+function populateIncomeSourceDropdown() {
+  const d = getBudgetMonth(currentBudgetMonth);
+  const sel = document.getElementById('incCat');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Select source…</option>' +
+    d.income.filter(r => r.name).map(r =>
+      `<option value="${r.name}" ${cur===r.name?'selected':''}>${r.name}</option>`
+    ).join('');
+}
+
+function populateExpenseCatDropdown() {
+  const d = getBudgetMonth(currentBudgetMonth);
+  const sel = document.getElementById('expCat');
+  if (!sel) return;
+  const cur = sel.value;
+  let options = [];
+  if (_expenseType === 'spend') {
+    options = d.expenseSummary.filter(r => r.name).map(r => r.name);
+  } else if (_expenseType === 'bill') {
+    options = d.bills.filter(r => r.name).map(r => r.name);
+  } else if (_expenseType === 'debt') {
+    options = d.debt.filter(r => r.name).map(r => r.name);
+  } else if (_expenseType === 'savings') {
+    options = d.savings.filter(r => r.name).map(r => r.name);
+  }
+  const label = { spend:'Select category…', bill:'Select bill…', debt:'Select debt…', savings:'Select goal…' }[_expenseType];
+  sel.innerHTML = `<option value="">${label}</option>` +
+    options.map(n => `<option value="${n}" ${cur===n?'selected':''}>${n}</option>`).join('');
+}
+
+// ── Add income entry ──────────────────────────────────────────
+function addIncome() {
+  const date   = document.getElementById('incDate').value;
+  const amount = document.getElementById('incAmount').value;
+  const source = document.getElementById('incCat').value;
+  const note   = document.getElementById('incNote').value;
+  if (!amount) { document.getElementById('incAmount').focus(); return; }
+  const d = getBudgetMonth(currentBudgetMonth);
+  if (!d.incomeLog) d.incomeLog = [];
+  d.incomeLog.push({ date, amount: parseFloat(amount), source, note, freq: _incomeFreq });
+  saveBudgetMonth(currentBudgetMonth, d);
+  document.getElementById('incAmount').value = '';
+  document.getElementById('incNote').value   = '';
+  const overlay = document.getElementById('expenseDrawerOverlay');
+  if (overlay) overlay.classList.remove('open');
+  renderBudget();
+}
+
+function deleteIncomeEntry(i) {
+  const d = getBudgetMonth(currentBudgetMonth);
+  if (!d.incomeLog) return;
+  d.incomeLog.splice(i, 1);
+  saveBudgetMonth(currentBudgetMonth, d);
+  renderBudget();
+}
+
+// ── Add expense / bill / debt / savings entry ─────────────────
 function addExpense() {
-  const date = document.getElementById('expDate').value;
+  const date   = document.getElementById('expDate').value;
   const amount = document.getElementById('expAmount').value;
-  const category = document.getElementById('expCat').value;
-  const note = document.getElementById('expNote').value;
+  const cat    = document.getElementById('expCat').value;
+  const note   = document.getElementById('expNote').value;
   if (!amount) { document.getElementById('expAmount').focus(); return; }
   const d = getBudgetMonth(currentBudgetMonth);
-  d.expenses.push({ date, amount: parseFloat(amount), category, note });
+  const entry = { date, amount: parseFloat(amount), note };
+
+  if (_expenseType === 'spend') {
+    d.expenses.push({ ...entry, category: cat });
+  } else if (_expenseType === 'bill') {
+    if (!d.billsLog) d.billsLog = [];
+    d.billsLog.push({ ...entry, name: cat });
+  } else if (_expenseType === 'debt') {
+    if (!d.debtLog) d.debtLog = [];
+    d.debtLog.push({ ...entry, name: cat });
+  } else if (_expenseType === 'savings') {
+    if (!d.savingsLog) d.savingsLog = [];
+    d.savingsLog.push({ ...entry, name: cat });
+  }
+
   saveBudgetMonth(currentBudgetMonth, d);
   document.getElementById('expAmount').value = '';
-  document.getElementById('expNote').value = '';
-  // Close drawer
+  document.getElementById('expNote').value   = '';
   const overlay = document.getElementById('expenseDrawerOverlay');
   if (overlay) overlay.classList.remove('open');
   renderBudget();
@@ -1021,6 +1168,14 @@ function addExpense() {
 function deleteExpense(i) {
   const d = getBudgetMonth(currentBudgetMonth);
   d.expenses.splice(i, 1);
+  saveBudgetMonth(currentBudgetMonth, d);
+  renderBudget();
+}
+
+function deleteLogEntry(logKey, i) {
+  const d = getBudgetMonth(currentBudgetMonth);
+  if (!d[logKey]) return;
+  d[logKey].splice(i, 1);
   saveBudgetMonth(currentBudgetMonth, d);
   renderBudget();
 }
@@ -1510,19 +1665,32 @@ function updateWeeklyRates(h) {
 }
 
 // ── Expense drawer ────────────────────────────────────────────
-function openExpenseDrawer() {
+function openExpenseDrawer(tab) {
   const overlay = document.getElementById('expenseDrawerOverlay');
-  if (overlay) {
-    overlay.classList.add('open');
-    // Focus amount field after animation
-    setTimeout(function() {
-      const amt = document.getElementById('expAmount');
-      if (amt) amt.focus();
-    }, 320);
-  }
-  // Update currency symbol in drawer
+  if (overlay) overlay.classList.add('open');
+
+  // Set today's date on both date fields if empty
+  const today = new Date().toISOString().slice(0,10);
+  ['expDate','incDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.value) el.value = today;
+  });
+
+  // Update currency symbols
   const sym = document.getElementById('drawerCurrencySym');
   if (sym) sym.textContent = currency;
+  const symInc = document.getElementById('drawerCurrencyInc');
+  if (symInc) symInc.textContent = currency;
+
+  // Switch to requested tab (default income)
+  switchDrawerTab(tab || _drawerTab);
+
+  setTimeout(function() {
+    const amt = _drawerTab === 'income'
+      ? document.getElementById('incAmount')
+      : document.getElementById('expAmount');
+    if (amt) amt.focus();
+  }, 320);
 }
 
 function closeExpenseDrawer(e) {

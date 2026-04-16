@@ -404,11 +404,11 @@ nav {
 
 .expense-row {
   display: grid;
-  grid-template-columns: 70px 80px 1fr auto;
+  grid-template-columns: 50px 80px 1fr 52px auto 20px;
   padding: 9px 16px;
   border-bottom: 1px solid var(--border);
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 13px;
 }
 .expense-row:last-child { border-bottom: none; }
@@ -417,7 +417,7 @@ nav {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 13px;
-  color: var(--red);
+  /* colour set dynamically per entry type */
 }
 .expense-cat {
   background: var(--coral-light);
@@ -427,9 +427,34 @@ nav {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 10px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.expense-note { color: var(--mid); font-size: 12px; }
+.log-type-badge {
+  border-radius: 20px;
+  padding: 2px 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.log-freq-badge {
+  background: rgba(0,0,0,0.12);
+  color: inherit;
+  border-radius: 4px;
+  padding: 0px 4px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.expense-note { color: var(--mid); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .delete-btn {
   background: none;
   border: none;

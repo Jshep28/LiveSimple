@@ -241,10 +241,10 @@
     </div>
   </div>
 
-  <!-- EXPENSE TRACKER (log) -->
+  <!-- TRANSACTION LOG -->
   <div class="section">
     <div class="section-head">
-      <h2>Expense Tracker</h2>
+      <h2>Transaction Log</h2>
       <button onclick="openExpenseDrawer()">+ Log</button>
     </div>
     <div id="expense-log"></div>
@@ -265,15 +265,64 @@
   <div class="bottom-space"></div>
 </div><!-- end page-budget -->
 
-<!-- ===== LOG EXPENSE DRAWER ===== -->
+<!-- ===== LOG DRAWER ===== -->
 <div class="drawer-overlay" id="expenseDrawerOverlay" onclick="closeExpenseDrawer(event)">
   <div class="expense-drawer" id="expenseDrawer">
     <div class="drawer-handle"></div>
     <div class="drawer-header">
-      <span class="drawer-title">Log Expense</span>
+      <span class="drawer-title">Log Entry</span>
       <button class="drawer-close" onclick="closeExpenseDrawer()">×</button>
     </div>
-    <div class="drawer-body">
+
+    <!-- Top tabs: Income / Expense -->
+    <div class="drawer-tabs">
+      <button class="drawer-tab active" id="drawerTabIncome" onclick="switchDrawerTab('income')">Log Income</button>
+      <button class="drawer-tab" id="drawerTabExpense" onclick="switchDrawerTab('expense')">Log Expense</button>
+    </div>
+
+    <!-- ── INCOME PANEL ── -->
+    <div class="drawer-body" id="drawerPanelIncome">
+      <!-- Income period tabs -->
+      <div class="drawer-sub-tabs" id="incomeFreqTabs">
+        <button class="drawer-sub-tab active" id="incFreqWeekly"    onclick="switchIncomeFreq('weekly')">Weekly</button>
+        <button class="drawer-sub-tab"        id="incFreqFort"      onclick="switchIncomeFreq('fortnightly')">Fortnightly</button>
+        <button class="drawer-sub-tab"        id="incFreqMonthly"   onclick="switchIncomeFreq('monthly')">Monthly</button>
+      </div>
+      <div class="drawer-row">
+        <div class="drawer-field">
+          <label>Date</label>
+          <input type="date" id="incDate" class="drawer-input">
+        </div>
+        <div class="drawer-field">
+          <label>Amount</label>
+          <div class="drawer-amount-wrap">
+            <span id="drawerCurrencyInc">$</span>
+            <input type="number" id="incAmount" class="drawer-input" placeholder="0.00" min="0" step="0.01" onkeydown="if(event.key==='Enter')addIncome()">
+          </div>
+        </div>
+      </div>
+      <div class="drawer-field" style="margin-top:10px;">
+        <label>Source</label>
+        <select id="incCat" class="drawer-input">
+          <option value="">Select source…</option>
+        </select>
+      </div>
+      <div class="drawer-field" style="margin-top:10px;">
+        <label>Note <span style="font-weight:400;opacity:0.6;">(optional)</span></label>
+        <input type="text" id="incNote" class="drawer-input" placeholder="e.g. weekly pay, bonus…" onkeydown="if(event.key==='Enter')addIncome()">
+      </div>
+      <button class="drawer-submit" onclick="addIncome()">+ Add Income</button>
+    </div>
+
+    <!-- ── EXPENSE PANEL ── -->
+    <div class="drawer-body" id="drawerPanelExpense" style="display:none">
+      <!-- Expense type sub-tabs -->
+      <div class="drawer-sub-tabs" id="expenseTypeTabs">
+        <button class="drawer-sub-tab active" id="expTypeSpend"   onclick="switchExpenseType('spend')">Spend</button>
+        <button class="drawer-sub-tab"        id="expTypeBill"    onclick="switchExpenseType('bill')">Bill</button>
+        <button class="drawer-sub-tab"        id="expTypeDebt"    onclick="switchExpenseType('debt')">Debt</button>
+        <button class="drawer-sub-tab"        id="expTypeSavings" onclick="switchExpenseType('savings')">Savings</button>
+      </div>
       <div class="drawer-row">
         <div class="drawer-field">
           <label>Date</label>
@@ -288,7 +337,7 @@
         </div>
       </div>
       <div class="drawer-field" style="margin-top:10px;">
-        <label>Category</label>
+        <label id="expCatLabel">Category</label>
         <select id="expCat" class="drawer-input">
           <option value="">Select category…</option>
         </select>
@@ -303,9 +352,9 @@
 </div>
 
 <!-- FAB -->
-<button class="expense-fab" id="expenseFab" onclick="openExpenseDrawer()" title="Log an expense">
+<button class="expense-fab" id="expenseFab" onclick="openExpenseDrawer()" title="Log an entry">
   <span style="font-size:22px;line-height:1;">+</span>
-  <span class="fab-label">Log Expense</span>
+  <span class="fab-label">Log Entry</span>
 </button>
 
 <!-- ===================== HABITS PAGE ===================== -->
