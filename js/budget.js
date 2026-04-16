@@ -521,8 +521,6 @@ function renderBudget() {
   aggregatePeriods(d, 'income');
   aggregatePeriods(d, 'bills');
 
-  // Apply recurring bill amounts from last month if not yet filled
-  if (applyRecurring(d)) saveBudgetMonth(currentBudgetMonth, d);
 
   // Render income and bills with section-level period controls
   renderSectionWithPeriods('income', d);
@@ -674,13 +672,11 @@ function renderTrackerSection(containerId, rows, section, hasPaid) {
     const barColor = overBudget
       ? (overIsGood ? 'var(--green)' : 'var(--red)')
       : a > 0 ? 'var(--green)' : 'var(--coral)';
-    const isRecurring = !!row.recurring;
     return `
     <div class="tracker-row" style="padding-right:28px;">
       <div class="row-name">
         ${hasPaid ? `<input type="checkbox" class="paid-checkbox" ${row.paid?'checked':''} onchange="togglePaid('${section}',${i},this.checked)" title="${row.paid?'Mark unpaid':'Mark paid'}">` : ''}
         <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('${section}',${i},this.value)" placeholder="Name" style="${row.paid?'text-decoration:line-through;opacity:0.5;':''}" title="Click to rename">
-        ${hasPaid ? `<button class="recurring-btn ${isRecurring?'active':''}" onclick="toggleRecurring('${section}',${i})" title="${isRecurring?'Recurring — click to disable':'Set as recurring (auto-fills actual each month)'}">↻</button>` : ''}
       </div>
       <div class="amount-input">
         <span>${currency}</span>
@@ -902,35 +898,6 @@ function updateTotals(d) {
 }
 
 // ── Recurring bills: toggle ───────────────────────────────────
-function toggleRecurring(section, i) {
-  const d = getBudgetMonth(currentBudgetMonth);
-  d[section][i].recurring = !d[section][i].recurring;
-  saveBudgetMonth(currentBudgetMonth, d);
-  renderBudget();
-}
-
-// ── Apply recurring actuals when loading a month ──────────────
-function applyRecurring(d) {
-  const prevMonth = currentBudgetMonth === 0 ? 11 : currentBudgetMonth - 1;
-  const prevYear  = currentBudgetMonth === 0 ? currentYear - 1 : currentYear;
-  const all = getAllState();
-  const prevData = ((all[prevYear] || {}).budget || {})[prevMonth];
-  if (!prevData) return false;
-  let changed = false;
-  ['bills','debt'].forEach(section => {
-    (d[section] || []).forEach((row, i) => {
-      if (row.recurring && (!row.actual || row.actual === '')) {
-        // Find matching row by name in previous month
-        const prevRow = (prevData[section] || []).find(r => r.name === row.name);
-        if (prevRow && (prevRow.actual || prevRow.budget)) {
-          d[section][i].actual = prevRow.actual || prevRow.budget;
-          changed = true;
-        }
-      }
-    });
-  });
-  return changed;
-}
 
 // ── Month notes save ──────────────────────────────────────────
 function saveMonthNotes(val) {
