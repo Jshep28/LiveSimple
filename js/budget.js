@@ -293,7 +293,7 @@ function togglePeriodPaid(section, periodIdx, rowIdx, checked) {
 }
 
 // ── Render income / bills section (no period tabs) ───────────
-function renderSectionWithPeriods(section, d) {
+function renderSectionWithPeriods(section, d, uncatAmount) {
   const isIncome = section === 'income';
   const hasPaid  = section === 'bills';
   const barId    = section + '-period-bar';
@@ -312,7 +312,7 @@ function renderSectionWithPeriods(section, d) {
       : `<span>Source</span><span>Budget</span><span>Actual</span>`;
   }
 
-  renderTrackerSection(rowsId, d[section], section, hasPaid);
+  renderTrackerSection(rowsId, d[section], section, hasPaid, uncatAmount);
 }
 
 function getHabitMonth(m) {
@@ -423,33 +423,48 @@ function renderBudget() {
   // ── Compute actuals from logs ─────────────────────────────────
   // Income: sum incomeLog entries by source name
   const incLog = d.incomeLog || [];
+  const knownIncomeSources = d.income.map(r => r.name);
   d.income.forEach(r => {
     r.actual = incLog.filter(e => e.source === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
   });
+  const uncatIncome = incLog.filter(e => !e.source || !knownIncomeSources.includes(e.source))
+    .reduce((a, e) => a + num(e.amount), 0);
+
   // Bills: sum billsLog entries by name
   const blLog = d.billsLog || [];
+  const knownBills = d.bills.map(r => r.name);
   d.bills.forEach(r => {
     r.actual = blLog.filter(e => e.name === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
   });
+  const uncatBills = blLog.filter(e => !e.name || !knownBills.includes(e.name))
+    .reduce((a, e) => a + num(e.amount), 0);
+
   // Savings: sum savingsLog entries by name
   const svLog = d.savingsLog || [];
+  const knownSavings = d.savings.map(r => r.name);
   d.savings.forEach(r => {
     r.actual = svLog.filter(e => e.name === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
   });
+  const uncatSavings = svLog.filter(e => !e.name || !knownSavings.includes(e.name))
+    .reduce((a, e) => a + num(e.amount), 0);
+
   // Debt: sum debtLog entries by name
   const dtLog = d.debtLog || [];
+  const knownDebt = d.debt.map(r => r.name);
   d.debt.forEach(r => {
     r.actual = dtLog.filter(e => e.name === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
   });
+  const uncatDebt = dtLog.filter(e => !e.name || !knownDebt.includes(e.name))
+    .reduce((a, e) => a + num(e.amount), 0);
 
   // Render income and bills sections
-  renderSectionWithPeriods('income', d);
-  renderSectionWithPeriods('bills', d);
+  renderSectionWithPeriods('income', d, uncatIncome);
+  renderSectionWithPeriods('bills', d, uncatBills);
 
   // Render remaining sections normally
   renderExpenseSummary(d);
-  renderTrackerSection('savings-rows', d.savings, 'savings', false);
-  renderTrackerSection('debt-rows', d.debt, 'debt', true);
+  renderTrackerSection('savings-rows', d.savings, 'savings', false, uncatSavings);
+  renderTrackerSection('debt-rows', d.debt, 'debt', true, uncatDebt);
   renderTransactionLog(d);
   renderBreakdown(d);
   updateTotals(d);
@@ -602,15 +617,15 @@ function updateCopyBar(d) {
   bar.classList.toggle('visible', !hasAnyBudget && hasPrevData);
 }
 
-function renderTrackerSection(containerId, rows, section, hasPaid) {
+function renderTrackerSection(containerId, rows, section, hasPaid, uncatAmount) {
   const el = document.getElementById(containerId);
-  if (!rows.length) {
+  if (!rows.length && !(uncatAmount > 0)) {
     el.innerHTML = `<div class="empty">No entries — click <strong>+ Add</strong> to add one</div>`;
     return;
   }
   // For income, savings, and debt: going over budget is GOOD (green). Bills only: red when over.
   const overIsGood = section === 'income' || section === 'savings' || section === 'debt';
-  el.innerHTML = rows.map((row, i) => {
+  let html = rows.map((row, i) => {
     const b = num(row.budget), a = num(row.actual);
     const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
     const overBudget = b > 0 && a > b;
@@ -635,19 +650,43 @@ function renderTrackerSection(containerId, rows, section, hasPaid) {
     </div>
     ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
   `}).join('');
+
+  // Uncategorised row at the bottom (when amount > 0)
+  if (uncatAmount > 0) {
+    html += `
+    <div class="tracker-row uncat-row" style="padding-right:28px;opacity:0.75;">
+      <div class="row-name" style="color:var(--mid);font-style:italic;">
+        ${hasPaid ? '<span style="width:18px;display:inline-block;"></span>' : ''}
+        <span style="padding-left:2px;">Uncategorised</span>
+      </div>
+      <div class="amount-input" style="visibility:hidden;">
+        <span>${currency}</span><input type="number" disabled style="width:60px;">
+      </div>
+      <div class="row-total" style="color:var(--mid);">
+        ${bFmt(uncatAmount)}
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = html;
 }
 
 function renderExpenseSummary(d) {
   // Compute actuals from expense log
+  const knownCats = d.expenseSummary.map(es => es.name);
   d.expenseSummary.forEach(es => {
     es.actual = d.expenses.filter(e => e.category === es.name).reduce((a,e) => a + num(e.amount), 0);
   });
+  const uncatExpenses = (d.expenses || [])
+    .filter(e => !e.category || !knownCats.includes(e.category))
+    .reduce((a, e) => a + num(e.amount), 0);
+
   const el = document.getElementById('expense-summary-rows');
-  if (!d.expenseSummary.length) {
+  if (!d.expenseSummary.length && !(uncatExpenses > 0)) {
     el.innerHTML = `<div class="empty">No categories — click <strong>+ Add</strong> to add one</div>`;
     return;
   }
-  el.innerHTML = d.expenseSummary.map((row, i) => {
+  let html = d.expenseSummary.map((row, i) => {
     const b = num(row.budget), a = row.actual;
     const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
     const overBudget = b > 0 && a > b;
@@ -669,6 +708,24 @@ function renderExpenseSummary(d) {
     </div>
     ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
   `}).join('');
+
+  // Uncategorised expenses row
+  if (uncatExpenses > 0) {
+    html += `
+    <div class="tracker-row uncat-row" style="padding-right:28px;opacity:0.75;">
+      <div class="row-name" style="color:var(--mid);font-style:italic;">
+        <span style="padding-left:2px;">Uncategorised</span>
+      </div>
+      <div class="amount-input" style="visibility:hidden;">
+        <span>${currency}</span><input type="number" disabled style="width:60px;">
+      </div>
+      <div class="row-total" style="color:var(--mid);">
+        ${bFmt(uncatExpenses)}
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = html;
 }
 
 // Store flattened transaction list for popup lookups
@@ -861,33 +918,54 @@ function calcRollover(month, year, depth) {
 }
 
 function updateTotals(d) {
+  // Uncategorised amounts (same logic as renderBudget)
+  const incLog = d.incomeLog || [];
+  const knownIncomeSources = d.income.map(r => r.name);
+  const uncatIncome = incLog.filter(e => !e.source || !knownIncomeSources.includes(e.source))
+    .reduce((a, e) => a + num(e.amount), 0);
+
+  const blLog = d.billsLog || [];
+  const knownBills = d.bills.map(r => r.name);
+  const uncatBills = blLog.filter(e => !e.name || !knownBills.includes(e.name))
+    .reduce((a, e) => a + num(e.amount), 0);
+
+  const svLog = d.savingsLog || [];
+  const knownSavings = d.savings.map(r => r.name);
+  const uncatSavings = svLog.filter(e => !e.name || !knownSavings.includes(e.name))
+    .reduce((a, e) => a + num(e.amount), 0);
+
+  const dtLog = d.debtLog || [];
+  const knownDebt = d.debt.map(r => r.name);
+  const uncatDebt = dtLog.filter(e => !e.name || !knownDebt.includes(e.name))
+    .reduce((a, e) => a + num(e.amount), 0);
+
   // Income
   const ib = d.income.reduce((a,r) => a+num(r.budget), 0);
-  const ia = d.income.reduce((a,r) => a+num(r.actual), 0);
+  const ia = d.income.reduce((a,r) => a+num(r.actual), 0) + uncatIncome;
   document.getElementById('income-budget-total').textContent = bFmt(ib);
   document.getElementById('income-actual-total').textContent = bFmt(ia);
 
   // Bills
   const bb = d.bills.reduce((a,r) => a+num(r.budget), 0);
-  const ba = d.bills.reduce((a,r) => a+num(r.actual), 0);
+  const ba = d.bills.reduce((a,r) => a+num(r.actual), 0) + uncatBills;
   document.getElementById('bills-budget-total').textContent = bFmt(bb);
   document.getElementById('bills-actual-total').textContent = bFmt(ba);
 
-  // Expenses
+  // Expenses (ea already includes all expenses regardless of category)
   const eb = d.expenseSummary.reduce((a,r) => a+num(r.budget), 0);
-  const ea = d.expenses.reduce((a,e) => a+num(e.amount), 0);
+  const ea = (d.expenses || []).reduce((a,e) => a+num(e.amount), 0);
   document.getElementById('expenses-budget-total').textContent = bFmt(eb);
   document.getElementById('expenses-actual-total').textContent = bFmt(ea);
 
   // Savings
   const sb = d.savings.reduce((a,r) => a+num(r.budget), 0);
-  const sa = d.savings.reduce((a,r) => a+num(r.actual), 0);
+  const sa = d.savings.reduce((a,r) => a+num(r.actual), 0) + uncatSavings;
   document.getElementById('savings-budget-total').textContent = bFmt(sb);
   document.getElementById('savings-actual-total').textContent = bFmt(sa);
 
   // Debt
   const db = d.debt.reduce((a,r) => a+num(r.budget), 0);
-  const da = d.debt.reduce((a,r) => a+num(r.actual), 0);
+  const da = d.debt.reduce((a,r) => a+num(r.actual), 0) + uncatDebt;
   document.getElementById('debt-budget-total').textContent = bFmt(db);
   document.getElementById('debt-actual-total').textContent = bFmt(da);
 

@@ -249,6 +249,10 @@ nav {
   gap: 8px;
 }
 .tracker-row:last-child { border-bottom: none; }
+.tracker-row.uncat-row {
+  border-top: 1px dashed var(--border);
+  margin-top: 4px;
+}
 .tracker-row.header {
   background: var(--light);
   padding: 6px 16px;
