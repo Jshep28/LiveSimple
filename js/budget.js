@@ -2055,7 +2055,8 @@ function importData(input) {
 // ============================================================
 function renderReview() {
   reviewYear = reviewYear || currentYear;
-  document.getElementById('reviewYearLabel').textContent = '· ' + reviewYear + ' ·';
+  const reviewYearLabelEl = document.getElementById('reviewYearLabel');
+  if (reviewYearLabelEl) reviewYearLabelEl.textContent = '· ' + reviewYear + ' ·';
   document.getElementById('reviewYearDisplay').textContent = reviewYear;
 
   const ys = getYearState(reviewYear);
