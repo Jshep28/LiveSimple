@@ -292,133 +292,27 @@ function togglePeriodPaid(section, periodIdx, rowIdx, checked) {
   saveBudgetMonth(currentBudgetMonth, d);
 }
 
-// ── Render section period controls + rows ─────────────────────
+// ── Render income / bills section (no period tabs) ───────────
 function renderSectionWithPeriods(section, d) {
-  const isIncome  = section === 'income';
-  const mode      = isIncome ? (d.incomePeriodMode || 'monthly') : (d.billsPeriodMode || 'monthly');
-  const tab       = isIncome ? incomePeriodTab : billsPeriodTab;
-  const barId     = section + '-period-bar';
-  const headerId  = section + '-header';
-  const addBtnId  = section + '-add-btn';
-  const rowsId    = section + '-rows';
-  const setMode   = isIncome ? 'setIncomePeriodMode' : 'setBillsPeriodMode';
-  const selTab    = isIncome ? 'selectIncomePeriodTab' : 'selectBillsPeriodTab';
+  const isIncome = section === 'income';
+  const hasPaid  = section === 'bills';
+  const barId    = section + '-period-bar';
+  const headerId = section + '-header';
+  const rowsId   = section + '-rows';
 
-  // ── Period control bar ──
+  // Clear period bar (not used)
   const barEl = document.getElementById(barId);
-  if (barEl) {
-    if (mode === 'monthly') {
-      barEl.innerHTML = `
-        <div class="section-period-bar">
-          <select class="section-period-select" onchange="${setMode}(this.value)">
-            <option value="monthly" selected>Monthly</option>
-            <option value="weekly">Weekly</option>
-            <option value="fortnightly">Fortnightly</option>
-          </select>
-        </div>`;
-    } else {
-      const periods = getPeriodsForMonth(currentBudgetMonth, currentYear, mode);
-      const tabBtns = periods.map(p =>
-        `<button class="period-tab-btn ${tab === p.index ? 'active' : ''}" onclick="${selTab}(${p.index})">${p.label}</button>`
-      ).join('');
-      barEl.innerHTML = `
-        <div class="section-period-bar">
-          <select class="section-period-select" onchange="${setMode}(this.value)">
-            <option value="monthly">Monthly</option>
-            <option value="weekly" ${mode==='weekly'?'selected':''}>Weekly</option>
-            <option value="fortnightly" ${mode==='fortnightly'?'selected':''}>Fortnightly</option>
-          </select>
-          <button class="period-tab-btn overview-btn ${tab === 'overview' ? 'active' : ''}" onclick="${selTab}('overview')">Overview</button>
-          <div class="section-period-tabs">${tabBtns}</div>
-        </div>`;
-    }
-  }
+  if (barEl) barEl.innerHTML = '';
 
-  // ── Column header ──
+  // Column header
   const headerEl = document.getElementById(headerId);
-  const hasPaid = section === 'bills';
-  const isPeriodTab = mode !== 'monthly' && tab !== 'overview';
   if (headerEl) {
-    if (isPeriodTab) {
-      headerEl.innerHTML = hasPaid
-        ? `<span>${isIncome ? 'Source' : 'Bill'}</span><span>Monthly Budget</span><span>This Period</span>`
-        : `<span>Source</span><span>Monthly Budget</span><span>This Period</span>`;
-    } else {
-      headerEl.innerHTML = hasPaid
-        ? `<span>Bill</span><span>Budget</span><span>Actual</span>`
-        : `<span>Source</span><span>Budget</span><span>Actual</span>`;
-    }
+    headerEl.innerHTML = hasPaid
+      ? `<span>Bill</span><span>Budget</span><span>Actual</span>`
+      : `<span>Source</span><span>Budget</span><span>Actual</span>`;
   }
 
-  // ── Add button ──
-  const addBtn = document.getElementById(addBtnId);
-  if (addBtn) addBtn.style.display = isPeriodTab ? 'none' : '';
-
-  // ── Rows ──
-  if (!isPeriodTab) {
-    // Overview / monthly: standard render (actuals already aggregated into d[section])
-    renderTrackerSection(rowsId, d[section], section, hasPaid);
-    // In period-overview, disable editing of actual column (it's auto-aggregated)
-    if (mode !== 'monthly') {
-      document.querySelectorAll('#' + rowsId + ' .amount-input:last-of-type input').forEach(inp => {
-        inp.readOnly = true;
-        inp.style.opacity = '0.5';
-        inp.title = 'Aggregated from ' + mode + ' data';
-      });
-    }
-  } else {
-    // Period tab: render per-period rows
-    const periods = getPeriodsForMonth(currentBudgetMonth, currentYear, mode);
-    if (tab >= periods.length) {
-      // Invalid tab, reset
-      if (isIncome) incomePeriodTab = 'overview'; else billsPeriodTab = 'overview';
-      renderSectionWithPeriods(section, d);
-      return;
-    }
-    const pRows = ensurePeriodRows(d, section, tab);
-    const el = document.getElementById(rowsId);
-    if (!d[section].length) {
-      el.innerHTML = `<div class="empty">No entries — switch to Overview to add rows</div>`;
-      return;
-    }
-    el.innerHTML = d[section].map((monthRow, i) => {
-      const pRow   = pRows[i] || { actual: '', paid: false };
-      const mb     = num(monthRow.budget);
-      const pa     = num(pRow.actual);
-      const periods_count = periods.length;
-      const prorated = mb > 0 ? (mb / periods_count) : 0;
-      const over   = prorated > 0 && pa > prorated;
-      const pctFill = prorated > 0 ? Math.min(pa / prorated * 100, 100) : 0;
-      // Income: going over prorated amount is GOOD (green). Bills: red when over.
-      const periodOverIsGood = section === 'income';
-      const barColor = over ? (periodOverIsGood ? 'var(--green)' : 'var(--red)') : pa > 0 ? 'var(--green)' : 'var(--coral)';
-      const paidHtml = hasPaid
-        ? `<input type="checkbox" class="paid-checkbox" ${pRow.paid ? 'checked' : ''}
-             onchange="togglePeriodPaid('${section}',${tab},${i},this.checked)"
-             title="${pRow.paid ? 'Mark unpaid' : 'Mark paid'}">`
-        : '';
-      return `
-        <div class="tracker-row" style="padding-right:28px;">
-          <div class="row-name">
-            ${paidHtml}
-            <input type="text" value="${monthRow.name.replace(/"/g,'&quot;')}" readonly
-              style="opacity:0.75;cursor:default;${pRow.paid ? 'text-decoration:line-through;opacity:0.4;' : ''}" title="Edit name on Overview tab">
-          </div>
-          <div class="amount-input">
-            <span style="opacity:0.5">${currency}</span>
-            <input type="number" value="${monthRow.budget||''}" readonly style="opacity:0.45;cursor:default" title="Monthly budget — edit on Overview tab">
-          </div>
-          <div class="amount-input">
-            <span>${currency}</span>
-            <input type="number" value="${pRow.actual||''}" min="0" step="0.01" placeholder="0.00"
-              oninput="updatePeriodActual('${section}',${tab},${i},this.value)" title="Amount this period">
-          </div>
-          <span style="width:28px;display:inline-block;"></span>
-        </div>
-        ${prorated > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
-      `;
-    }).join('');
-  }
+  renderTrackerSection(rowsId, d[section], section, hasPaid);
 }
 
 function getHabitMonth(m) {
@@ -548,11 +442,7 @@ function renderBudget() {
     r.actual = dtLog.filter(e => e.name === r.name).reduce((a, e) => a + num(e.amount), 0) || '';
   });
 
-  // Aggregate period data into monthly rows before rendering
-  aggregatePeriods(d, 'income');
-  aggregatePeriods(d, 'bills');
-
-  // Render income and bills with section-level period controls
+  // Render income and bills sections
   renderSectionWithPeriods('income', d);
   renderSectionWithPeriods('bills', d);
 
@@ -717,7 +607,7 @@ function renderTrackerSection(containerId, rows, section, hasPaid) {
       </div>
       <div class="amount-input">
         <span>${currency}</span>
-        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00"
+        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
           onchange="updateBudget('${section}',${i},this.value)" title="Budgeted amount">
       </div>
       <div class="row-total ${overBudget && !overIsGood ? 'red' : ''}" style="color:${a > 0 ? (overBudget && !overIsGood ? 'var(--red)' : overBudget && overIsGood ? 'var(--green)' : 'var(--dark)') : 'var(--mid)'}">
@@ -751,7 +641,7 @@ function renderExpenseSummary(d) {
       </div>
       <div class="amount-input">
         <span>${currency}</span>
-        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00"
+        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
           onchange="updateBudget('expenseSummary',${i},this.value)" title="Budgeted amount">
       </div>
       <div class="row-total ${overBudget ? 'red' : ''}" style="color:${a > 0 ? (overBudget ? 'var(--red)' : 'var(--dark)') : 'var(--mid)'}">

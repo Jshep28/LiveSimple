@@ -297,7 +297,7 @@
           <label>Amount</label>
           <div class="drawer-amount-wrap">
             <span id="drawerCurrencyInc">$</span>
-            <input type="number" id="incAmount" class="drawer-input" placeholder="0.00" min="0" step="0.01" onkeydown="if(event.key==='Enter')addIncome()">
+            <input type="number" id="incAmount" class="drawer-input" placeholder="0.00" min="0" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter')addIncome()">
           </div>
         </div>
       </div>
@@ -332,7 +332,7 @@
           <label>Amount</label>
           <div class="drawer-amount-wrap">
             <span id="drawerCurrencySym">$</span>
-            <input type="number" id="expAmount" class="drawer-input" placeholder="0.00" min="0" step="0.01" onkeydown="if(event.key==='Enter')addExpense()">
+            <input type="number" id="expAmount" class="drawer-input" placeholder="0.00" min="0" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter')addExpense()">
           </div>
         </div>
       </div>
@@ -531,7 +531,7 @@
         <button class="tax-rate-btn" data-rate="37"   onclick="setTaxRate(37)">37%</button>
         <button class="tax-rate-btn" data-rate="45"   onclick="setTaxRate(45)">45%</button>
         <button class="tax-rate-btn tax-rate-custom" data-rate="custom" onclick="focusTaxCustom()">Custom</button>
-        <input type="number" id="taxCustomInput" class="tax-custom-input" min="0" max="99" step="1" placeholder="%" oninput="setTaxRate(parseFloat(this.value)||0)">
+        <input type="number" id="taxCustomInput" class="tax-custom-input" min="0" max="99" step="1" placeholder="%" inputmode="decimal" oninput="setTaxRate(parseFloat(this.value)||0)">
       </div>
     </div>
 
@@ -979,11 +979,11 @@
       </div>
       <div class="form-group">
         <label>Units</label>
-        <input type="number" id="inp-units" placeholder="4" min="0" step="any">
+        <input type="number" id="inp-units" placeholder="4" min="0" step="any" inputmode="decimal">
       </div>
       <div class="form-group">
         <label>Avg buy price (native currency)</label>
-        <input type="number" id="inp-price" placeholder="172.40" min="0" step="any">
+        <input type="number" id="inp-price" placeholder="172.40" min="0" step="any" inputmode="decimal">
       </div>
       <div class="form-group" style="min-width:120px;">
         <label>Type</label>
@@ -1086,7 +1086,7 @@
         <div class="calc-label">Initial deposit</div>
         <div class="goal-input-wrap">
           <span id="calc-init-sym">$</span>
-          <input type="number" id="c-init" placeholder="500" min="0" step="any" value="500"
+          <input type="number" id="c-init" placeholder="500" min="0" step="any" inputmode="decimal" value="500"
             oninput="calcUpdate()"
             style="flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--dark);outline:none;background:white;"
             onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--border)'">
@@ -1096,7 +1096,7 @@
         <div class="calc-label">Monthly contribution</div>
         <div class="goal-input-wrap">
           <span id="calc-contrib-sym">$</span>
-          <input type="number" id="c-contrib" placeholder="500" min="0" step="any" value="500"
+          <input type="number" id="c-contrib" placeholder="500" min="0" step="any" inputmode="decimal" value="500"
             oninput="calcUpdate()"
             style="flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--dark);outline:none;background:white;"
             onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--border)'">
@@ -1138,14 +1138,14 @@
         <div class="calc-label" style="margin-bottom:6px;">Portfolio target</div>
         <div class="goal-input-wrap">
           <span id="goal-currency-sym">$</span>
-          <input type="number" id="goal-target" placeholder="50000" min="0" oninput="updateGoal()">
+          <input type="number" id="goal-target" placeholder="50000" min="0" inputmode="decimal" oninput="updateGoal()">
         </div>
       </div>
       <div>
         <div class="calc-label" style="margin-bottom:6px;">Monthly contribution</div>
         <div class="goal-input-wrap">
           <span id="goal-contrib-sym">$</span>
-          <input type="number" id="goal-contrib" placeholder="500" min="0" oninput="updateGoal()">
+          <input type="number" id="goal-contrib" placeholder="500" min="0" inputmode="decimal" oninput="updateGoal()">
         </div>
       </div>
       <div style="grid-column:1/-1;">
@@ -1271,8 +1271,8 @@
     </div>
     <div class="invest-drawer-body">
       <div style="padding:8px 0 12px;font-size:12px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;" id="addUnitsCurrentInfo"></div>
-      <div class="invest-drawer-field"><label>Additional Units</label><input type="number" class="invest-drawer-input" id="add-units-qty" placeholder="e.g. 5" min="0" step="any"></div>
-      <div class="invest-drawer-field"><label>Purchase Price (native currency)</label><input type="number" class="invest-drawer-input" id="add-units-price" placeholder="e.g. 180.00" min="0" step="any"></div>
+      <div class="invest-drawer-field"><label>Additional Units</label><input type="number" class="invest-drawer-input" id="add-units-qty" placeholder="e.g. 5" min="0" step="any" inputmode="decimal"></div>
+      <div class="invest-drawer-field"><label>Purchase Price (native currency)</label><input type="number" class="invest-drawer-input" id="add-units-price" placeholder="e.g. 180.00" min="0" step="any" inputmode="decimal"></div>
       <div style="padding:10px;background:#f0f4f8;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--navy);" id="addUnitsPreview"></div>
       <button class="invest-drawer-submit" onclick="confirmAddUnits()">Update Holding</button>
     </div>
@@ -1289,8 +1289,8 @@
     </div>
     <div class="invest-drawer-body">
       <div style="padding:8px 0 12px;font-size:12px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;" id="sellCurrentInfo"></div>
-      <div class="invest-drawer-field"><label>Units to Sell</label><input type="number" class="invest-drawer-input" id="sell-units" placeholder="e.g. 2" min="0" step="any"></div>
-      <div class="invest-drawer-field"><label>Sell Price (native currency)</label><input type="number" class="invest-drawer-input" id="sell-price" placeholder="e.g. 200.00" min="0" step="any"></div>
+      <div class="invest-drawer-field"><label>Units to Sell</label><input type="number" class="invest-drawer-input" id="sell-units" placeholder="e.g. 2" min="0" step="any" inputmode="decimal"></div>
+      <div class="invest-drawer-field"><label>Sell Price (native currency)</label><input type="number" class="invest-drawer-input" id="sell-price" placeholder="e.g. 200.00" min="0" step="any" inputmode="decimal"></div>
       <div class="invest-drawer-field"><label>Date</label><input type="date" class="invest-drawer-input" id="sell-date"></div>
       <div style="padding:10px;background:#f0f4f8;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--navy);" id="sellPreview"></div>
       <button class="invest-drawer-submit" onclick="confirmSell()">Record Sale</button>
@@ -1307,7 +1307,7 @@
       <button class="drawer-close" onclick="closeInvestDrawer('divDrawerOverlay')">×</button>
     </div>
     <div class="invest-drawer-body">
-      <div class="invest-drawer-field"><label>Amount (display currency)</label><input type="number" class="invest-drawer-input" id="div-amount" placeholder="e.g. 45.00" min="0" step="any"></div>
+      <div class="invest-drawer-field"><label>Amount (display currency)</label><input type="number" class="invest-drawer-input" id="div-amount" placeholder="e.g. 45.00" min="0" step="any" inputmode="decimal"></div>
       <div class="invest-drawer-field"><label>Date</label><input type="date" class="invest-drawer-input" id="div-date"></div>
       <div class="invest-drawer-field"><label>Note (optional)</label><input type="text" class="invest-drawer-input" id="div-note" placeholder="e.g. Q1 dividend"></div>
       <button class="invest-drawer-submit" onclick="confirmDividend()">Log Dividend</button>
