@@ -176,14 +176,24 @@ input, select, textarea, button, canvas, img,
 [data-theme="dark"] select,
 [data-theme="dark"] textarea,
 [data-theme="dark"] .invest-drawer-input,
-[data-theme="dark"] .row-name input[type=text],
-[data-theme="dark"] .amount-input input,
 [data-theme="dark"] .alloc-target-input,
 [data-theme="dark"] .form-group input,
 [data-theme="dark"] .form-group select,
 [data-theme="dark"] .calc-input {
   background: #0f1923 !important;
   border-color: #1e2d3d !important;
+  color: #e0e8f0 !important;
+}
+/* Table row name inputs: no box, just text on the row background */
+[data-theme="dark"] .row-name input[type=text] {
+  background: transparent !important;
+  border: none !important;
+  color: #e0e8f0 !important;
+}
+/* Budget number inputs: match the dark card surface, no visible border */
+[data-theme="dark"] .amount-input input {
+  background: rgba(255,255,255,0.06) !important;
+  border: none !important;
   color: #e0e8f0 !important;
 }
 [data-theme="dark"] .add-form { background: #0f1923; border-top-color: #1e2d3d; }
