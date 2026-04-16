@@ -291,6 +291,12 @@
       <div class="txn-popup-row" id="txnPopupNoteRow">
         <div><div class="txn-popup-label">Note</div><div class="txn-popup-val txn-popup-note" id="txnPopupNote"></div></div>
       </div>
+      <div class="txn-popup-row" id="txnPopupCatEditRow">
+        <div style="width:100%">
+          <div class="txn-popup-label">Reassign Category</div>
+          <select id="txnPopupCatSelect" class="txn-popup-cat-select" onchange="reassignTxnCat(this.value)"></select>
+        </div>
+      </div>
     </div>
     <button class="txn-popup-delete" id="txnPopupDelete">Delete transaction</button>
   </div>

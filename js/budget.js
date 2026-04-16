@@ -774,17 +774,24 @@ function renderTransactionLog(d) {
     debt:    { label: 'Debt',    color: '#8b5cf6',      sign: '-' },
   };
 
+  const txnDelSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>`;
+
   el.innerHTML = all.map((e, idx) => {
     const ts  = typeStyles[e._type];
     const cat = e.category || e.source || e.name || '—';
     const freqBadge = e._type === 'income' && e.freq && e.freq !== 'monthly'
       ? `<span class="log-freq-badge">${e.freq.slice(0,4)}</span>` : '';
-    return `<div class="expense-row" onclick="openTxnPopup(${idx})">
-      <span class="expense-date">${e.date ? e.date.slice(5) : '—'}</span>
-      <span class="expense-amount" style="color:${ts.color}">${ts.sign}${bFmt(e.amount)}</span>
-      <span class="expense-cat">${cat}${freqBadge}</span>
-      <span class="log-type-badge" style="background:${ts.color}20;color:${ts.color}">${ts.label}</span>
-      <button class="delete-btn" onclick="event.stopPropagation();deleteTxn(${idx})">×</button>
+    return `<div class="swipe-wrap txn-swipe-wrap" data-txn-idx="${idx}">
+      <div class="swipe-action-delete">${txnDelSvg}Delete</div>
+      <div class="swipe-content">
+        <div class="expense-row" onclick="openTxnPopup(${idx})">
+          <span class="expense-date">${e.date ? e.date.slice(5) : '—'}</span>
+          <span class="expense-amount" style="color:${ts.color}">${ts.sign}${bFmt(e.amount)}</span>
+          <span class="expense-cat">${cat}${freqBadge}</span>
+          <span class="log-type-badge" style="background:${ts.color}20;color:${ts.color}">${ts.label}</span>
+          <button class="delete-btn" onclick="event.stopPropagation();deleteTxn(${idx})">×</button>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -828,8 +835,62 @@ function openTxnPopup(idx) {
     noteRow.style.display = 'none';
   }
 
+  // ── Category reassign dropdown ──────────────────────────────
+  const catEditRow = document.getElementById('txnPopupCatEditRow');
+  const catSelect  = document.getElementById('txnPopupCatSelect');
+  const d = getBudgetMonth(currentBudgetMonth);
+
+  // Build options list based on entry type
+  let options = [];
+  if (e._type === 'income') {
+    options = d.income.map(r => r.name);
+  } else if (e._type === 'spend') {
+    options = d.expenseSummary.map(r => r.name);
+  } else if (e._type === 'bill') {
+    options = d.bills.map(r => r.name);
+  } else if (e._type === 'savings') {
+    options = d.savings.map(r => r.name);
+  } else if (e._type === 'debt') {
+    options = d.debt.map(r => r.name);
+  }
+
+  if (options.length > 0) {
+    catEditRow.style.display = '';
+    const currentCat = e.category || e.source || e.name || '';
+    catSelect.innerHTML = `<option value="">— No category —</option>` +
+      options.map(o => `<option value="${o.replace(/"/g,'&quot;')}" ${o === currentCat ? 'selected' : ''}>${o}</option>`).join('');
+    // Store current idx for reassign callback
+    catSelect.dataset.txnIdx = idx;
+  } else {
+    catEditRow.style.display = 'none';
+  }
+
   document.getElementById('txnPopupDelete').onclick = function() { deleteTxn(idx); closeTxnPopup(); };
   document.getElementById('txnPopupOverlay').classList.add('open');
+}
+
+function reassignTxnCat(newVal) {
+  const catSelect = document.getElementById('txnPopupCatSelect');
+  const idx = parseInt(catSelect.dataset.txnIdx, 10);
+  const e = _txnList[idx];
+  if (!e) return;
+  const d = getBudgetMonth(currentBudgetMonth);
+  const entry = d[e._key] ? d[e._key][e._i] : null;
+  if (!entry) return;
+
+  if (e._type === 'income') {
+    entry.source = newVal;
+  } else if (e._type === 'spend') {
+    entry.category = newVal;
+  } else {
+    // bill, savings, debt
+    entry.name = newVal;
+  }
+
+  saveBudgetMonth(currentBudgetMonth, d);
+  // Update cat display in popup header
+  document.getElementById('txnPopupCat').textContent = newVal || '—';
+  renderBudget();
 }
 
 function closeTxnPopup(e) {
@@ -2054,25 +2115,57 @@ function renderReview() {
     btn.classList.toggle('active', parseFloat(btn.dataset.rate) === taxRate);
   });
 
-  // Months with actual income data
-  const activeMonths = monthlyData.filter(m => m.inc > 0);
-  const avgMonthlyIncome = activeMonths.length
-    ? activeMonths.reduce((a, m) => a + m.inc, 0) / activeMonths.length
-    : 0;
-  const avgMonthlySpent = activeMonths.length
-    ? activeMonths.reduce((a, m) => a + m.spent, 0) / activeMonths.length
+  // ── Determine which months are "filled" (have any real data) ──
+  // A month is filled if it has income, expenses, or any logged entries in the stored state.
+  const filledMonths = monthlyData.map((m, i) => {
+    const raw = months[i]; // undefined if never touched
+    if (!raw) return false;
+    const hasIncome  = m.inc > 0;
+    const hasSpend   = m.spent > 0;
+    const hasLogs    = (raw.incomeLog  || []).length > 0
+                    || (raw.expenses   || []).length > 0
+                    || (raw.billsLog   || []).length > 0
+                    || (raw.savingsLog || []).length > 0
+                    || (raw.debtLog    || []).length > 0;
+    const hasBudget  = (raw.income  || []).some(r => parseFloat(r.budget) > 0)
+                    || (raw.bills   || []).some(r => parseFloat(r.budget) > 0);
+    return hasIncome || hasSpend || hasLogs || hasBudget;
+  });
+
+  // Per-month take-home (income - tax - spent) for filled months only
+  const filledTakeHomeValues = monthlyData
+    .filter((_, i) => filledMonths[i])
+    .map(m => {
+      const tax = m.inc * (taxRate / 100);
+      return m.inc - tax - m.spent;
+    });
+
+  const filledCount = filledTakeHomeValues.length;
+  const avgTakeHome = filledCount
+    ? filledTakeHomeValues.reduce((a, v) => a + v, 0) / filledCount
     : 0;
 
-  // Monthly take-home after tax
-  const taxAmount = avgMonthlyIncome * (taxRate / 100);
-  const monthlyTakeHome = avgMonthlyIncome - taxAmount - avgMonthlySpent;
-  const annualTakeHome = monthlyTakeHome * 12;
+  // Average income/tax for the subtitle tax line
+  const avgFilledIncome = filledCount
+    ? monthlyData.filter((_, i) => filledMonths[i]).reduce((a, m) => a + m.inc, 0) / filledCount
+    : 0;
+  const avgTaxAmount = avgFilledIncome * (taxRate / 100);
+
+  // Annual total: actual values for filled months + avg for empty months
+  const annualTakeHome = monthlyData.reduce((sum, m, i) => {
+    if (filledMonths[i]) {
+      const tax = m.inc * (taxRate / 100);
+      return sum + (m.inc - tax - m.spent);
+    } else {
+      return sum + avgTakeHome;
+    }
+  }, 0);
 
   const projNumEl = document.getElementById('rv-proj-num');
   const projSubEl = document.getElementById('rv-proj-sub');
   const projTaxEl = document.getElementById('rv-proj-tax');
 
-  if (avgMonthlyIncome === 0) {
+  if (filledCount === 0) {
     projNumEl.textContent = '—';
     projNumEl.className = 'proj-big-num';
     projSubEl.textContent = 'No income data for ' + reviewYear;
@@ -2080,17 +2173,18 @@ function renderReview() {
   } else {
     projNumEl.textContent = (annualTakeHome >= 0 ? '+' : '') + bFmt(annualTakeHome);
     projNumEl.className = 'proj-big-num' + (annualTakeHome < 0 ? ' negative' : '');
-    const monthCount = activeMonths.length;
-    const baseLabel = monthCount === 1
-      ? 'Based on 1 month · projected annually'
-      : 'Avg of ' + monthCount + ' months · projected annually';
+    const emptyCount = 12 - filledCount;
+    const baseLabel = filledCount === 12
+      ? 'All 12 months actual data'
+      : filledCount === 1
+        ? '1 month actual · ' + emptyCount + ' projected from avg'
+        : filledCount + ' months actual · ' + emptyCount + ' projected from avg';
     projSubEl.textContent = taxOn
       ? baseLabel + ' · after ' + taxRate + '% tax'
       : baseLabel + ' · pre-tax';
-    // Show annual tax amount if tax is on
     if (projTaxEl) {
-      if (taxOn && taxAmount > 0) {
-        const annualTax = taxAmount * 12;
+      if (taxOn && avgTaxAmount > 0) {
+        const annualTax = avgTaxAmount * filledCount + avgTaxAmount * (12 - filledCount);
         projTaxEl.innerHTML = '−' + bFmt(annualTax) + '/yr in tax';
         projTaxEl.style.display = 'block';
       } else {
@@ -2099,11 +2193,23 @@ function renderReview() {
     }
   }
 
-  // Small projection chart (12 monthly bars)
+  // Small projection chart — actual for filled months, avg for empty months
   const projLabels = MONTHS.map(m => m.slice(0,3));
-  const projTakeHome = projLabels.map(() => Math.max(monthlyTakeHome, 0));
-  const projTax      = projLabels.map(() => taxOn ? taxAmount : 0);
-  const projNeg      = projLabels.map(() => monthlyTakeHome < 0 ? Math.abs(monthlyTakeHome) : 0);
+  const perMonthTakeHome = monthlyData.map((m, i) => {
+    if (filledMonths[i]) {
+      const tax = m.inc * (taxRate / 100);
+      return m.inc - tax - m.spent;
+    }
+    return avgTakeHome;
+  });
+  const perMonthTax = monthlyData.map((m, i) => {
+    if (!taxOn) return 0;
+    if (filledMonths[i]) return m.inc * (taxRate / 100);
+    return avgTaxAmount;
+  });
+  const projTakeHome = perMonthTakeHome.map(v => Math.max(v, 0));
+  const projTax      = perMonthTax;
+  const projNeg      = perMonthTakeHome.map(v => v < 0 ? Math.abs(v) : 0);
 
   const projCanvas = document.getElementById('projChart');
   if (projCanvas) {
@@ -2116,21 +2222,25 @@ function renderReview() {
           {
             label: 'Take-home',
             data: projTakeHome,
-            backgroundColor: 'rgba(34,197,94,0.7)',
+            // Solid for actual months, faded/hatched for projected months
+            backgroundColor: filledMonths.map(f => f ? 'rgba(34,197,94,0.80)' : 'rgba(34,197,94,0.30)'),
+            borderColor: filledMonths.map(f => f ? 'rgba(34,197,94,0)' : 'rgba(34,197,94,0.55)'),
+            borderWidth: filledMonths.map(f => f ? 0 : 1.5),
+            borderDash: [4, 3],
             borderRadius: 4,
             stack: 'proj',
           },
           {
             label: 'Tax',
             data: projTax,
-            backgroundColor: 'rgba(239,68,68,0.45)',
+            backgroundColor: filledMonths.map(f => f ? 'rgba(239,68,68,0.50)' : 'rgba(239,68,68,0.20)'),
             borderRadius: 4,
             stack: 'proj',
           },
           {
             label: 'Deficit',
             data: projNeg,
-            backgroundColor: 'rgba(239,68,68,0.7)',
+            backgroundColor: filledMonths.map(f => f ? 'rgba(239,68,68,0.80)' : 'rgba(239,68,68,0.35)'),
             borderRadius: 4,
             stack: 'proj',
           }
@@ -2144,7 +2254,13 @@ function renderReview() {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: ctx => ' ' + ctx.dataset.label + ': ' + bFmt(ctx.parsed.y)
+              label: ctx => ' ' + ctx.dataset.label + ': ' + bFmt(ctx.parsed.y),
+              afterLabel: ctx => {
+                if (ctx.datasetIndex === 0) {
+                  return filledMonths[ctx.dataIndex] ? '  ✓ actual' : '  ~ projected';
+                }
+                return '';
+              }
             }
           }
         },
@@ -2304,13 +2420,18 @@ function renderReview() {
       content.style.transition = '';
 
       const allowRight = hasPaid();
+      const isTxnRow = wrap.classList.contains('txn-swipe-wrap');
 
       if (deltaX < -THRESHOLD) {
         // ── Swipe left: delete ──────────────────────────────────
         wrap.classList.add('animate-out');
         wrap.classList.remove('reveal-delete');
         setTimeout(() => {
-          deleteRow(getSection(), getIndex());
+          if (isTxnRow) {
+            deleteTxn(parseInt(wrap.dataset.txnIdx, 10));
+          } else {
+            deleteRow(getSection(), getIndex());
+          }
         }, 280);
       } else if (deltaX > THRESHOLD && allowRight) {
         // ── Swipe right: mark paid ──────────────────────────────
