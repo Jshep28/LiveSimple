@@ -625,6 +625,9 @@ function renderTrackerSection(containerId, rows, section, hasPaid, uncatAmount) 
   }
   // For income, savings, and debt: going over budget is GOOD (green). Bills only: red when over.
   const overIsGood = section === 'income' || section === 'savings' || section === 'debt';
+  const deleteSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>`;
+  const checkSvg  = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>`;
+
   let html = rows.map((row, i) => {
     const b = num(row.budget), a = num(row.actual);
     const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
@@ -632,23 +635,29 @@ function renderTrackerSection(containerId, rows, section, hasPaid, uncatAmount) 
     const barColor = overBudget
       ? (overIsGood ? 'var(--green)' : 'var(--red)')
       : a > 0 ? 'var(--green)' : 'var(--coral)';
+    const paidClass = (hasPaid && row.paid) ? ' row-paid' : '';
     return `
-    <div class="tracker-row" style="padding-right:28px;">
-      <div class="row-name">
-        ${hasPaid ? `<input type="checkbox" class="paid-checkbox" ${row.paid?'checked':''} onchange="togglePaid('${section}',${i},this.checked)" title="${row.paid?'Mark unpaid':'Mark paid'}">` : ''}
-        <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('${section}',${i},this.value)" placeholder="Name" style="${row.paid?'text-decoration:line-through;opacity:0.5;':''}" title="Click to rename">
+    <div class="swipe-wrap" data-section="${section}" data-index="${i}" data-has-paid="${hasPaid}">
+      ${hasPaid ? `<div class="swipe-action-check">${checkSvg}Done</div>` : ''}
+      <div class="swipe-action-delete">${deleteSvg}Delete</div>
+      <div class="swipe-content">
+        <div class="tracker-row${paidClass}" style="padding-right:28px;">
+          <div class="row-name">
+            <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('${section}',${i},this.value)" placeholder="Name" title="Click to rename">
+          </div>
+          <div class="amount-input">
+            <span>${currency}</span>
+            <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
+              onchange="updateBudget('${section}',${i},this.value)" title="Budgeted amount">
+          </div>
+          <div class="row-total ${overBudget && !overIsGood ? 'red' : ''}" style="color:${a > 0 ? (overBudget && !overIsGood ? 'var(--red)' : overBudget && overIsGood ? 'var(--green)' : 'var(--dark)') : 'var(--mid)'}">
+            ${a > 0 ? bFmt(a) : '—'}${overBudget && !overIsGood ? ' <span style="font-size:9px;color:var(--red)">over</span>' : overBudget && overIsGood ? ' <span style="font-size:9px;color:var(--green)">↑</span>' : ''}
+          </div>
+          <button class="row-del" onclick="deleteRow('${section}',${i})" title="Remove row">×</button>
+        </div>
+        ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
       </div>
-      <div class="amount-input">
-        <span>${currency}</span>
-        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
-          onchange="updateBudget('${section}',${i},this.value)" title="Budgeted amount">
-      </div>
-      <div class="row-total ${overBudget && !overIsGood ? 'red' : ''}" style="color:${a > 0 ? (overBudget && !overIsGood ? 'var(--red)' : overBudget && overIsGood ? 'var(--green)' : 'var(--dark)') : 'var(--mid)'}">
-        ${a > 0 ? bFmt(a) : '—'}${overBudget && !overIsGood ? ' <span style="font-size:9px;color:var(--red)">over</span>' : overBudget && overIsGood ? ' <span style="font-size:9px;color:var(--green)">↑</span>' : ''}
-      </div>
-      <button class="row-del" onclick="deleteRow('${section}',${i})" title="Remove row">×</button>
     </div>
-    ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
   `}).join('');
 
   // Uncategorised row at the bottom (when amount > 0)
@@ -686,27 +695,33 @@ function renderExpenseSummary(d) {
     el.innerHTML = `<div class="empty">No categories — click <strong>+ Add</strong> to add one</div>`;
     return;
   }
+  const deleteSvgEs = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>`;
   let html = d.expenseSummary.map((row, i) => {
     const b = num(row.budget), a = row.actual;
     const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
     const overBudget = b > 0 && a > b;
     const barColor = overBudget ? 'var(--red)' : a > 0 ? 'var(--coral)' : 'var(--coral)';
     return `
-    <div class="tracker-row" style="padding-right:28px;">
-      <div class="row-name">
-        <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('expenseSummary',${i},this.value);renderBudget();" placeholder="Category" title="Click to rename">
+    <div class="swipe-wrap" data-section="expenseSummary" data-index="${i}" data-has-paid="false">
+      <div class="swipe-action-delete">${deleteSvgEs}Delete</div>
+      <div class="swipe-content">
+        <div class="tracker-row" style="padding-right:28px;">
+          <div class="row-name">
+            <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('expenseSummary',${i},this.value);renderBudget();" placeholder="Category" title="Click to rename">
+          </div>
+          <div class="amount-input">
+            <span>${currency}</span>
+            <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
+              onchange="updateBudget('expenseSummary',${i},this.value)" title="Budgeted amount">
+          </div>
+          <div class="row-total ${overBudget ? 'red' : ''}" style="color:${a > 0 ? (overBudget ? 'var(--red)' : 'var(--dark)') : 'var(--mid)'}">
+            ${bFmt(a)}${overBudget ? ' <span style="font-size:9px;color:var(--red)">over</span>' : ''}
+          </div>
+          <button class="row-del" onclick="deleteRow('expenseSummary',${i})" title="Remove category">×</button>
+        </div>
+        ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
       </div>
-      <div class="amount-input">
-        <span>${currency}</span>
-        <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
-          onchange="updateBudget('expenseSummary',${i},this.value)" title="Budgeted amount">
-      </div>
-      <div class="row-total ${overBudget ? 'red' : ''}" style="color:${a > 0 ? (overBudget ? 'var(--red)' : 'var(--dark)') : 'var(--mid)'}">
-        ${bFmt(a)}${overBudget ? ' <span style="font-size:9px;color:var(--red)">over</span>' : ''}
-      </div>
-      <button class="row-del" onclick="deleteRow('expenseSummary',${i})" title="Remove category">×</button>
     </div>
-    ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
   `}).join('');
 
   // Uncategorised expenses row
@@ -1089,7 +1104,14 @@ function updateBudget(section, i, val) {
 function togglePaid(section, i, checked) {
   const d = getBudgetMonth(currentBudgetMonth);
   d[section][i].paid = checked;
+  // Move paid bills to bottom, unpaid to top
+  if (section === 'bills') {
+    const unpaid = d.bills.filter(r => !r.paid);
+    const paid   = d.bills.filter(r =>  r.paid);
+    d.bills = [...unpaid, ...paid];
+  }
   saveBudgetMonth(currentBudgetMonth, d);
+  renderBudget();
 }
 
 // ── Drawer tab / type switching ───────────────────────────────
@@ -2207,6 +2229,130 @@ function renderReview() {
 
 // Init
 // Set AUD as default active in budget currency picker
+// ============================================================
+//  SWIPE GESTURES  (mobile: swipe-left = delete, swipe-right = check off bills)
+// ============================================================
+(function() {
+  const THRESHOLD  = 72;   // px needed to trigger action
+  const MAX_TRAVEL = 90;   // max px the row slides before snap
+  const isMobile   = () => window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  let activeTouchWrap = null;  // currently dragging wrap
+
+  function attachSwipe(wrap) {
+    if (wrap._swipeAttached) return;
+    wrap._swipeAttached = true;
+
+    let startX = 0, startY = 0, deltaX = 0, dragging = false, axis = null;
+    const content = wrap.querySelector('.swipe-content');
+    if (!content) return;
+
+    function getSection() { return wrap.dataset.section; }
+    function getIndex()   { return parseInt(wrap.dataset.index, 10); }
+    function hasPaid()    { return wrap.dataset.hasPaid === 'true'; }
+
+    wrap.addEventListener('touchstart', e => {
+      if (!isMobile()) return;
+      const t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+      deltaX = 0;
+      axis = null;
+      dragging = true;
+      content.style.transition = 'none';
+    }, { passive: true });
+
+    wrap.addEventListener('touchmove', e => {
+      if (!dragging || !isMobile()) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+
+      // Lock axis on first significant movement
+      if (!axis) {
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      }
+      if (axis !== 'x') return;
+
+      // Prevent page scroll when swiping horizontally
+      e.preventDefault();
+
+      deltaX = dx;
+      // Clamp travel
+      const clamped = Math.max(-MAX_TRAVEL, Math.min(MAX_TRAVEL, deltaX));
+
+      // Only allow right-swipe on bill rows; always allow left-swipe
+      const allowRight = hasPaid();
+      const effective = (clamped < 0) ? clamped : (allowRight ? clamped : 0);
+
+      content.style.transform = `translateX(${effective}px)`;
+
+      // Show/hide hint panels
+      wrap.classList.toggle('reveal-delete', effective < -THRESHOLD * 0.5);
+      wrap.classList.toggle('reveal-check',  effective >  THRESHOLD * 0.5 && allowRight);
+
+      // Dismiss any other open row
+      if (activeTouchWrap && activeTouchWrap !== wrap) resetWrap(activeTouchWrap);
+      activeTouchWrap = wrap;
+    }, { passive: false });
+
+    wrap.addEventListener('touchend', () => {
+      if (!dragging || !isMobile()) return;
+      dragging = false;
+      axis = null;
+      content.style.transition = '';
+
+      const allowRight = hasPaid();
+
+      if (deltaX < -THRESHOLD) {
+        // ── Swipe left: delete ──────────────────────────────────
+        wrap.classList.add('animate-out');
+        wrap.classList.remove('reveal-delete');
+        setTimeout(() => {
+          deleteRow(getSection(), getIndex());
+        }, 280);
+      } else if (deltaX > THRESHOLD && allowRight) {
+        // ── Swipe right: mark paid ──────────────────────────────
+        wrap.classList.add('animate-check');
+        wrap.classList.remove('reveal-check');
+        setTimeout(() => {
+          togglePaid(getSection(), getIndex(), true);
+        }, 280);
+      } else {
+        // ── Snap back ───────────────────────────────────────────
+        content.style.transform = '';
+        wrap.classList.remove('reveal-delete', 'reveal-check');
+      }
+    });
+
+    wrap.addEventListener('touchcancel', () => {
+      dragging = false;
+      axis = null;
+      content.style.transition = '';
+      content.style.transform  = '';
+      wrap.classList.remove('reveal-delete', 'reveal-check');
+    });
+  }
+
+  function resetWrap(wrap) {
+    const content = wrap.querySelector('.swipe-content');
+    if (content) { content.style.transition = ''; content.style.transform = ''; }
+    wrap.classList.remove('reveal-delete', 'reveal-check');
+  }
+
+  // Use event delegation on the budget page so it picks up re-rendered rows
+  document.addEventListener('touchstart', e => {
+    const wrap = e.target.closest('.swipe-wrap');
+    if (!wrap) {
+      // Tap outside — reset any open row
+      if (activeTouchWrap) { resetWrap(activeTouchWrap); activeTouchWrap = null; }
+      return;
+    }
+    attachSwipe(wrap);
+  }, { passive: true });
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
   const opts = document.querySelectorAll('#budgetCurrencyPicker .curr-opt');
   if (opts.length) opts[0].classList.add('active');
