@@ -2235,10 +2235,11 @@ function renderReview() {
   });
 
   // Per-month take-home (income - tax - spent) for filled months only
+  const effectiveTaxRate = taxOn ? taxRate : 0;
   const filledTakeHomeValues = monthlyData
     .filter((_, i) => filledMonths[i])
     .map(m => {
-      const tax = m.inc * (taxRate / 100);
+      const tax = m.inc * (effectiveTaxRate / 100);
       return m.inc - tax - m.spent;
     });
 
@@ -2251,12 +2252,12 @@ function renderReview() {
   const avgFilledIncome = filledCount
     ? monthlyData.filter((_, i) => filledMonths[i]).reduce((a, m) => a + m.inc, 0) / filledCount
     : 0;
-  const avgTaxAmount = avgFilledIncome * (taxRate / 100);
+  const avgTaxAmount = avgFilledIncome * (effectiveTaxRate / 100);
 
   // Annual total: actual values for filled months + avg for empty months
   const annualTakeHome = monthlyData.reduce((sum, m, i) => {
     if (filledMonths[i]) {
-      const tax = m.inc * (taxRate / 100);
+      const tax = m.inc * (effectiveTaxRate / 100);
       return sum + (m.inc - tax - m.spent);
     } else {
       return sum + avgTakeHome;
@@ -2306,7 +2307,7 @@ function renderReview() {
   });
   const perMonthTax = monthlyData.map((m, i) => {
     if (!taxOn) return 0;
-    if (filledMonths[i]) return m.inc * (taxRate / 100);
+    if (filledMonths[i]) return m.inc * (effectiveTaxRate / 100);
     return avgTaxAmount;
   });
   const projTakeHome = perMonthTakeHome.map(v => Math.max(v, 0));
