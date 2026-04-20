@@ -1124,11 +1124,6 @@ function renderInsights(d, totalIn) {
 
   // Savings rate warning
   if (totalIn > 0) {
-    const sa = d.savings.reduce((a,r)=>a+num(r.actual||r.budget),0);
-    const savingsRate = sa / totalIn * 100;
-    if (savingsRate < 10 && savingsRate >= 0 && d.savings.some(r => r.budget)) {
-      insights.push(`💡 Savings rate is ${savingsRate.toFixed(0)}% — aim for at least 20%`);
-    }
   }
 
   // Unpaid bills past mid-month
@@ -2183,6 +2178,8 @@ function renderReview() {
     const savingsActual  = hasData ? (m.savingsLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
     const debtActual     = hasData ? (m.debtLog    || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
 
+    // "Left to spend" = same formula as the budget page:
+    // income - bills - expenses - savings - debt (all outgoings)
     const spent = billsActual + expensesActual + savingsActual + debtActual;
     const saved = savingsActual;
 
@@ -2310,7 +2307,7 @@ function renderReview() {
   const projLabels = MONTHS.map(m => m.slice(0,3));
   const perMonthTakeHome = monthlyData.map((m, i) => {
     if (filledMonths[i]) {
-      const tax = m.inc * (taxRate / 100);
+      const tax = m.inc * (effectiveTaxRate / 100);
       return m.inc - tax - m.spent;
     }
     return avgTakeHome;
