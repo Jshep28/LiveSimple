@@ -356,17 +356,14 @@ input, select, textarea, button, canvas, img,
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 20px;
-  padding: 5px 10px;
+  padding: 6px 10px;
   cursor: pointer;
-  font-size: 14px;
   line-height: 1;
   display: flex; align-items: center; gap: 5px;
-  color: rgba(255,255,255,0.8);
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 11px;
+  color: rgba(255,255,255,0.9);
   white-space: nowrap;
 }
+.mode-icon { display: flex; align-items: center; }
 .dark-toggle:hover { background: rgba(255,255,255,0.18); }
 [data-theme="dark"] .dark-toggle { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
 body { font-family: 'Lora', Georgia, serif; background: var(--light); color: var(--dark); min-height: 100vh; }
