@@ -137,8 +137,11 @@ input, select, textarea, button, canvas, img,
 .toggle-thumb, .market-ticker-inner {
   transition: none !important;
 }
+/* Nav tabs: instant colour/underline change on click */
+.nav-tab { transition: none !important; }
 .toggle-thumb { transition: transform 0.2s ease !important; }
-.tab-btn, .nav-tab { transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease !important; }
+.tab-btn { transition: color 0.2s ease, border-color 0.2s ease !important; }
+.nav-tab { transition: none !important; }
 
 /* ── DARK MODE OVERRIDES ─────────────────────────────────────── */
 [data-theme="dark"] body { background: #0b1520; color: var(--dark); }
