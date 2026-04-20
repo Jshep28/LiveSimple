@@ -1414,8 +1414,8 @@ html, body {
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 360px) {
   #app-budget nav .nav-tab {
-    padding: 5px 10px;
-    font-size: 11px;
+    padding: 0 10px;
+    font-size: 10px;
   }
 
   .tab-btn {

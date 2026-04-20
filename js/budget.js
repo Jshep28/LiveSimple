@@ -1873,12 +1873,13 @@ function renderSettings() {
     if (ok) {
       lbl.textContent = 'Local storage active';
       desc.textContent = 'Your data is saved on this device and persists when you close the browser';
-      badge.textContent = '✅';
+      badge.textContent = 'Active';
+      badge.style.cssText = 'background:rgba(34,197,94,0.15);color:var(--green);font-family:Montserrat,sans-serif;font-weight:700;font-size:11px;padding:3px 10px;border-radius:20px;';
     } else {
       lbl.textContent = 'Storage blocked';
       desc.textContent = 'Data cannot be saved — open the app directly (not inside another website), or use Export/Import to back up manually';
-      badge.textContent = '⚠️';
-      badge.style.fontSize = '22px';
+      badge.textContent = 'Inactive';
+      badge.style.cssText = 'background:rgba(239,68,68,0.15);color:var(--red);font-family:Montserrat,sans-serif;font-weight:700;font-size:11px;padding:3px 10px;border-radius:20px;';
     }
   }
 
@@ -2358,7 +2359,7 @@ function renderReview() {
               label: ctx => ' ' + ctx.dataset.label + ': ' + bFmt(ctx.parsed.y),
               afterLabel: ctx => {
                 if (ctx.datasetIndex === 0) {
-                  return filledMonths[ctx.dataIndex] ? '  ✓ actual' : '  ~ projected';
+                  return filledMonths[ctx.dataIndex] ? '  actual' : '  projected';
                 }
                 return '';
               }
