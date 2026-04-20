@@ -779,15 +779,13 @@ function renderTransactionLog(d) {
   el.innerHTML = all.map((e, idx) => {
     const ts  = typeStyles[e._type];
     const cat = e.category || e.source || e.name || '—';
-    const freqBadge = e._type === 'income' && e.freq && e.freq !== 'monthly'
-      ? `<span class="log-freq-badge">${e.freq.slice(0,4)}</span>` : '';
     return `<div class="swipe-wrap txn-swipe-wrap" data-txn-idx="${idx}">
       <div class="swipe-action-delete">${txnDelSvg}Delete</div>
       <div class="swipe-content">
         <div class="expense-row" onclick="openTxnPopup(${idx})">
           <span class="expense-date">${e.date ? e.date.slice(5) : '—'}</span>
           <span class="expense-amount" style="color:${ts.color}">${ts.sign}${bFmt(e.amount)}</span>
-          <span class="expense-cat">${cat}${freqBadge}</span>
+          <span class="expense-cat">${cat}</span>
           <span class="log-type-badge" style="background:${ts.color}20;color:${ts.color}">${ts.label}</span>
           <button class="delete-btn" onclick="event.stopPropagation();deleteTxn(${idx})">×</button>
         </div>
@@ -965,19 +963,17 @@ function calcRollover(month, year, depth) {
   const data = ((all[year] || {}).budget || {})[month];
   if (!data) return 0;
 
-  // Compute actuals from logs (same logic as renderBudget)
+  // Compute actuals from logs — include ALL log entries (categorised + uncategorised)
   const incLog = data.incomeLog  || [];
   const blLog  = data.billsLog   || [];
   const svLog  = data.savingsLog || [];
   const dtLog  = data.debtLog    || [];
-  const incActual = data.income.reduce((a,r) =>
-    a + incLog.filter(e => e.source === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
-  const blActual  = data.bills.reduce((a,r) =>
-    a + blLog.filter(e => e.name === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
-  const svActual  = data.savings.reduce((a,r) =>
-    a + svLog.filter(e => e.name === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
-  const dtActual  = data.debt.reduce((a,r) =>
-    a + dtLog.filter(e => e.name === r.name).reduce((s,e) => s + num(e.amount), 0), 0);
+
+  // Total all log entries (not just those matching a named row)
+  const incActual = incLog.reduce((a, e) => a + num(e.amount), 0);
+  const blActual  = blLog.reduce((a, e) => a + num(e.amount), 0);
+  const svActual  = svLog.reduce((a, e) => a + num(e.amount), 0);
+  const dtActual  = dtLog.reduce((a, e) => a + num(e.amount), 0);
 
   const pIn  = Math.max(incActual || data.income.reduce((a,r) => a + num(r.budget), 0), 0);
   const pOut = (blActual  || data.bills.reduce((a,r) => a + num(r.budget), 0))
@@ -2044,6 +2040,110 @@ function importData(input) {
       });
     } catch(err) {
       alert('Invalid file. Please use a Live Simple backup JSON file.');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const text = ev.target.result;
+      // Parse CSV (handles quoted fields with commas/newlines)
+      function parseCSV(str) {
+        const rows = [];
+        let row = [], field = '', inQuotes = false;
+        for (let i = 0; i < str.length; i++) {
+          const ch = str[i], nx = str[i+1];
+          if (inQuotes) {
+            if (ch === '"' && nx === '"') { field += '"'; i++; }
+            else if (ch === '"') { inQuotes = false; }
+            else { field += ch; }
+          } else {
+            if (ch === '"') { inQuotes = true; }
+            else if (ch === ',') { row.push(field); field = ''; }
+            else if (ch === '\n' || (ch === '\r' && nx === '\n')) {
+              row.push(field); field = '';
+              if (row.some(c => c !== '')) rows.push(row);
+              row = [];
+              if (ch === '\r') i++;
+            } else { field += ch; }
+          }
+        }
+        if (field || row.length) { row.push(field); if (row.some(c => c !== '')) rows.push(row); }
+        return rows;
+      }
+
+      const rows = parseCSV(text);
+      if (!rows.length) { alert('Empty CSV file.'); return; }
+
+      // Expected header: Year, Month, Type, Name, Budget, Actual, Paid, Notes
+      const header = rows[0].map(h => h.trim().toLowerCase());
+      const col = k => header.indexOf(k);
+      if (col('year') === -1 || col('type') === -1) {
+        alert('CSV format not recognised. Please use a Live Simple CSV export.');
+        return;
+      }
+
+      openModal('Import CSV?',
+        'This will merge the CSV data with your existing data. Existing entries may be overwritten.',
+        'Import', () => {
+          const all = getAllState();
+          const dataRows = rows.slice(1);
+
+          dataRows.forEach(r => {
+            const year  = parseInt(r[col('year')]);
+            const month = MONTHS.indexOf(r[col('month')]);
+            const type  = (r[col('type')] || '').trim();
+            const name  = (r[col('name')] || '').trim();
+            const budget = r[col('budget')] !== undefined ? r[col('budget')].trim() : '';
+            const actual = r[col('actual')] !== undefined ? r[col('actual')].trim() : '';
+            const paid   = (r[col('paid')] || '').trim().toLowerCase() === 'yes';
+            const notes  = col('notes') !== -1 ? (r[col('notes')] || '').trim() : '';
+
+            if (!year || month === -1) return;
+
+            if (!all[year]) all[year] = { budget: {}, habits: {} };
+            if (!all[year].budget) all[year].budget = {};
+            if (!all[year].budget[month]) all[year].budget[month] = defaultMonth(month);
+            const md = all[year].budget[month];
+
+            const upsert = (arr, entry) => {
+              const idx = arr.findIndex(x => x.name === entry.name);
+              if (idx >= 0) Object.assign(arr[idx], entry);
+              else arr.push(entry);
+            };
+
+            if (type === 'Income') {
+              upsert(md.income, { name, budget, actual, paid: false });
+            } else if (type === 'Bill') {
+              upsert(md.bills, { name, budget, actual, paid, recurring: false });
+            } else if (type === 'ExpenseCategory') {
+              upsert(md.expenseSummary, { name, budget, actual: parseFloat(actual) || 0 });
+            } else if (type === 'Savings') {
+              upsert(md.savings, { name, budget, actual });
+            } else if (type === 'Debt') {
+              upsert(md.debt, { name, budget, actual, paid });
+            } else if (type === 'ExpenseLog') {
+              if (!md.expenses) md.expenses = [];
+              md.expenses.push({ date: '', amount: actual, category: notes, note: name });
+            } else if (type === 'Note') {
+              md.notes = name;
+            }
+          });
+
+          saveAllState(all);
+          renderSettings();
+          renderBudget();
+          alert('CSV imported successfully.');
+        });
+    } catch(err) {
+      console.error(err);
+      alert('Failed to parse CSV. Please use a Live Simple CSV export.');
     }
   };
   reader.readAsText(file);

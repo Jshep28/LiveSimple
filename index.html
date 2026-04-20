@@ -214,6 +214,11 @@
       <span id="expenses-budget-total">$0</span>
       <span id="expenses-actual-total">$0</span>
     </div>
+    <!-- Expense Breakdown (inline, below summary) -->
+    <div class="section-head" style="margin-top:8px;border-top:1px solid var(--border);padding-top:12px;">
+      <h2>Breakdown</h2>
+    </div>
+    <div id="breakdown-rows"></div>
   </div>
 
   <!-- SAVINGS -->
@@ -257,12 +262,6 @@
       <button onclick="openExpenseDrawer()">+ Log</button>
     </div>
     <div id="expense-log"></div>
-  </div>
-
-  <!-- BREAKDOWN -->
-  <div class="section">
-    <div class="section-head"><h2>Expense Breakdown</h2></div>
-    <div id="breakdown-rows"></div>
   </div>
 
   <!-- MONTH NOTES -->
@@ -658,8 +657,10 @@
         <div class="settings-row-label">Import Data</div>
         <div class="settings-row-desc">Restore from a previously exported JSON backup</div>
       </div>
-      <button class="settings-btn neutral" onclick="document.getElementById('importFile').click()">Import</button>
+      <button class="settings-btn neutral" onclick="document.getElementById('importFile').click()">JSON</button>
+      <button class="settings-btn neutral" onclick="document.getElementById('importCSVFile').click()" style="margin-left:4px;">CSV</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+      <input type="file" id="importCSVFile" accept=".csv" style="display:none" onchange="importCSV(this)">
     </div>
     <div class="settings-row">
       <div class="settings-row-info">

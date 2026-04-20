@@ -531,6 +531,10 @@ nav {
   transition: color 0.15s, background 0.15s;
 }
 .delete-btn:hover { color: var(--red); background: rgba(232,84,68,0.08); }
+/* Hide transaction log delete × on touch devices (swipe-to-delete replaces it) */
+@media (hover: none) and (pointer: coarse) {
+  .txn-swipe-wrap .delete-btn { display: none; }
+}
 
 /* ── TRANSACTION DETAIL POPUP ───────────────────────────────── */
 .txn-popup-overlay {
