@@ -140,8 +140,7 @@ input, select, textarea, button, canvas, img,
 /* Nav tabs: instant colour/underline change on click */
 .nav-tab { transition: none !important; }
 .toggle-thumb { transition: transform 0.2s ease !important; }
-.tab-btn { transition: color 0.2s ease, border-color 0.2s ease !important; }
-.nav-tab { transition: none !important; }
+.tab-btn, .nav-tab { transition: none !important; }
 
 /* ── DARK MODE OVERRIDES ─────────────────────────────────────── */
 [data-theme="dark"] body { background: #0b1520; color: var(--dark); }
@@ -404,14 +403,23 @@ nav {
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 .tab-btn {
-  background: none; border: none;
+  background: none !important;
+  border: none;
+  border-bottom: 2px solid transparent !important;
   padding: 10px 16px;
-  font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 11px;
-  color: rgba(255,255,255,0.5); cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: rgba(255,255,255,0.45) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.tab-btn.active { color: var(--coral); border-bottom-color: var(--coral); }
+.tab-btn.active { color: var(--coral) !important; border-bottom-color: var(--coral) !important; }
+.tab-btn:hover:not(.active) { color: rgba(255,255,255,0.8) !important; }
 
 /* PANELS */
 .panel { display: none; padding: 16px 16px 60px; max-width: 900px; margin: 0 auto; }
