@@ -2165,14 +2165,27 @@ function renderReview() {
 
   let totalIncome = 0, totalSpent = 0, totalSaved = 0;
   const monthlyData = MONTHS.map((name, i) => {
-    const m = months[i] || defaultMonth(i);
-    const inc = Math.max(
-      m.income.reduce((a,r) => a + (parseFloat(r.actual)||parseFloat(r.budget)||0), 0),
-      0
-    );
-    const spent = (m.expenses || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0)
-      + m.bills.reduce((a,r) => a + (parseFloat(r.actual)||parseFloat(r.budget)||0), 0);
-    const saved = m.savings.reduce((a,r) => a + (parseFloat(r.actual)||parseFloat(r.budget)||0), 0);
+    const raw = months[i];
+    const m = raw || defaultMonth(i);
+
+    // Only use actual logged values for filled months — no budget fallback,
+    // so unfilled months contribute 0 and don't skew the projected average
+    const hasData = !!raw;
+
+    // Income: sum all income log entries (source of truth)
+    const inc = hasData
+      ? (m.incomeLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0)
+      : 0;
+
+    // Outgoings: sum all log entries for each category
+    const billsActual    = hasData ? (m.billsLog   || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
+    const expensesActual = hasData ? (m.expenses   || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
+    const savingsActual  = hasData ? (m.savingsLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
+    const debtActual     = hasData ? (m.debtLog    || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
+
+    const spent = billsActual + expensesActual + savingsActual + debtActual;
+    const saved = savingsActual;
+
     totalIncome += inc;
     totalSpent += spent;
     totalSaved += saved;
@@ -2219,19 +2232,16 @@ function renderReview() {
 
   // ── Determine which months are "filled" (have any real data) ──
   // A month is filled if it has income, expenses, or any logged entries in the stored state.
+  // A month is "filled" only if it has actual logged transactions
+  // (not just a budget set) — so the projected average is based on real data only
   const filledMonths = monthlyData.map((m, i) => {
-    const raw = months[i]; // undefined if never touched
+    const raw = months[i];
     if (!raw) return false;
-    const hasIncome  = m.inc > 0;
-    const hasSpend   = m.spent > 0;
-    const hasLogs    = (raw.incomeLog  || []).length > 0
-                    || (raw.expenses   || []).length > 0
-                    || (raw.billsLog   || []).length > 0
-                    || (raw.savingsLog || []).length > 0
-                    || (raw.debtLog    || []).length > 0;
-    const hasBudget  = (raw.income  || []).some(r => parseFloat(r.budget) > 0)
-                    || (raw.bills   || []).some(r => parseFloat(r.budget) > 0);
-    return hasIncome || hasSpend || hasLogs || hasBudget;
+    return (raw.incomeLog  || []).length > 0
+        || (raw.expenses   || []).length > 0
+        || (raw.billsLog   || []).length > 0
+        || (raw.savingsLog || []).length > 0
+        || (raw.debtLog    || []).length > 0;
   });
 
   // Per-month take-home (income - tax - spent) for filled months only
