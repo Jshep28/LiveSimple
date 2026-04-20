@@ -62,14 +62,14 @@ nav {
   align-self: stretch;  /* fills full nav height so border-bottom is at nav bottom edge */
 }
 .nav-tab {
-  background: none;
+  background: none !important;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 2px solid transparent !important;
   padding: 0 16px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 11px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.45) !important;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -79,11 +79,11 @@ nav {
   height: 100%;
 }
 .nav-tab.active {
-  color: var(--coral);
-  border-bottom-color: var(--coral);
+  color: var(--coral) !important;
+  border-bottom-color: var(--coral) !important;
 }
-.nav-tab:hover {
-  color: rgba(255,255,255,0.85);
+.nav-tab:hover:not(.active) {
+  color: rgba(255,255,255,0.8) !important;
 }
 
 /* currency-select replaced with dropdown picker */
