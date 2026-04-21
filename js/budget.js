@@ -1989,9 +1989,13 @@ function exportData() {
 
 function exportCSV() {
   const all = getAllState();
+  // Columns: Year, Month, Type, Name, Budget, Actual, Paid, Notes
   const rows = [['Year','Month','Type','Name','Budget','Actual','Paid','Notes']];
+
   Object.keys(all).filter(k => !isNaN(k)).sort().forEach(y => {
     const ys = all[y] || {};
+
+    // ── Budget data ──────────────────────────────────────────────
     MONTHS.forEach((mName, mi) => {
       const m = (ys.budget || {})[mi];
       if (!m) return;
@@ -2009,15 +2013,75 @@ function exportCSV() {
       (m.expenses || []).forEach(e => {
         rows.push([y, mName, 'ExpenseLog', e.note||'', '', e.amount||'', '', e.category||'']);
       });
+      // Income / bills / savings / debt logs
+      (m.incomeLog || []).forEach(e => {
+        rows.push([y, mName, 'IncomeLog', e.source||'', '', e.amount||'', '', e.note||'']);
+      });
+      (m.billsLog || []).forEach(e => {
+        rows.push([y, mName, 'BillLog', e.name||'', '', e.amount||'', '', e.note||'']);
+      });
+      (m.savingsLog || []).forEach(e => {
+        rows.push([y, mName, 'SavingsLog', e.name||'', '', e.amount||'', '', e.note||'']);
+      });
+      (m.debtLog || []).forEach(e => {
+        rows.push([y, mName, 'DebtLog', e.name||'', '', e.amount||'', '', e.note||'']);
+      });
       if (note) rows.push([y, mName, 'Note', note, '', '', '', '']);
     });
+
+    // ── Habits data ──────────────────────────────────────────────
+    MONTHS.forEach((mName, mi) => {
+      const h = (ys.habits || {})[mi];
+      if (!h) return;
+
+      // Habit definitions
+      (h.dailyHabits || []).forEach((name, hi) => {
+        rows.push([y, mName, 'HabitDaily', name, hi, '', '', '']);
+      });
+      (h.weeklyHabits || []).forEach((name, hi) => {
+        rows.push([y, mName, 'HabitWeekly', name, hi, '', '', '']);
+      });
+      (h.monthlyHabits || []).forEach((name, hi) => {
+        rows.push([y, mName, 'HabitMonthly', name, hi, '', '', '']);
+      });
+
+      // Daily check-ins: key = "habitIndex_day"
+      Object.entries(h.dailyChecks || {}).forEach(([key, val]) => {
+        if (val) rows.push([y, mName, 'HabitDailyCheck', key, '', '', 'yes', '']);
+      });
+      // Weekly check-ins: key = "habitIndex_week"
+      Object.entries(h.weeklyChecks || {}).forEach(([key, val]) => {
+        if (val) rows.push([y, mName, 'HabitWeeklyCheck', key, '', '', 'yes', '']);
+      });
+      // Monthly check-ins: key = "habitIndex"
+      Object.entries(h.monthlyChecks || {}).forEach(([key, val]) => {
+        if (val) rows.push([y, mName, 'HabitMonthlyCheck', key, '', '', 'yes', '']);
+      });
+    });
   });
+
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'livesimple-export-' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
+}
+
+function deepMerge(target, source) {
+  // Deep-merge source into target. Arrays are replaced (not concatenated).
+  if (typeof source !== 'object' || source === null) return source;
+  if (Array.isArray(source)) return source;
+  const out = Object.assign({}, target);
+  Object.keys(source).forEach(k => {
+    if (typeof source[k] === 'object' && source[k] !== null && !Array.isArray(source[k])
+        && typeof target[k] === 'object' && target[k] !== null && !Array.isArray(target[k])) {
+      out[k] = deepMerge(target[k], source[k]);
+    } else {
+      out[k] = source[k];
+    }
+  });
+  return out;
 }
 
 function importData(input) {
@@ -2029,10 +2093,11 @@ function importData(input) {
       const data = JSON.parse(e.target.result);
       openModal('Import data?', 'This will merge imported data with your existing data. Existing entries may be overwritten.', 'Import', () => {
         const all = getAllState();
-        Object.assign(all, data);
-        saveAllState(all);
+        const merged = deepMerge(all, data);
+        saveAllState(merged);
         renderSettings();
         renderBudget();
+        renderHabits();
       });
     } catch(err) {
       alert('Invalid file. Please use a Live Simple backup JSON file.');
@@ -2114,6 +2179,7 @@ function importCSV(input) {
               else arr.push(entry);
             };
 
+            // ── Budget rows ──────────────────────────────────────
             if (type === 'Income') {
               upsert(md.income, { name, budget, actual, paid: false });
             } else if (type === 'Bill') {
@@ -2127,14 +2193,47 @@ function importCSV(input) {
             } else if (type === 'ExpenseLog') {
               if (!md.expenses) md.expenses = [];
               md.expenses.push({ date: '', amount: actual, category: notes, note: name });
+            } else if (type === 'IncomeLog') {
+              if (!md.incomeLog) md.incomeLog = [];
+              md.incomeLog.push({ source: name, amount: actual, note: notes, date: '' });
+            } else if (type === 'BillLog') {
+              if (!md.billsLog) md.billsLog = [];
+              md.billsLog.push({ name, amount: actual, note: notes, date: '' });
+            } else if (type === 'SavingsLog') {
+              if (!md.savingsLog) md.savingsLog = [];
+              md.savingsLog.push({ name, amount: actual, note: notes, date: '' });
+            } else if (type === 'DebtLog') {
+              if (!md.debtLog) md.debtLog = [];
+              md.debtLog.push({ name, amount: actual, note: notes, date: '' });
             } else if (type === 'Note') {
               md.notes = name;
+
+            // ── Habit rows ───────────────────────────────────────
+            } else if (type === 'HabitDaily' || type === 'HabitWeekly' || type === 'HabitMonthly') {
+              if (!all[year].habits) all[year].habits = {};
+              if (!all[year].habits[month]) all[year].habits[month] = defaultHabitMonth(month);
+              const hd = all[year].habits[month];
+              const idx = parseInt(budget); // budget col holds the original index
+              const listKey = type === 'HabitDaily' ? 'dailyHabits'
+                            : type === 'HabitWeekly' ? 'weeklyHabits' : 'monthlyHabits';
+              // Ensure array is large enough, then set at original index
+              while (hd[listKey].length <= idx) hd[listKey].push('');
+              hd[listKey][idx] = name;
+
+            } else if (type === 'HabitDailyCheck' || type === 'HabitWeeklyCheck' || type === 'HabitMonthlyCheck') {
+              if (!all[year].habits) all[year].habits = {};
+              if (!all[year].habits[month]) all[year].habits[month] = defaultHabitMonth(month);
+              const hd = all[year].habits[month];
+              const checksKey = type === 'HabitDailyCheck' ? 'dailyChecks'
+                              : type === 'HabitWeeklyCheck' ? 'weeklyChecks' : 'monthlyChecks';
+              if (paid) hd[checksKey][name] = true; // name col holds the check key (e.g. "0_14")
             }
           });
 
           saveAllState(all);
           renderSettings();
           renderBudget();
+          renderHabits();
           alert('CSV imported successfully.');
         });
     } catch(err) {
@@ -2161,32 +2260,43 @@ function renderReview() {
   let totalIncome = 0, totalSpent = 0, totalSaved = 0;
   const monthlyData = MONTHS.map((name, i) => {
     const raw = months[i];
-    const m = raw || defaultMonth(i);
+    if (!raw) return { name: name.slice(0,3), inc: 0, spent: 0, saved: 0, net: 0, notes: '' };
+    const m = raw;
 
-    // Only use actual logged values for filled months — no budget fallback,
-    // so unfilled months contribute 0 and don't skew the projected average
-    const hasData = !!raw;
+    // ── Income ────────────────────────────────────────────────────
+    // Prefer log total; fall back to sum of budget-row actual fields
+    const incLog  = (m.incomeLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+    const incRows = (m.income    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
+    const inc = incLog || incRows;
 
-    // Income: sum all income log entries (source of truth)
-    const inc = hasData
-      ? (m.incomeLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0)
-      : 0;
+    // ── Bills ─────────────────────────────────────────────────────
+    const blLog  = (m.billsLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+    const blRows = (m.bills    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
+    const bills  = blLog || blRows;
 
-    // Outgoings: sum all log entries for each category
-    const billsActual    = hasData ? (m.billsLog   || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
-    const expensesActual = hasData ? (m.expenses   || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
-    const savingsActual  = hasData ? (m.savingsLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
-    const debtActual     = hasData ? (m.debtLog    || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0) : 0;
+    // ── Expenses (transaction log only — no row fallback) ─────────
+    const expenses = (m.expenses || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
 
-    // "Left to spend" = same formula as the budget page:
-    // income - bills - expenses - savings - debt (all outgoings)
-    const spent = billsActual + expensesActual + savingsActual + debtActual;
-    const saved = savingsActual;
+    // ── Savings ───────────────────────────────────────────────────
+    const svLog  = (m.savingsLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+    const svRows = (m.savings    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
+    const saved  = svLog || svRows;
+
+    // ── Debt ──────────────────────────────────────────────────────
+    const dtLog  = (m.debtLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+    const dtRows = (m.debt    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
+    const debt   = dtLog || dtRows;
+
+    // ── Totals ────────────────────────────────────────────────────
+    // "spent" = all outgoings (matches updateTotals definition)
+    const spent = bills + expenses + saved + debt;
+    // Per-month net = income - all outgoings (no rollover — purely what was made/lost)
+    const net = inc - spent;
 
     totalIncome += inc;
-    totalSpent += spent;
-    totalSaved += saved;
-    return { name: name.slice(0,3), inc, spent, saved, notes: m.notes || '' };
+    totalSpent  += spent;
+    totalSaved  += saved;
+    return { name: name.slice(0,3), inc, spent, saved, net, notes: m.notes || '' };
   });
 
   // Habit rate across year
@@ -2204,12 +2314,13 @@ function renderReview() {
   });
   const habitRate = habitPossible ? Math.round(habitChecked/habitPossible*100) : 0;
 
-  document.getElementById('rv-net').textContent = bFmt(totalIncome - totalSpent);
-  document.getElementById('rv-net').className = 'review-big-num ' + (totalIncome - totalSpent >= 0 ? '' : 'red');
+  const totalNet = totalIncome - totalSpent;
+  document.getElementById('rv-net').textContent = (totalNet >= 0 ? '+' : '') + bFmt(totalNet);
+  document.getElementById('rv-net').className = 'review-big-num ' + (totalNet >= 0 ? '' : 'red');
   document.getElementById('rv-income').textContent = bFmt(totalIncome);
-  document.getElementById('rv-spent').textContent = bFmt(totalSpent);
-  document.getElementById('rv-saved').textContent = bFmt(totalSaved);
-  document.getElementById('rv-habit').textContent = habitRate + '%';
+  document.getElementById('rv-spent').textContent  = bFmt(totalSpent);
+  document.getElementById('rv-saved').textContent  = bFmt(totalSaved);
+  document.getElementById('rv-habit').textContent  = habitRate + '%';
 
   // ── PROJECTED TAKE-HOME ──────────────────────────────────────
   const taxPrefs = getTaxPrefs();
@@ -2228,47 +2339,35 @@ function renderReview() {
   });
 
   // ── Determine which months are "filled" (have any real data) ──
-  // A month is filled if it has income, expenses, or any logged entries in the stored state.
-  // A month is "filled" only if it has actual logged transactions
-  // (not just a budget set) — so the projected average is based on real data only
+  // A month is filled if it has any log entries OR any budget-row actuals entered.
   const filledMonths = monthlyData.map((m, i) => {
-    const raw = months[i];
-    if (!raw) return false;
-    return (raw.incomeLog  || []).length > 0
-        || (raw.expenses   || []).length > 0
-        || (raw.billsLog   || []).length > 0
-        || (raw.savingsLog || []).length > 0
-        || (raw.debtLog    || []).length > 0;
+    return m.inc > 0 || m.spent > 0;
   });
 
-  // Per-month take-home (income - tax - spent) for filled months only
+  // Per-month take-home = net (inc - all outgoings) minus tax on income, no rollover
   const effectiveTaxRate = taxOn ? taxRate : 0;
+
+  // Helper: take-home for a single month's data object
+  const monthTakeHome = m => m.net - m.inc * (effectiveTaxRate / 100);
+
   const filledTakeHomeValues = monthlyData
     .filter((_, i) => filledMonths[i])
-    .map(m => {
-      const tax = m.inc * (effectiveTaxRate / 100);
-      return m.inc - tax - m.spent;
-    });
+    .map(monthTakeHome);
 
   const filledCount = filledTakeHomeValues.length;
   const avgTakeHome = filledCount
     ? filledTakeHomeValues.reduce((a, v) => a + v, 0) / filledCount
     : 0;
 
-  // Average income/tax for the subtitle tax line
+  // Average tax amount (for subtitle display)
   const avgFilledIncome = filledCount
     ? monthlyData.filter((_, i) => filledMonths[i]).reduce((a, m) => a + m.inc, 0) / filledCount
     : 0;
   const avgTaxAmount = avgFilledIncome * (effectiveTaxRate / 100);
 
-  // Annual total: actual values for filled months + avg for empty months
+  // Annual total: actual for filled months + avg for empty months (no rollover stacking)
   const annualTakeHome = monthlyData.reduce((sum, m, i) => {
-    if (filledMonths[i]) {
-      const tax = m.inc * (effectiveTaxRate / 100);
-      return sum + (m.inc - tax - m.spent);
-    } else {
-      return sum + avgTakeHome;
-    }
+    return sum + (filledMonths[i] ? monthTakeHome(m) : avgTakeHome);
   }, 0);
 
   const projNumEl = document.getElementById('rv-proj-num');
@@ -2305,17 +2404,12 @@ function renderReview() {
 
   // Small projection chart — actual for filled months, avg for empty months
   const projLabels = MONTHS.map(m => m.slice(0,3));
-  const perMonthTakeHome = monthlyData.map((m, i) => {
-    if (filledMonths[i]) {
-      const tax = m.inc * (effectiveTaxRate / 100);
-      return m.inc - tax - m.spent;
-    }
-    return avgTakeHome;
-  });
+  const perMonthTakeHome = monthlyData.map((m, i) =>
+    filledMonths[i] ? monthTakeHome(m) : avgTakeHome
+  );
   const perMonthTax = monthlyData.map((m, i) => {
     if (!taxOn) return 0;
-    if (filledMonths[i]) return m.inc * (effectiveTaxRate / 100);
-    return avgTaxAmount;
+    return filledMonths[i] ? m.inc * (effectiveTaxRate / 100) : avgTaxAmount;
   });
   const projTakeHome = perMonthTakeHome.map(v => Math.max(v, 0));
   const projTax      = perMonthTax;
@@ -2394,15 +2488,18 @@ function renderReview() {
   const maxVal = Math.max(...monthlyData.map(m => Math.max(m.inc, m.spent)), 1);
   document.getElementById('rv-bars').innerHTML = monthlyData.map(m => {
     const incW = Math.round(m.inc / maxVal * 100);
-    const spW = Math.round(m.spent / maxVal * 100);
+    const spW  = Math.round(m.spent / maxVal * 100);
     const hasData = m.inc > 0 || m.spent > 0;
+    const netVal = m.net;
+    const netClass = netVal >= 0 ? 'color:var(--green)' : 'color:var(--coral)';
+    const netSign  = netVal >= 0 ? '+' : '';
     return `<div class="rmb-row" style="flex-wrap:wrap;">
       <span class="rmb-label">${m.name}</span>
       <div class="rmb-bar-wrap" style="position:relative;">
         <div style="position:absolute;top:0;left:0;height:100%;width:${incW}%;background:var(--green);opacity:0.3;border-radius:4px;"></div>
         <div style="height:100%;width:${spW}%;background:var(--coral);opacity:0.7;border-radius:4px;"></div>
       </div>
-      <span class="rmb-val">${hasData ? bFmt(m.inc - m.spent) : '—'}</span>
+      <span class="rmb-val" style="${hasData ? netClass : ''}">${hasData ? netSign + bFmt(netVal) : '—'}</span>
       ${m.notes ? `<div style="width:100%;padding:2px 0 4px 40px;font-size:11px;color:var(--mid);font-style:italic;">📝 ${m.notes}</div>` : ''}
     </div>`;
   }).join('');
