@@ -2733,6 +2733,40 @@ function renderReview() {
     }
     attachSwipe(wrap);
   }, { passive: true });
+
+  // ── Desktop click on the hover tick ──────────────────────────
+  // On non-touch devices (hover-capable pointers) the green "Done"
+  // side-tab is revealed on hover via CSS. Clicking it runs the same
+  // right-slide animation the mobile swipe uses, then calls
+  // togglePaid — keeping the layout and outcome identical to mobile.
+  const isDesktopHover = () =>
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  document.addEventListener('click', e => {
+    const tab = e.target.closest('.swipe-action-check');
+    if (!tab) return;
+    if (!isDesktopHover()) return; // Mobile still uses swipe
+
+    const wrap = tab.closest('.swipe-wrap');
+    if (!wrap || wrap.dataset.hasPaid !== 'true') return;
+    if (wrap.classList.contains('animate-check') ||
+        wrap.classList.contains('animate-out')) return;
+
+    const section = wrap.dataset.section;
+    const index   = parseInt(wrap.dataset.index, 10);
+    if (!section || Number.isNaN(index)) return;
+
+    // Run the same slide-right animation used by the mobile swipe.
+    wrap.classList.add('animate-check');
+    wrap.classList.remove('reveal-check');
+    // togglePaid() re-renders the list; waiting for the animation to
+    // finish (matching the mobile 280ms timeout) keeps the motion
+    // consistent across input methods. Pass `true` like mobile does —
+    // the swipe-right action is always "mark paid".
+    setTimeout(() => {
+      togglePaid(section, index, true);
+    }, 280);
+  });
 })();
 
 document.addEventListener('DOMContentLoaded', function() {

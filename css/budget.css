@@ -1227,6 +1227,41 @@ nav {
 }
 .swipe-wrap.reveal-check .swipe-action-check { opacity: 1; }
 
+/* ── DESKTOP HOVER: show the "Done" side-tab on row hover ──
+   Mobile keeps the swipe behaviour (targets coarse pointer / no-hover
+   media). Desktop gets a clickable green tick that slides in from the
+   left when the user hovers the bill row; clicking it triggers the
+   same slide-right animation as the mobile swipe. */
+@media (hover: hover) and (pointer: fine) {
+  .swipe-wrap .swipe-action-check {
+    /* Start hidden off to the left so it slides in on hover */
+    transform: translateX(-100%);
+    transition: transform 0.2s ease, opacity 0.15s ease;
+    pointer-events: none;
+    cursor: pointer;
+    opacity: 0;
+  }
+  /* Only bill rows (data-has-paid=true) respond to hover — and only
+     when NOT currently animating a check-off. Already-paid rows still
+     show the tab on hover so the user can un-check. */
+  .swipe-wrap[data-has-paid="true"]:hover:not(.animate-check):not(.animate-out) .swipe-action-check {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .swipe-wrap[data-has-paid="true"] .swipe-action-check:hover {
+    filter: brightness(1.08);
+  }
+  /* Already-paid rows don't need the hover tab (bill is already
+     marked as done). The mobile swipe behaviour on paid rows is
+     effectively a no-op too, so hiding it here keeps parity. */
+  .swipe-wrap[data-has-paid="true"]:has(.row-paid):hover .swipe-action-check {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
 /* The sliding content strip */
 .swipe-content {
   position: relative;
