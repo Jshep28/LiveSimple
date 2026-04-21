@@ -2274,63 +2274,56 @@ function renderReview() {
     const m = raw;
     const n = v => parseFloat(v) || 0;
 
-    // ── Mirror the same "actual || budget" fallback logic used by
-    //    updateTotals() on the Budget page and by calcRollover(), so
-    //    the Review reflects what the user SEES as their monthly
-    //    income / left-to-spend number even when only budgets (no
-    //    actuals) have been entered. ────────────────────────────────
+    // ── Use the SAME formula as the Budget page's hero card ────────
+    //    "Amount Left to Spend" = (inc_actual + inc_uncat) totalled,
+    //    OR inc_budget if no income actuals yet. Then subtract every
+    //    outgoing (bills + expenses + savings + debt) using the same
+    //    actual-totals-OR-budget fallback per category. Rollover is
+    //    intentionally NOT included here — the Review graph shows
+    //    each month as a standalone "take-home" number, and rolling
+    //    last month's leftovers into this month's take-home would
+    //    double-count money on the annual projection.
 
-    // Income: row actuals + any log entries whose source doesn't match a named row
-    const knownIncomeSources = (m.income || []).map(r => r.name);
-    const incRowsActual = (m.income || []).reduce((a,r) => a + n(r.actual), 0);
+    // ── Income ────────────────────────────────────────────────────
+    // Sum ALL income log entries (categorised + uncategorised) the
+    // same way calcRollover does — this is the authoritative "income
+    // actual" for the month. Fall back to sum of row budgets.
+    const incLogTotal = (m.incomeLog || []).reduce((a,e) => a + n(e.amount), 0);
     const incRowsBudget = (m.income || []).reduce((a,r) => a + n(r.budget), 0);
-    const uncatIncome   = (m.incomeLog || [])
-      .filter(e => !e.source || !knownIncomeSources.includes(e.source))
-      .reduce((a,e) => a + n(e.amount), 0);
-    const incActual = incRowsActual + uncatIncome;
+    const incActual = incLogTotal;
     const incBudget = incRowsBudget;
     const inc = incActual || incBudget;
 
-    // Bills: row actuals + uncategorised log entries, budget fallback
-    const knownBills  = (m.bills || []).map(r => r.name);
-    const blRowsActual = (m.bills || []).reduce((a,r) => a + n(r.actual), 0);
+    // ── Bills ─────────────────────────────────────────────────────
+    const blLogTotal = (m.billsLog || []).reduce((a,e) => a + n(e.amount), 0);
     const blRowsBudget = (m.bills || []).reduce((a,r) => a + n(r.budget), 0);
-    const uncatBills   = (m.billsLog || [])
-      .filter(e => !e.name || !knownBills.includes(e.name))
-      .reduce((a,e) => a + n(e.amount), 0);
-    const billsActual = blRowsActual + uncatBills;
+    const billsActual = blLogTotal;
     const bills = billsActual || blRowsBudget;
 
-    // Expenses: transaction log first, budget fallback (expenseSummary)
+    // ── Expenses (transaction log only; budget fallback optional) ─
     const expensesActual = (m.expenses || []).reduce((a,e) => a + n(e.amount), 0);
     const expensesBudget = (m.expenseSummary || []).reduce((a,r) => a + n(r.budget), 0);
     const expenses = expensesActual || expensesBudget;
 
-    // Savings: row actuals + uncategorised log entries, budget fallback
-    const knownSavings = (m.savings || []).map(r => r.name);
-    const svRowsActual = (m.savings || []).reduce((a,r) => a + n(r.actual), 0);
+    // ── Savings ───────────────────────────────────────────────────
+    const svLogTotal = (m.savingsLog || []).reduce((a,e) => a + n(e.amount), 0);
     const svRowsBudget = (m.savings || []).reduce((a,r) => a + n(r.budget), 0);
-    const uncatSavings = (m.savingsLog || [])
-      .filter(e => !e.name || !knownSavings.includes(e.name))
-      .reduce((a,e) => a + n(e.amount), 0);
-    const savedActual = svRowsActual + uncatSavings;
+    const savedActual = svLogTotal;
     const saved = savedActual || svRowsBudget;
 
-    // Debt: row actuals + uncategorised log entries, budget fallback
-    const knownDebt  = (m.debt || []).map(r => r.name);
-    const dtRowsActual = (m.debt || []).reduce((a,r) => a + n(r.actual), 0);
+    // ── Debt ──────────────────────────────────────────────────────
+    const dtLogTotal = (m.debtLog || []).reduce((a,e) => a + n(e.amount), 0);
     const dtRowsBudget = (m.debt || []).reduce((a,r) => a + n(r.budget), 0);
-    const uncatDebt    = (m.debtLog || [])
-      .filter(e => !e.name || !knownDebt.includes(e.name))
-      .reduce((a,e) => a + n(e.amount), 0);
-    const debtActual = dtRowsActual + uncatDebt;
+    const debtActual = dtLogTotal;
     const debt = debtActual || dtRowsBudget;
 
-    // Totals — spent = bills + expenses + savings + debt
+    // Totals — same as updateTotals: spent = bills + expenses + savings + debt
     const spent = bills + expenses + saved + debt;
     const spentActual = billsActual + expensesActual + savedActual + debtActual;
     const spentBudget = blRowsBudget + expensesBudget + svRowsBudget + dtRowsBudget;
-    // Pure per-month net: income − all outgoings, no rollover
+    // Per-month net / take-home (matches the hero card's "Amount Left
+    // to Spend" WITHOUT rollover — rollover is a running balance, not
+    // a take-home contribution).
     const net = inc - spent;
 
     // Has the user entered ANY data for this month? (actuals OR budgets)
