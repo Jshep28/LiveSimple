@@ -579,8 +579,9 @@ function copyLastMonth(includeActuals) {
   });
 
   // Copy log entries and period data if includeActuals
+  // NOTE: expenses (daily spend log) is intentionally never copied — it must start fresh each month
   if (includeActuals) {
-    ['incomeLog', 'billsLog', 'savingsLog', 'debtLog', 'expenses'].forEach(key => {
+    ['incomeLog', 'billsLog', 'savingsLog', 'debtLog'].forEach(key => {
       if (prevData[key]) cur[key] = JSON.parse(JSON.stringify(prevData[key]));
     });
     ['incomePeriods', 'billsPeriods'].forEach(key => {
@@ -589,6 +590,8 @@ function copyLastMonth(includeActuals) {
     if (prevData.incomePeriodMode) cur.incomePeriodMode = prevData.incomePeriodMode;
     if (prevData.billsPeriodMode)  cur.billsPeriodMode  = prevData.billsPeriodMode;
   }
+  // Always reset the daily expense log regardless of copy mode
+  cur.expenses = [];
 
   if (prevData.expenseSummary) {
     cur.expenseSummary = prevData.expenseSummary.map(r => ({
@@ -2262,35 +2265,47 @@ function renderReview() {
     const raw = months[i];
     if (!raw) return { name: name.slice(0,3), inc: 0, spent: 0, saved: 0, net: 0, notes: '' };
     const m = raw;
+    const n = v => parseFloat(v) || 0;
 
-    // ── Income ────────────────────────────────────────────────────
-    // Prefer log total; fall back to sum of budget-row actual fields
-    const incLog  = (m.incomeLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
-    const incRows = (m.income    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
-    const inc = incLog || incRows;
+    // ── Mirror the exact formula from updateTotals() ──────────────
+    // Income: row actuals + any log entries whose source doesn't match a named row
+    const knownIncomeSources = (m.income || []).map(r => r.name);
+    const incRowsTotal = (m.income || []).reduce((a,r) => a + n(r.actual), 0);
+    const uncatIncome  = (m.incomeLog || [])
+      .filter(e => !e.source || !knownIncomeSources.includes(e.source))
+      .reduce((a,e) => a + n(e.amount), 0);
+    const inc = incRowsTotal + uncatIncome;
 
-    // ── Bills ─────────────────────────────────────────────────────
-    const blLog  = (m.billsLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
-    const blRows = (m.bills    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
-    const bills  = blLog || blRows;
+    // Bills: row actuals + uncategorised log entries
+    const knownBills  = (m.bills || []).map(r => r.name);
+    const blRowsTotal = (m.bills || []).reduce((a,r) => a + n(r.actual), 0);
+    const uncatBills  = (m.billsLog || [])
+      .filter(e => !e.name || !knownBills.includes(e.name))
+      .reduce((a,e) => a + n(e.amount), 0);
+    const bills = blRowsTotal + uncatBills;
 
-    // ── Expenses (transaction log only — no row fallback) ─────────
-    const expenses = (m.expenses || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+    // Expenses: transaction log only (no rows)
+    const expenses = (m.expenses || []).reduce((a,e) => a + n(e.amount), 0);
 
-    // ── Savings ───────────────────────────────────────────────────
-    const svLog  = (m.savingsLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
-    const svRows = (m.savings    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
-    const saved  = svLog || svRows;
+    // Savings: row actuals + uncategorised log entries
+    const knownSavings = (m.savings || []).map(r => r.name);
+    const svRowsTotal  = (m.savings || []).reduce((a,r) => a + n(r.actual), 0);
+    const uncatSavings = (m.savingsLog || [])
+      .filter(e => !e.name || !knownSavings.includes(e.name))
+      .reduce((a,e) => a + n(e.amount), 0);
+    const saved = svRowsTotal + uncatSavings;
 
-    // ── Debt ──────────────────────────────────────────────────────
-    const dtLog  = (m.debtLog || []).reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
-    const dtRows = (m.debt    || []).reduce((a,r) => a + (parseFloat(r.actual )||0), 0);
-    const debt   = dtLog || dtRows;
+    // Debt: row actuals + uncategorised log entries
+    const knownDebt  = (m.debt || []).map(r => r.name);
+    const dtRowsTotal = (m.debt || []).reduce((a,r) => a + n(r.actual), 0);
+    const uncatDebt   = (m.debtLog || [])
+      .filter(e => !e.name || !knownDebt.includes(e.name))
+      .reduce((a,e) => a + n(e.amount), 0);
+    const debt = dtRowsTotal + uncatDebt;
 
-    // ── Totals ────────────────────────────────────────────────────
-    // "spent" = all outgoings (matches updateTotals definition)
+    // Totals — same as updateTotals: spent = bills + expenses + savings + debt
     const spent = bills + expenses + saved + debt;
-    // Per-month net = income - all outgoings (no rollover — purely what was made/lost)
+    // Pure per-month net: income − all outgoings, no rollover
     const net = inc - spent;
 
     totalIncome += inc;
