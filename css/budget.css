@@ -532,10 +532,9 @@ nav {
   transition: color 0.15s, background 0.15s;
 }
 .delete-btn:hover { color: var(--red); background: rgba(232,84,68,0.08); }
-/* Hide transaction log delete × on touch devices (swipe-to-delete replaces it) */
-@media (hover: none) and (pointer: coarse) {
-  .txn-swipe-wrap .delete-btn { display: none; }
-}
+/* Transaction log × is hidden everywhere — mobile uses swipe, desktop
+   uses the hover Delete tab. */
+.txn-swipe-wrap .delete-btn { display: none; }
 
 /* ── TRANSACTION DETAIL POPUP ───────────────────────────────── */
 .txn-popup-overlay {
@@ -1136,7 +1135,11 @@ nav {
 .copy-bar.visible { display: flex; }
 [data-theme="dark"] .copy-bar { background: #1e2a3a; }
 
-/* TRACKER ROW DELETE BUTTON (desktop only) */
+/* TRACKER ROW DELETE BUTTON
+   The × button is kept in the DOM (so clicks from any legacy path
+   still work), but hidden everywhere — mobile uses swipe-to-delete
+   and desktop now uses the hover Delete tab revealed on the right
+   half of the row. */
 .tracker-row { position: relative; }
 .row-del {
   position: absolute;
@@ -1150,17 +1153,8 @@ nav {
   cursor: pointer;
   padding: 4px 6px;
   line-height: 1;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
+  display: none;
   z-index: 2;
-}
-.tracker-row:hover .row-del { opacity: 1; }
-.row-del:hover { color: var(--red); }
-
-/* ── SWIPE GESTURES (mobile) ────────────────────────────────── */
-/* Hide desktop × button on touch devices */
-@media (hover: none) and (pointer: coarse) {
-  .row-del { display: none; }
 }
 
 /* Swipeable row wrapper */
@@ -1233,8 +1227,10 @@ nav {
    left when the user hovers the bill row; clicking it triggers the
    same slide-right animation as the mobile swipe. */
 @media (hover: hover) and (pointer: fine) {
-  /* Tab starts hidden off to the left. It slides in to sit flush
-     against the left edge of the (now-shifted) row content. */
+  /* ── Tabs start hidden off-screen ──
+     Both tabs sit at opacity 0 / translated off-axis so they don't
+     interfere with the row layout until the appropriate hover zone
+     is activated. */
   .swipe-wrap .swipe-action-check {
     transform: translateX(-100%);
     transition: transform 0.2s ease, opacity 0.15s ease;
@@ -1242,27 +1238,49 @@ nav {
     cursor: pointer;
     opacity: 0;
   }
-  /* On hover of an unpaid bill row: slide the content strip right by
-     the width of the tab (72px), and slide the tab into view. Because
-     the shift uses the same `transform` the mobile swipe uses, the
-     animate-check class still overrides cleanly on click. */
-  .swipe-wrap[data-has-paid="true"]:hover:not(.animate-check):not(.animate-out) .swipe-content {
+  .swipe-wrap .swipe-action-delete {
+    transform: translateX(100%);
+    transition: transform 0.2s ease, opacity 0.15s ease;
+    pointer-events: none;
+    cursor: pointer;
+    opacity: 0;
+  }
+
+  /* ── Split-zone hover ──
+     `.hover-check-zone` (left half, bill rows only) slides the
+     content right and reveals the green Done tab.
+     `.hover-delete-zone` (right half, all rows) slides the content
+     left and reveals the red Delete tab.
+     Classes are applied by a JS mousemove listener so we can do a
+     true halfway split regardless of row width. */
+  .swipe-wrap.hover-check-zone:not(.animate-check):not(.animate-out) .swipe-content {
     transform: translateX(72px);
   }
-  .swipe-wrap[data-has-paid="true"]:hover:not(.animate-check):not(.animate-out) .swipe-action-check {
+  .swipe-wrap.hover-check-zone:not(.animate-check):not(.animate-out) .swipe-action-check {
     transform: translateX(0);
     opacity: 1;
     pointer-events: auto;
   }
-  .swipe-wrap[data-has-paid="true"] .swipe-action-check:hover {
+  .swipe-wrap.hover-delete-zone:not(.animate-check):not(.animate-out) .swipe-content {
+    transform: translateX(-72px);
+  }
+  .swipe-wrap.hover-delete-zone:not(.animate-check):not(.animate-out) .swipe-action-delete {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .swipe-wrap .swipe-action-check:hover,
+  .swipe-wrap .swipe-action-delete:hover {
     filter: brightness(1.08);
   }
-  /* Already-paid rows: no hover tab, no content shift — the row just
-     sits in its "paid" state at the bottom of the list. */
-  .swipe-wrap[data-has-paid="true"]:has(.row-paid):hover .swipe-content {
+
+  /* Already-paid rows: no Done tab (already done) — but Delete tab
+     still works on the right half so the user can remove the bill. */
+  .swipe-wrap[data-has-paid="true"].hover-check-zone:has(.row-paid) .swipe-content {
     transform: none;
   }
-  .swipe-wrap[data-has-paid="true"]:has(.row-paid):hover .swipe-action-check {
+  .swipe-wrap[data-has-paid="true"].hover-check-zone:has(.row-paid) .swipe-action-check {
     transform: translateX(-100%);
     opacity: 0;
     pointer-events: none;

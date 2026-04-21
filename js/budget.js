@@ -2767,6 +2767,79 @@ function renderReview() {
       togglePaid(section, index, true);
     }, 280);
   });
+
+  // ── Desktop hover split-zone for Done / Delete tabs ──────────
+  // Left half of the row reveals the green Done tab (bills only);
+  // right half reveals the red Delete tab (all rows). The JS
+  // decides which half the cursor is in and toggles the zone
+  // class; the CSS handles the actual reveal + content shift.
+  document.addEventListener('mousemove', e => {
+    if (!isDesktopHover()) return;
+    const wrap = e.target.closest('.swipe-wrap');
+    if (!wrap) return;
+    // Don't interfere with an in-flight animation
+    if (wrap.classList.contains('animate-check') ||
+        wrap.classList.contains('animate-out')) return;
+
+    const rect = wrap.getBoundingClientRect();
+    const midX = rect.left + rect.width / 2;
+    const inLeftHalf = e.clientX < midX;
+
+    const canCheck = wrap.dataset.hasPaid === 'true' &&
+                     !wrap.querySelector('.row-paid');
+
+    if (inLeftHalf && canCheck) {
+      if (!wrap.classList.contains('hover-check-zone')) {
+        wrap.classList.add('hover-check-zone');
+      }
+      wrap.classList.remove('hover-delete-zone');
+    } else {
+      if (!wrap.classList.contains('hover-delete-zone')) {
+        wrap.classList.add('hover-delete-zone');
+      }
+      wrap.classList.remove('hover-check-zone');
+    }
+  });
+
+  // Clear zone classes when cursor leaves the row
+  document.addEventListener('mouseout', e => {
+    const wrap = e.target.closest && e.target.closest('.swipe-wrap');
+    if (!wrap) return;
+    // Only clear when leaving the wrap entirely (relatedTarget outside)
+    if (e.relatedTarget && wrap.contains(e.relatedTarget)) return;
+    wrap.classList.remove('hover-check-zone', 'hover-delete-zone');
+  });
+
+  // ── Desktop click on the hover delete tab ────────────────────
+  // Mirrors the mobile swipe-left flow: add `animate-out` (slides
+  // content off-screen left), then call deleteRow / deleteTxn
+  // after the animation completes.
+  document.addEventListener('click', e => {
+    const tab = e.target.closest('.swipe-action-delete');
+    if (!tab) return;
+    if (!isDesktopHover()) return; // Mobile still uses swipe
+
+    const wrap = tab.closest('.swipe-wrap');
+    if (!wrap) return;
+    if (wrap.classList.contains('animate-check') ||
+        wrap.classList.contains('animate-out')) return;
+
+    const isTxnRow = wrap.classList.contains('txn-swipe-wrap');
+
+    wrap.classList.add('animate-out');
+    wrap.classList.remove('reveal-delete', 'hover-delete-zone');
+
+    setTimeout(() => {
+      if (isTxnRow) {
+        const txnIdx = parseInt(wrap.dataset.txnIdx, 10);
+        if (!Number.isNaN(txnIdx)) deleteTxn(txnIdx);
+      } else {
+        const section = wrap.dataset.section;
+        const index   = parseInt(wrap.dataset.index, 10);
+        if (section && !Number.isNaN(index)) deleteRow(section, index);
+      }
+    }, 280);
+  });
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
