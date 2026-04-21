@@ -264,7 +264,19 @@ input, select, textarea, button, canvas, img,
 [data-theme="dark"] .daily-habits-section,
 [data-theme="dark"] .wm-section { background: #162030; }
 [data-theme="dark"] .habit-add-row,
-[data-theme="dark"] .wm-add { background: #0f1923; border-color: #1e2d3d; }
+[data-theme="dark"] .wm-add { background: #162030; border-color: #1e2d3d; }
+/* Inputs inside habit add rows: match the card surface (same
+   approach as the budget page's .amount-input input). */
+[data-theme="dark"] .habit-add-row input,
+[data-theme="dark"] .wm-add input {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid #1e2d3d !important;
+  color: #e0e8f0 !important;
+}
+[data-theme="dark"] .habit-add-row input:focus,
+[data-theme="dark"] .wm-add input:focus {
+  border-color: var(--coral) !important;
+}
 [data-theme="dark"] .cal-header { background: #0f1923; border-bottom-color: #1e2d3d; }
 [data-theme="dark"] .cal-row { border-bottom-color: #1e2d3d; }
 [data-theme="dark"] .cal-row:hover { background: #1a2d45; }

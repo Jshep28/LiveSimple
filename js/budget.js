@@ -2263,55 +2263,92 @@ function renderReview() {
   let totalIncome = 0, totalSpent = 0, totalSaved = 0;
   const monthlyData = MONTHS.map((name, i) => {
     const raw = months[i];
-    if (!raw) return { name: name.slice(0,3), inc: 0, spent: 0, saved: 0, net: 0, notes: '' };
+    if (!raw) return {
+      name: name.slice(0,3),
+      inc: 0, spent: 0, saved: 0, net: 0,
+      incActual: 0, incBudget: 0,
+      spentActual: 0, spentBudget: 0,
+      hasActual: false, hasBudget: false,
+      notes: ''
+    };
     const m = raw;
     const n = v => parseFloat(v) || 0;
 
-    // ── Mirror the exact formula from updateTotals() ──────────────
+    // ── Mirror the same "actual || budget" fallback logic used by
+    //    updateTotals() on the Budget page and by calcRollover(), so
+    //    the Review reflects what the user SEES as their monthly
+    //    income / left-to-spend number even when only budgets (no
+    //    actuals) have been entered. ────────────────────────────────
+
     // Income: row actuals + any log entries whose source doesn't match a named row
     const knownIncomeSources = (m.income || []).map(r => r.name);
-    const incRowsTotal = (m.income || []).reduce((a,r) => a + n(r.actual), 0);
-    const uncatIncome  = (m.incomeLog || [])
+    const incRowsActual = (m.income || []).reduce((a,r) => a + n(r.actual), 0);
+    const incRowsBudget = (m.income || []).reduce((a,r) => a + n(r.budget), 0);
+    const uncatIncome   = (m.incomeLog || [])
       .filter(e => !e.source || !knownIncomeSources.includes(e.source))
       .reduce((a,e) => a + n(e.amount), 0);
-    const inc = incRowsTotal + uncatIncome;
+    const incActual = incRowsActual + uncatIncome;
+    const incBudget = incRowsBudget;
+    const inc = incActual || incBudget;
 
-    // Bills: row actuals + uncategorised log entries
+    // Bills: row actuals + uncategorised log entries, budget fallback
     const knownBills  = (m.bills || []).map(r => r.name);
-    const blRowsTotal = (m.bills || []).reduce((a,r) => a + n(r.actual), 0);
-    const uncatBills  = (m.billsLog || [])
+    const blRowsActual = (m.bills || []).reduce((a,r) => a + n(r.actual), 0);
+    const blRowsBudget = (m.bills || []).reduce((a,r) => a + n(r.budget), 0);
+    const uncatBills   = (m.billsLog || [])
       .filter(e => !e.name || !knownBills.includes(e.name))
       .reduce((a,e) => a + n(e.amount), 0);
-    const bills = blRowsTotal + uncatBills;
+    const billsActual = blRowsActual + uncatBills;
+    const bills = billsActual || blRowsBudget;
 
-    // Expenses: transaction log only (no rows)
-    const expenses = (m.expenses || []).reduce((a,e) => a + n(e.amount), 0);
+    // Expenses: transaction log first, budget fallback (expenseSummary)
+    const expensesActual = (m.expenses || []).reduce((a,e) => a + n(e.amount), 0);
+    const expensesBudget = (m.expenseSummary || []).reduce((a,r) => a + n(r.budget), 0);
+    const expenses = expensesActual || expensesBudget;
 
-    // Savings: row actuals + uncategorised log entries
+    // Savings: row actuals + uncategorised log entries, budget fallback
     const knownSavings = (m.savings || []).map(r => r.name);
-    const svRowsTotal  = (m.savings || []).reduce((a,r) => a + n(r.actual), 0);
+    const svRowsActual = (m.savings || []).reduce((a,r) => a + n(r.actual), 0);
+    const svRowsBudget = (m.savings || []).reduce((a,r) => a + n(r.budget), 0);
     const uncatSavings = (m.savingsLog || [])
       .filter(e => !e.name || !knownSavings.includes(e.name))
       .reduce((a,e) => a + n(e.amount), 0);
-    const saved = svRowsTotal + uncatSavings;
+    const savedActual = svRowsActual + uncatSavings;
+    const saved = savedActual || svRowsBudget;
 
-    // Debt: row actuals + uncategorised log entries
+    // Debt: row actuals + uncategorised log entries, budget fallback
     const knownDebt  = (m.debt || []).map(r => r.name);
-    const dtRowsTotal = (m.debt || []).reduce((a,r) => a + n(r.actual), 0);
-    const uncatDebt   = (m.debtLog || [])
+    const dtRowsActual = (m.debt || []).reduce((a,r) => a + n(r.actual), 0);
+    const dtRowsBudget = (m.debt || []).reduce((a,r) => a + n(r.budget), 0);
+    const uncatDebt    = (m.debtLog || [])
       .filter(e => !e.name || !knownDebt.includes(e.name))
       .reduce((a,e) => a + n(e.amount), 0);
-    const debt = dtRowsTotal + uncatDebt;
+    const debtActual = dtRowsActual + uncatDebt;
+    const debt = debtActual || dtRowsBudget;
 
-    // Totals — same as updateTotals: spent = bills + expenses + savings + debt
+    // Totals — spent = bills + expenses + savings + debt
     const spent = bills + expenses + saved + debt;
+    const spentActual = billsActual + expensesActual + savedActual + debtActual;
+    const spentBudget = blRowsBudget + expensesBudget + svRowsBudget + dtRowsBudget;
     // Pure per-month net: income − all outgoings, no rollover
     const net = inc - spent;
 
-    totalIncome += inc;
-    totalSpent  += spent;
-    totalSaved  += saved;
-    return { name: name.slice(0,3), inc, spent, saved, net, notes: m.notes || '' };
+    // Has the user entered ANY data for this month? (actuals OR budgets)
+    const hasActual = incActual > 0 || spentActual > 0;
+    const hasBudget = incBudget > 0 || spentBudget > 0;
+
+    // "Net Savings This Year" / totals — actuals only (real money)
+    totalIncome += incActual;
+    totalSpent  += spentActual;
+    totalSaved  += savedActual;
+    return {
+      name: name.slice(0,3),
+      inc, spent, saved, net,
+      incActual, incBudget,
+      spentActual, spentBudget,
+      hasActual, hasBudget,
+      notes: m.notes || ''
+    };
   });
 
   // Habit rate across year
@@ -2354,10 +2391,10 @@ function renderReview() {
   });
 
   // ── Determine which months are "filled" (have any real data) ──
-  // A month is filled if it has any log entries OR any budget-row actuals entered.
-  const filledMonths = monthlyData.map((m, i) => {
-    return m.inc > 0 || m.spent > 0;
-  });
+  // A month is filled if the user has entered EITHER actuals (logs or
+  // row-level actuals) OR budget values. Any of those mean the month
+  // has its own number to display, rather than needing the average.
+  const filledMonths = monthlyData.map(m => m.hasActual || m.hasBudget);
 
   // Per-month take-home = net (inc - all outgoings) minus tax on income, no rollover
   const effectiveTaxRate = taxOn ? taxRate : 0;
@@ -2374,13 +2411,14 @@ function renderReview() {
     ? filledTakeHomeValues.reduce((a, v) => a + v, 0) / filledCount
     : 0;
 
-  // Average tax amount (for subtitle display)
+  // Average income across filled months (for tax display)
   const avgFilledIncome = filledCount
     ? monthlyData.filter((_, i) => filledMonths[i]).reduce((a, m) => a + m.inc, 0) / filledCount
     : 0;
   const avgTaxAmount = avgFilledIncome * (effectiveTaxRate / 100);
 
-  // Annual total: actual for filled months + avg for empty months (no rollover stacking)
+  // Annual total: each month uses its own take-home if data entered,
+  // otherwise uses the average of months that DO have data.
   const annualTakeHome = monthlyData.reduce((sum, m, i) => {
     return sum + (filledMonths[i] ? monthTakeHome(m) : avgTakeHome);
   }, 0);
@@ -2407,10 +2445,18 @@ function renderReview() {
       ? baseLabel + ' · after ' + taxRate + '% tax'
       : baseLabel + ' · pre-tax';
     if (projTaxEl) {
-      if (taxOn && avgTaxAmount > 0) {
-        const annualTax = avgTaxAmount * filledCount + avgTaxAmount * (12 - filledCount);
-        projTaxEl.innerHTML = '−' + bFmt(annualTax) + '/yr in tax';
-        projTaxEl.style.display = 'block';
+      if (taxOn && effectiveTaxRate > 0) {
+        // Actual tax for filled months + avg tax for projected months
+        const filledTaxTotal = monthlyData
+          .filter((_, i) => filledMonths[i])
+          .reduce((a, m) => a + m.inc * (effectiveTaxRate / 100), 0);
+        const annualTax = filledTaxTotal + avgTaxAmount * (12 - filledCount);
+        if (annualTax > 0) {
+          projTaxEl.innerHTML = '−' + bFmt(annualTax) + '/yr in tax';
+          projTaxEl.style.display = 'block';
+        } else {
+          projTaxEl.style.display = 'none';
+        }
       } else {
         projTaxEl.style.display = 'none';
       }
