@@ -2758,7 +2758,7 @@ function renderReview() {
 
     // Run the same slide-right animation used by the mobile swipe.
     wrap.classList.add('animate-check');
-    wrap.classList.remove('reveal-check');
+    wrap.classList.remove('reveal-check', 'hover-check-zone');
     // togglePaid() re-renders the list; waiting for the animation to
     // finish (matching the mobile 280ms timeout) keeps the motion
     // consistent across input methods. Pass `true` like mobile does —
