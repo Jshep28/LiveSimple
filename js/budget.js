@@ -1159,11 +1159,13 @@ function updateBudget(section, i, val) {
 function togglePaid(section, i, checked) {
   const d = getBudgetMonth(currentBudgetMonth);
   d[section][i].paid = checked;
-  // Move paid bills to bottom, unpaid to top
-  if (section === 'bills') {
-    const unpaid = d.bills.filter(r => !r.paid);
-    const paid   = d.bills.filter(r =>  r.paid);
-    d.bills = [...unpaid, ...paid];
+  // Move paid rows to the bottom, unpaid to the top (bills + debt share
+  // the same "tick off and move down" behaviour on both desktop and
+  // mobile — driven by the same swipe/hover Done action).
+  if (section === 'bills' || section === 'debt') {
+    const unpaid = d[section].filter(r => !r.paid);
+    const paid   = d[section].filter(r =>  r.paid);
+    d[section] = [...unpaid, ...paid];
   }
   saveBudgetMonth(currentBudgetMonth, d);
   renderBudget();
