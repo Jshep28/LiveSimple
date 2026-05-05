@@ -966,23 +966,35 @@ function calcRollover(month, year, depth) {
   const data = ((all[year] || {}).budget || {})[month];
   if (!data) return 0;
 
-  // Compute actuals from logs — include ALL log entries (categorised + uncategorised)
+  // Derive actuals the same way renderBudget() does:
+  // named-row log entries summed per row, plus uncategorised entries
   const incLog = data.incomeLog  || [];
   const blLog  = data.billsLog   || [];
   const svLog  = data.savingsLog || [];
   const dtLog  = data.debtLog    || [];
 
-  // Total all log entries (not just those matching a named row)
-  const incActual = incLog.reduce((a, e) => a + num(e.amount), 0);
-  const blActual  = blLog.reduce((a, e) => a + num(e.amount), 0);
-  const svActual  = svLog.reduce((a, e) => a + num(e.amount), 0);
-  const dtActual  = dtLog.reduce((a, e) => a + num(e.amount), 0);
+  const sumLog = (log, rows, nameKey) => {
+    const known = rows.map(r => r.name);
+    const named = rows.reduce((a, r) =>
+      a + log.filter(e => (e[nameKey] || e.source || e.name) === r.name)
+             .reduce((s, e) => s + num(e.amount), 0), 0);
+    const uncat = log.filter(e => {
+      const n = e[nameKey] || e.source || e.name;
+      return !n || !known.includes(n);
+    }).reduce((a, e) => a + num(e.amount), 0);
+    return named + uncat;
+  };
 
-  const pIn  = Math.max(incActual || data.income.reduce((a,r) => a + num(r.budget), 0), 0);
-  const pOut = (blActual  || data.bills.reduce((a,r) => a + num(r.budget), 0))
+  const incActual = sumLog(incLog, data.income || [], 'source');
+  const blActual  = sumLog(blLog,  data.bills  || [], 'name');
+  const svActual  = sumLog(svLog,  data.savings|| [], 'name');
+  const dtActual  = sumLog(dtLog,  data.debt   || [], 'name');
+
+  const pIn  = Math.max(incActual || (data.income  || []).reduce((a,r) => a + num(r.budget), 0), 0);
+  const pOut = (blActual || (data.bills   || []).reduce((a,r) => a + num(r.budget), 0))
              + (data.expenses || []).reduce((a,e) => a + num(e.amount), 0)
-             + (svActual  || data.savings.reduce((a,r) => a + num(r.budget), 0))
-             + (dtActual  || data.debt.reduce((a,r) => a + num(r.budget), 0));
+             + (svActual || (data.savings || []).reduce((a,r) => a + num(r.budget), 0))
+             + (dtActual || (data.debt    || []).reduce((a,r) => a + num(r.budget), 0));
 
   // This month's own rollover from the month before it
   const prevM = month === 0 ? 11 : month - 1;
@@ -2265,85 +2277,92 @@ function renderReview() {
   let totalIncome = 0, totalSpent = 0, totalSaved = 0;
   const monthlyData = MONTHS.map((name, i) => {
     const raw = months[i];
-    if (!raw) return {
-      name: name.slice(0,3),
-      inc: 0, spent: 0, saved: 0, net: 0,
-      incActual: 0, incBudget: 0,
-      spentActual: 0, spentBudget: 0,
-      hasActual: false, hasBudget: false,
-      notes: ''
-    };
+    const empty = { name: name.slice(0,3), inc: 0, spent: 0, saved: 0, net: 0, hasData: false, notes: '' };
+    if (!raw) return empty;
     const m = raw;
     const n = v => parseFloat(v) || 0;
 
-    // ── Use the SAME formula as the Budget page's hero card ────────
-    //    "Amount Left to Spend" = (inc_actual + inc_uncat) totalled,
-    //    OR inc_budget if no income actuals yet. Then subtract every
-    //    outgoing (bills + expenses + savings + debt) using the same
-    //    actual-totals-OR-budget fallback per category. Rollover is
-    //    intentionally NOT included here — the Review graph shows
-    //    each month as a standalone "take-home" number, and rolling
-    //    last month's leftovers into this month's take-home would
-    //    double-count money on the annual projection.
+    // ── Replicate renderBudget()'s log→row derivation exactly ─────
+    // renderBudget() overwrites r.actual from logs at render time;
+    // stored r.actual values are stale. We must re-derive here.
 
-    // ── Income ────────────────────────────────────────────────────
-    // Sum ALL income log entries (categorised + uncategorised) the
-    // same way calcRollover does — this is the authoritative "income
-    // actual" for the month. Fall back to sum of row budgets.
-    const incLogTotal = (m.incomeLog || []).reduce((a,e) => a + n(e.amount), 0);
-    const incRowsBudget = (m.income || []).reduce((a,r) => a + n(r.budget), 0);
-    const incActual = incLogTotal;
-    const incBudget = incRowsBudget;
+    // INCOME: each named row's actual = sum of log entries for that source.
+    // Uncategorised = log entries whose source doesn't match any row name.
+    const incLog = m.incomeLog || [];
+    const incomeRows = m.income || [];
+    const incRowActuals = incomeRows.map(r =>
+      incLog.filter(e => e.source === r.name).reduce((a,e) => a + n(e.amount), 0)
+    );
+    const incRowsTotal  = incRowActuals.reduce((a,v) => a + v, 0);
+    const knownIncomeSources = incomeRows.map(r => r.name);
+    const incUncat = incLog.filter(e => !e.source || !knownIncomeSources.includes(e.source))
+                           .reduce((a,e) => a + n(e.amount), 0);
+    // Actual income = named rows + uncategorised log entries
+    const incActual = incRowsTotal + incUncat;
+    // Budget fallback (for months with budgets but no logged actuals)
+    const incBudget = incomeRows.reduce((a,r) => a + n(r.budget), 0);
     const inc = incActual || incBudget;
 
-    // ── Bills ─────────────────────────────────────────────────────
-    const blLogTotal = (m.billsLog || []).reduce((a,e) => a + n(e.amount), 0);
-    const blRowsBudget = (m.bills || []).reduce((a,r) => a + n(r.budget), 0);
-    const billsActual = blLogTotal;
-    const bills = billsActual || blRowsBudget;
+    // BILLS: same pattern
+    const blLog = m.billsLog || [];
+    const billsRows = m.bills || [];
+    const blRowsTotal = billsRows.map(r =>
+      blLog.filter(e => e.name === r.name).reduce((a,e) => a + n(e.amount), 0)
+    ).reduce((a,v) => a + v, 0);
+    const knownBills = billsRows.map(r => r.name);
+    const blUncat = blLog.filter(e => !e.name || !knownBills.includes(e.name))
+                         .reduce((a,e) => a + n(e.amount), 0);
+    const billsActual = blRowsTotal + blUncat;
+    const billsBudget = billsRows.reduce((a,r) => a + n(r.budget), 0);
+    const bills = billsActual || billsBudget;
 
-    // ── Expenses (transaction log only; budget fallback optional) ─
+    // EXPENSES: transaction log sum (no row fallback for actuals)
     const expensesActual = (m.expenses || []).reduce((a,e) => a + n(e.amount), 0);
     const expensesBudget = (m.expenseSummary || []).reduce((a,r) => a + n(r.budget), 0);
     const expenses = expensesActual || expensesBudget;
 
-    // ── Savings ───────────────────────────────────────────────────
-    const svLogTotal = (m.savingsLog || []).reduce((a,e) => a + n(e.amount), 0);
-    const svRowsBudget = (m.savings || []).reduce((a,r) => a + n(r.budget), 0);
-    const savedActual = svLogTotal;
-    const saved = savedActual || svRowsBudget;
+    // SAVINGS: same pattern as bills/income
+    const svLog = m.savingsLog || [];
+    const savingsRows = m.savings || [];
+    const svRowsTotal = savingsRows.map(r =>
+      svLog.filter(e => e.name === r.name).reduce((a,e) => a + n(e.amount), 0)
+    ).reduce((a,v) => a + v, 0);
+    const knownSavings = savingsRows.map(r => r.name);
+    const svUncat = svLog.filter(e => !e.name || !knownSavings.includes(e.name))
+                         .reduce((a,e) => a + n(e.amount), 0);
+    const savedActual = svRowsTotal + svUncat;
+    const savedBudget = savingsRows.reduce((a,r) => a + n(r.budget), 0);
+    const saved = savedActual || savedBudget;
 
-    // ── Debt ──────────────────────────────────────────────────────
-    const dtLogTotal = (m.debtLog || []).reduce((a,e) => a + n(e.amount), 0);
-    const dtRowsBudget = (m.debt || []).reduce((a,r) => a + n(r.budget), 0);
-    const debtActual = dtLogTotal;
-    const debt = debtActual || dtRowsBudget;
+    // DEBT: same pattern
+    const dtLog = m.debtLog || [];
+    const debtRows = m.debt || [];
+    const dtRowsTotal = debtRows.map(r =>
+      dtLog.filter(e => e.name === r.name).reduce((a,e) => a + n(e.amount), 0)
+    ).reduce((a,v) => a + v, 0);
+    const knownDebt = debtRows.map(r => r.name);
+    const dtUncat = dtLog.filter(e => !e.name || !knownDebt.includes(e.name))
+                         .reduce((a,e) => a + n(e.amount), 0);
+    const debtActual = dtRowsTotal + dtUncat;
+    const debtBudget = debtRows.reduce((a,r) => a + n(r.budget), 0);
+    const debt = debtActual || debtBudget;
 
-    // Totals — same as updateTotals: spent = bills + expenses + savings + debt
+    // ── Totals ────────────────────────────────────────────────────
     const spent = bills + expenses + saved + debt;
-    const spentActual = billsActual + expensesActual + savedActual + debtActual;
-    const spentBudget = blRowsBudget + expensesBudget + svRowsBudget + dtRowsBudget;
-    // Per-month net / take-home (matches the hero card's "Amount Left
-    // to Spend" WITHOUT rollover — rollover is a running balance, not
-    // a take-home contribution).
+    // Pure per-month net (no rollover — rollover is a running balance,
+    // not a standalone monthly contribution)
     const net = inc - spent;
 
-    // Has the user entered ANY data for this month? (actuals OR budgets)
-    const hasActual = incActual > 0 || spentActual > 0;
-    const hasBudget = incBudget > 0 || spentBudget > 0;
+    // hasData: month has any real numbers (actuals or budgets)
+    const hasData = inc > 0 || spent > 0;
 
-    // "Net Savings This Year" / totals — actuals only (real money)
+    // Year totals: actual money only (not budget projections)
+    const spentActual = billsActual + expensesActual + savedActual + debtActual;
     totalIncome += incActual;
     totalSpent  += spentActual;
     totalSaved  += savedActual;
-    return {
-      name: name.slice(0,3),
-      inc, spent, saved, net,
-      incActual, incBudget,
-      spentActual, spentBudget,
-      hasActual, hasBudget,
-      notes: m.notes || ''
-    };
+
+    return { name: name.slice(0,3), inc, spent, saved, net, hasData, notes: m.notes || '' };
   });
 
   // Habit rate across year
@@ -2385,11 +2404,8 @@ function renderReview() {
     btn.classList.toggle('active', parseFloat(btn.dataset.rate) === taxRate);
   });
 
-  // ── Determine which months are "filled" (have any real data) ──
-  // A month is filled if the user has entered EITHER actuals (logs or
-  // row-level actuals) OR budget values. Any of those mean the month
-  // has its own number to display, rather than needing the average.
-  const filledMonths = monthlyData.map(m => m.hasActual || m.hasBudget);
+  // A month is "filled" if it has any income or spending data (actual or budgeted)
+  const filledMonths = monthlyData.map(m => m.hasData);
 
   // Per-month take-home = net (inc - all outgoings) minus tax on income, no rollover
   const effectiveTaxRate = taxOn ? taxRate : 0;
@@ -2545,7 +2561,6 @@ function renderReview() {
   document.getElementById('rv-bars').innerHTML = monthlyData.map(m => {
     const incW = Math.round(m.inc / maxVal * 100);
     const spW  = Math.round(m.spent / maxVal * 100);
-    const hasData = m.inc > 0 || m.spent > 0;
     const netVal = m.net;
     const netClass = netVal >= 0 ? 'color:var(--green)' : 'color:var(--coral)';
     const netSign  = netVal >= 0 ? '+' : '';
@@ -2555,7 +2570,7 @@ function renderReview() {
         <div style="position:absolute;top:0;left:0;height:100%;width:${incW}%;background:var(--green);opacity:0.3;border-radius:4px;"></div>
         <div style="height:100%;width:${spW}%;background:var(--coral);opacity:0.7;border-radius:4px;"></div>
       </div>
-      <span class="rmb-val" style="${hasData ? netClass : ''}">${hasData ? netSign + bFmt(netVal) : '—'}</span>
+      <span class="rmb-val" style="${m.hasData ? netClass : ''}">${m.hasData ? netSign + bFmt(netVal) : '—'}</span>
       ${m.notes ? `<div style="width:100%;padding:2px 0 4px 40px;font-size:11px;color:var(--mid);font-style:italic;">📝 ${m.notes}</div>` : ''}
     </div>`;
   }).join('');
@@ -2581,7 +2596,7 @@ function renderReview() {
     : '<div class="empty">No expense data logged yet</div>';
 
   // Best & worst months
-  const withData = monthlyData.filter(m => m.inc > 0 || m.spent > 0);
+  const withData = monthlyData.filter(m => m.hasData);
   if (withData.length >= 2) {
     const ranked = [...withData].sort((a,b) => (b.inc-b.spent)-(a.inc-a.spent));
     const best = ranked[0], worst = ranked[ranked.length-1];
