@@ -2825,11 +2825,11 @@ function renderReview() {
     }, 280);
   });
 
-  // ── Desktop hover split-zone for Done / Delete tabs ──────────
-  // Left half of the row reveals the green Done tab (bills only);
-  // right half reveals the red Delete tab (all rows). The JS
-  // decides which half the cursor is in and toggles the zone
-  // class; the CSS handles the actual reveal + content shift.
+  // ── Desktop hover edge-zone for Done / Delete tabs ──────────
+  // Only the outermost ~15% of each row edge reveals an action tab:
+  // left edge → green Done tab (bills only); right edge → red Delete.
+  // The middle 70% of the row is a dead zone so text inputs and
+  // budget fields can be used without triggering the action tabs.
   document.addEventListener('mousemove', e => {
     if (!isDesktopHover()) return;
     const wrap = e.target.closest('.swipe-wrap');
@@ -2839,22 +2839,22 @@ function renderReview() {
         wrap.classList.contains('animate-out')) return;
 
     const rect = wrap.getBoundingClientRect();
-    const midX = rect.left + rect.width / 2;
-    const inLeftHalf = e.clientX < midX;
+    const EDGE = rect.width * 0.15; // 15% from each edge
+    const fromLeft  = e.clientX - rect.left;
+    const fromRight = rect.right - e.clientX;
 
     const canCheck = wrap.dataset.hasPaid === 'true' &&
                      !wrap.querySelector('.row-paid');
 
-    if (inLeftHalf && canCheck) {
-      if (!wrap.classList.contains('hover-check-zone')) {
-        wrap.classList.add('hover-check-zone');
-      }
+    if (fromLeft < EDGE && canCheck) {
+      wrap.classList.add('hover-check-zone');
       wrap.classList.remove('hover-delete-zone');
-    } else {
-      if (!wrap.classList.contains('hover-delete-zone')) {
-        wrap.classList.add('hover-delete-zone');
-      }
+    } else if (fromRight < EDGE) {
+      wrap.classList.add('hover-delete-zone');
       wrap.classList.remove('hover-check-zone');
+    } else {
+      // Middle of row — clear both zones so inputs are unobstructed
+      wrap.classList.remove('hover-check-zone', 'hover-delete-zone');
     }
   });
 
