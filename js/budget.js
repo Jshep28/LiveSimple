@@ -990,11 +990,12 @@ function calcRollover(month, year, depth) {
   const svActual  = sumLog(svLog,  data.savings|| [], 'name');
   const dtActual  = sumLog(dtLog,  data.debt   || [], 'name');
 
-  const pIn  = Math.max(incActual || (data.income  || []).reduce((a,r) => a + num(r.budget), 0), 0);
-  const pOut = (blActual || (data.bills   || []).reduce((a,r) => a + num(r.budget), 0))
+  // Actuals only — budget values are never used in rollover calculation
+  const pIn  = incActual;
+  const pOut = blActual
              + (data.expenses || []).reduce((a,e) => a + num(e.amount), 0)
-             + (svActual || (data.savings || []).reduce((a,r) => a + num(r.budget), 0))
-             + (dtActual || (data.debt    || []).reduce((a,r) => a + num(r.budget), 0));
+             + svActual
+             + dtActual;
 
   // This month's own rollover from the month before it
   const prevM = month === 0 ? 11 : month - 1;
@@ -1056,24 +1057,22 @@ function updateTotals(d) {
   document.getElementById('debt-budget-total').textContent = bFmt(db);
   document.getElementById('debt-actual-total').textContent = bFmt(da);
 
-  // Cash flow summary
-  document.getElementById('cf-income').textContent = bFmt(ia || ib);
-  document.getElementById('cf-bills').textContent = '-' + bFmt(ba || bb);
-  document.getElementById('cf-expenses').textContent = '-' + bFmt(ea || eb);
-  document.getElementById('cf-savings').textContent = '-' + bFmt(sa || sb);
-  document.getElementById('cf-debt').textContent = '-' + bFmt(da || db);
+  // Cash flow summary — actuals only, never fall back to budget
+  document.getElementById('cf-income').textContent = bFmt(ia);
+  document.getElementById('cf-bills').textContent = '-' + bFmt(ba);
+  document.getElementById('cf-expenses').textContent = '-' + bFmt(ea);
+  document.getElementById('cf-savings').textContent = '-' + bFmt(sa);
+  document.getElementById('cf-debt').textContent = '-' + bFmt(da);
 
-  // Allocation
-  const totalOut = (ba||bb) + (ea||eb) + (sa||sb) + (da||db);
-  const totalIn = ia || ib;
-  document.getElementById('alloc-bills').textContent = pct(ba||bb, totalIn);
-  document.getElementById('alloc-expenses').textContent = pct(ea||eb, totalIn);
-  document.getElementById('alloc-savings').textContent = pct(sa||sb, totalIn);
-  document.getElementById('alloc-debt').textContent = pct(da||db, totalIn);
+  // Allocation — actuals only
+  const totalOut = ba + ea + sa + da;
+  const totalIn = ia;
+  document.getElementById('alloc-bills').textContent = pct(ba, totalIn);
+  document.getElementById('alloc-expenses').textContent = pct(ea, totalIn);
+  document.getElementById('alloc-savings').textContent = pct(sa, totalIn);
+  document.getElementById('alloc-debt').textContent = pct(da, totalIn);
 
   // ── Rollover from previous month ──────────────────────────────
-  // We carry forward the EXACT "left to spend" the previous month showed,
-  // which itself includes that month's rollover — so the chain is correct.
   const prevMonth = currentBudgetMonth === 0 ? 11 : currentBudgetMonth - 1;
   const prevYear  = currentBudgetMonth === 0 ? currentYear - 1 : currentYear;
   const rolloverAmt = calcRollover(prevMonth, prevYear);
@@ -1090,8 +1089,8 @@ function updateTotals(d) {
     }
   }
 
-  // Left to spend (include rollover)
-  const left = (ia || ib) + rolloverAmt - totalOut;
+  // Left to spend = actuals only + rollover (never inflated by budget)
+  const left = ia + rolloverAmt - totalOut;
   const leftEl = document.getElementById('leftAmount');
   leftEl.textContent = bFmt(Math.abs(left));
   leftEl.className = 'left-amount ' + (left > 0 ? 'positive' : left < 0 ? 'negative' : 'zero');
@@ -2297,13 +2296,10 @@ function renderReview() {
     const knownIncomeSources = incomeRows.map(r => r.name);
     const incUncat = incLog.filter(e => !e.source || !knownIncomeSources.includes(e.source))
                            .reduce((a,e) => a + n(e.amount), 0);
-    // Actual income = named rows + uncategorised log entries
-    const incActual = incRowsTotal + incUncat;
-    // Budget fallback (for months with budgets but no logged actuals)
-    const incBudget = incomeRows.reduce((a,r) => a + n(r.budget), 0);
-    const inc = incActual || incBudget;
+    // Actuals only — no budget fallback
+    const inc = incRowsTotal + incUncat;
 
-    // BILLS: same pattern
+    // BILLS: same pattern — actuals only
     const blLog = m.billsLog || [];
     const billsRows = m.bills || [];
     const blRowsTotal = billsRows.map(r =>
@@ -2312,16 +2308,12 @@ function renderReview() {
     const knownBills = billsRows.map(r => r.name);
     const blUncat = blLog.filter(e => !e.name || !knownBills.includes(e.name))
                          .reduce((a,e) => a + n(e.amount), 0);
-    const billsActual = blRowsTotal + blUncat;
-    const billsBudget = billsRows.reduce((a,r) => a + n(r.budget), 0);
-    const bills = billsActual || billsBudget;
+    const bills = blRowsTotal + blUncat;
 
-    // EXPENSES: transaction log sum (no row fallback for actuals)
-    const expensesActual = (m.expenses || []).reduce((a,e) => a + n(e.amount), 0);
-    const expensesBudget = (m.expenseSummary || []).reduce((a,r) => a + n(r.budget), 0);
-    const expenses = expensesActual || expensesBudget;
+    // EXPENSES: transaction log only
+    const expenses = (m.expenses || []).reduce((a,e) => a + n(e.amount), 0);
 
-    // SAVINGS: same pattern as bills/income
+    // SAVINGS: actuals only
     const svLog = m.savingsLog || [];
     const savingsRows = m.savings || [];
     const svRowsTotal = savingsRows.map(r =>
@@ -2330,11 +2322,9 @@ function renderReview() {
     const knownSavings = savingsRows.map(r => r.name);
     const svUncat = svLog.filter(e => !e.name || !knownSavings.includes(e.name))
                          .reduce((a,e) => a + n(e.amount), 0);
-    const savedActual = svRowsTotal + svUncat;
-    const savedBudget = savingsRows.reduce((a,r) => a + n(r.budget), 0);
-    const saved = savedActual || savedBudget;
+    const saved = svRowsTotal + svUncat;
 
-    // DEBT: same pattern
+    // DEBT: actuals only
     const dtLog = m.debtLog || [];
     const debtRows = m.debt || [];
     const dtRowsTotal = debtRows.map(r =>
@@ -2343,24 +2333,20 @@ function renderReview() {
     const knownDebt = debtRows.map(r => r.name);
     const dtUncat = dtLog.filter(e => !e.name || !knownDebt.includes(e.name))
                          .reduce((a,e) => a + n(e.amount), 0);
-    const debtActual = dtRowsTotal + dtUncat;
-    const debtBudget = debtRows.reduce((a,r) => a + n(r.budget), 0);
-    const debt = debtActual || debtBudget;
+    const debt = dtRowsTotal + dtUncat;
 
     // ── Totals ────────────────────────────────────────────────────
     const spent = bills + expenses + saved + debt;
-    // Pure per-month net (no rollover — rollover is a running balance,
-    // not a standalone monthly contribution)
+    // Pure per-month net (no rollover)
     const net = inc - spent;
 
-    // hasData: month has any real numbers (actuals or budgets)
+    // hasData: month has any logged actuals
     const hasData = inc > 0 || spent > 0;
 
-    // Year totals: actual money only (not budget projections)
-    const spentActual = billsActual + expensesActual + savedActual + debtActual;
-    totalIncome += incActual;
-    totalSpent  += spentActual;
-    totalSaved  += savedActual;
+    // Year totals — actuals only
+    totalIncome += inc;
+    totalSpent  += spent;
+    totalSaved  += saved;
 
     return { name: name.slice(0,3), inc, spent, saved, net, hasData, notes: m.notes || '' };
   });
@@ -2404,7 +2390,7 @@ function renderReview() {
     btn.classList.toggle('active', parseFloat(btn.dataset.rate) === taxRate);
   });
 
-  // A month is "filled" if it has any income or spending data (actual or budgeted)
+  // A month is "filled" only if it has real logged actuals (not just a budget plan)
   const filledMonths = monthlyData.map(m => m.hasData);
 
   // Per-month take-home = net (inc - all outgoings) minus tax on income, no rollover
