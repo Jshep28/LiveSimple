@@ -179,7 +179,13 @@
   <div class="section budget-section-panel" id="panel-income">
     <div class="section-head">
       <h2>Income Summary</h2>
-      <button id="income-add-btn" onclick="addRow('income')">+ Add</button>
+      <div class="section-head-actions">
+        <button class="edit-rows-btn" onclick="toggleEditMode('panel-income',this)" title="Edit rows">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button id="income-add-btn" onclick="addRow('income')">+ Add</button>
+      </div>
     </div>
     <div id="income-period-bar"></div>
     <div class="tracker-row header" id="income-header">
@@ -197,7 +203,13 @@
   <div class="section budget-section-panel" id="panel-bills" style="display:none">
     <div class="section-head">
       <h2>Bill Tracker</h2>
-      <button id="bills-add-btn" onclick="addRow('bills')">+ Add</button>
+      <div class="section-head-actions">
+        <button class="edit-rows-btn" onclick="toggleEditMode('panel-bills',this)" title="Edit rows">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button id="bills-add-btn" onclick="addRow('bills')">+ Add</button>
+      </div>
     </div>
     <div id="bills-period-bar"></div>
     <div class="tracker-row header" id="bills-header">
@@ -215,7 +227,13 @@
   <div class="section budget-section-panel" id="panel-expense" style="display:none">
     <div class="section-head">
       <h2>Expense Summary</h2>
-      <button onclick="addRow('expenseSummary')">+ Add</button>
+      <div class="section-head-actions">
+        <button class="edit-rows-btn" onclick="toggleEditMode('panel-expense',this)" title="Edit rows">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button onclick="addRow('expenseSummary')">+ Add</button>
+      </div>
     </div>
     <div class="tracker-row header">
       <span>Category</span><span>Budget</span><span>Actual</span>
@@ -237,7 +255,13 @@
   <div class="section budget-section-panel" id="panel-savings" style="display:none">
     <div class="section-head">
       <h2>Savings Tracker</h2>
-      <button onclick="addRow('savings')">+ Add</button>
+      <div class="section-head-actions">
+        <button class="edit-rows-btn" onclick="toggleEditMode('panel-savings',this)" title="Edit rows">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button onclick="addRow('savings')">+ Add</button>
+      </div>
     </div>
     <div class="tracker-row header">
       <span>Goal</span><span>Budget</span><span>Actual</span>
@@ -254,7 +278,13 @@
   <div class="section budget-section-panel" id="panel-debt" style="display:none">
     <div class="section-head">
       <h2>Debt Tracker</h2>
-      <button onclick="addRow('debt')">+ Add</button>
+      <div class="section-head-actions">
+        <button class="edit-rows-btn" onclick="toggleEditMode('panel-debt',this)" title="Edit rows">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button onclick="addRow('debt')">+ Add</button>
+      </div>
     </div>
     <div class="tracker-row header">
       <span>Debt</span><span>Budget</span><span>Actual</span>
@@ -268,10 +298,16 @@
   </div>
 
   <!-- TRANSACTION LOG -->
-  <div class="section">
+  <div class="section" id="panel-txnlog">
     <div class="section-head">
       <h2>Transaction Log</h2>
-      <button onclick="openExpenseDrawer()">+ Log</button>
+      <div class="section-head-actions">
+        <button class="edit-rows-btn" onclick="toggleEditMode('panel-txnlog',this)" title="Edit entries">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button onclick="openExpenseDrawer()">+ Log</button>
+      </div>
     </div>
     <div id="expense-log"></div>
   </div>

@@ -1221,38 +1221,68 @@ nav {
 }
 .swipe-wrap.reveal-check .swipe-action-check { opacity: 1; }
 
+/* ── Section header action group ─────────────────────────────── */
+.section-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Edit-mode toggle button — only shown on desktop */
+.edit-rows-btn {
+  display: none; /* hidden on mobile */
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.15) !important;
+  border: 1.5px solid rgba(255,255,255,0.3) !important;
+  color: rgba(255,255,255,0.75) !important;
+  transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+}
+.edit-rows-btn svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+.edit-rows-btn.active {
+  background: rgba(255,255,255,0.95) !important;
+  border-color: rgba(255,255,255,0.95) !important;
+  color: var(--coral) !important;
+}
+.edit-rows-btn:hover:not(.active) {
+  background: rgba(255,255,255,0.25) !important;
+  border-color: rgba(255,255,255,0.5) !important;
+  color: #fff !important;
+}
+
 /* ── DESKTOP: circle action buttons outside each row ──────────
-   On desktop (hover: hover / pointer: fine) each row sits inside a
-   `.row-outer` flex container.  A green tick circle appears on the
-   left (bill rows only) and a red minus circle appears on the right.
-   These never overlap the row content so text inputs and budget
-   fields are never accidentally activated. Mobile hides them
-   entirely and continues to use the swipe gestures. */
+   Each row sits inside a `.row-outer` flex container. Circle buttons
+   appear when the parent section has `.editing` class (toggled by
+   the Edit button in the section header). Hidden on mobile — swipe
+   gestures are used there instead. */
 
 /* Row outer wrapper — flex so the circle buttons sit on either side */
 .row-outer {
   display: flex;
   align-items: center;
-  gap: 0;
 }
 .row-outer .swipe-wrap {
   flex: 1;
   min-width: 0;
 }
 
-/* Spacer keeps alignment consistent when the check button is absent */
+/* Spacer keeps left-side alignment when the check button is absent */
 .desktop-btn-spacer {
-  width: 28px;
+  width: 36px;
   flex-shrink: 0;
 }
 
-/* Shared circle-button base — hidden on mobile, visible on desktop */
+/* Shared circle-button base */
 .desktop-btn-check,
 .desktop-btn-delete {
-  display: none; /* shown only inside the desktop media query below */
+  display: none; /* shown only on desktop when editing */
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 1.5px solid transparent;
   background: transparent;
@@ -1260,13 +1290,14 @@ nav {
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
-  opacity: 0.35;
+  opacity: 0;
+  pointer-events: none;
+  transition: background 0.15s, border-color 0.15s, opacity 0.2s, transform 0.15s;
 }
 .desktop-btn-check svg,
 .desktop-btn-delete svg {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   pointer-events: none;
 }
 
@@ -1274,34 +1305,43 @@ nav {
 .desktop-btn-check {
   border-color: var(--green);
   color: var(--green);
-  margin-right: 6px;
+  margin-right: 5px;
 }
 .desktop-btn-check:hover {
   background: var(--green);
   color: #fff;
-  opacity: 1;
+  transform: scale(1.1);
 }
 
 /* Red minus circle (delete row / transaction) */
 .desktop-btn-delete {
   border-color: var(--red);
   color: var(--red);
-  margin-left: 6px;
+  margin-left: 5px;
 }
 .desktop-btn-delete:hover {
   background: var(--red);
   color: #fff;
-  opacity: 1;
+  transform: scale(1.1);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  /* Show the circle buttons on desktop */
-  .desktop-btn-check,
-  .desktop-btn-delete {
+  /* Show the Edit toggle button */
+  .edit-rows-btn {
     display: flex;
   }
 
-  /* On desktop hide the slide-in swipe tabs — they're no longer needed */
+  /* Reveal circle buttons when section is in edit mode */
+  .budget-section-panel.editing .desktop-btn-check,
+  .budget-section-panel.editing .desktop-btn-delete,
+  #panel-txnlog.editing .desktop-btn-check,
+  #panel-txnlog.editing .desktop-btn-delete {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* On desktop hide the slide-in swipe tabs — not needed */
   .swipe-wrap .swipe-action-check,
   .swipe-wrap .swipe-action-delete {
     display: none;

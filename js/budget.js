@@ -475,6 +475,7 @@ function renderBudget() {
 }
 
 function selectBudgetMonth(m) {
+  clearAllEditModes();
   currentBudgetMonth = m;
   incomePeriodTab = 'overview';
   billsPeriodTab  = 'overview';
@@ -484,6 +485,7 @@ function selectBudgetMonth(m) {
 let _activeBudgetSection = 'income';
 
 function selectBudgetSection(section) {
+  clearAllEditModes();
   _activeBudgetSection = section;
   // Toggle pills
   ['income','bills','expense','savings','debt'].forEach(s => {
@@ -2892,6 +2894,33 @@ function renderReview() {
     }
   });
 })();
+
+// ── Edit-mode toggle for desktop row action buttons ──────────
+// Clicking the Edit button in a section header adds `.editing` to
+// that panel, which reveals the circle check/delete buttons via CSS.
+// Clicking again (or switching section/month) exits edit mode.
+function toggleEditMode(panelId, btn) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const isEditing = panel.classList.toggle('editing');
+  btn.classList.toggle('active', isEditing);
+  // Update button label
+  const textNode = [...btn.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+  if (textNode) textNode.textContent = isEditing ? ' Done' : ' Edit';
+}
+
+// Clear edit mode from all panels (called on section/month switch)
+function clearAllEditModes() {
+  document.querySelectorAll('.budget-section-panel.editing, #panel-txnlog.editing').forEach(panel => {
+    panel.classList.remove('editing');
+    const btn = panel.querySelector('.edit-rows-btn');
+    if (btn) {
+      btn.classList.remove('active');
+      const textNode = [...btn.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+      if (textNode) textNode.textContent = ' Edit';
+    }
+  });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
   const opts = document.querySelectorAll('#budgetCurrencyPicker .curr-opt');
