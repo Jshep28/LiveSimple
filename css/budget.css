@@ -1221,102 +1221,90 @@ nav {
 }
 .swipe-wrap.reveal-check .swipe-action-check { opacity: 1; }
 
-/* ── DESKTOP HOVER: show the "Done" side-tab on row hover ──
-   Mobile keeps the swipe behaviour (targets coarse pointer / no-hover
-   media). Desktop gets a clickable green tick that slides in from the
-   left when the user hovers the bill row; clicking it triggers the
-   same slide-right animation as the mobile swipe. */
+/* ── DESKTOP: circle action buttons outside each row ──────────
+   On desktop (hover: hover / pointer: fine) each row sits inside a
+   `.row-outer` flex container.  A green tick circle appears on the
+   left (bill rows only) and a red minus circle appears on the right.
+   These never overlap the row content so text inputs and budget
+   fields are never accidentally activated. Mobile hides them
+   entirely and continues to use the swipe gestures. */
+
+/* Row outer wrapper — flex so the circle buttons sit on either side */
+.row-outer {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.row-outer .swipe-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Spacer keeps alignment consistent when the check button is absent */
+.desktop-btn-spacer {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+/* Shared circle-button base — hidden on mobile, visible on desktop */
+.desktop-btn-check,
+.desktop-btn-delete {
+  display: none; /* shown only inside the desktop media query below */
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  opacity: 0.35;
+}
+.desktop-btn-check svg,
+.desktop-btn-delete svg {
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+}
+
+/* Green tick circle (check-off paid bills) */
+.desktop-btn-check {
+  border-color: var(--green);
+  color: var(--green);
+  margin-right: 6px;
+}
+.desktop-btn-check:hover {
+  background: var(--green);
+  color: #fff;
+  opacity: 1;
+}
+
+/* Red minus circle (delete row / transaction) */
+.desktop-btn-delete {
+  border-color: var(--red);
+  color: var(--red);
+  margin-left: 6px;
+}
+.desktop-btn-delete:hover {
+  background: var(--red);
+  color: #fff;
+  opacity: 1;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  /* ── Tabs start hidden but sit ABOVE the sliding content ──
-     `.swipe-content` has an opaque background and z-index:1, so a
-     lower-stacked tab would be hidden behind it. We keep the tabs
-     at z-index:2 so they appear within the padding gap we open up
-     during hover. They're collapsed to zero width until the hover
-     zone is active. */
-  .swipe-wrap .swipe-action-check {
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-    transition: width 0.2s ease, opacity 0.15s ease;
-    pointer-events: none;
-    cursor: pointer;
-    opacity: 0;
-    z-index: 2;
+  /* Show the circle buttons on desktop */
+  .desktop-btn-check,
+  .desktop-btn-delete {
+    display: flex;
   }
+
+  /* On desktop hide the slide-in swipe tabs — they're no longer needed */
+  .swipe-wrap .swipe-action-check,
   .swipe-wrap .swipe-action-delete {
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-    transition: width 0.2s ease, opacity 0.15s ease;
-    pointer-events: none;
-    cursor: pointer;
-    opacity: 0;
-    z-index: 2;
-  }
-
-  /* ── Split-zone hover ──
-     `.hover-check-zone` (left half, bill rows only) reveals the
-     green Done tab on the left.
-     `.hover-delete-zone` (right half, all rows) reveals the red
-     Delete tab on the right.
-
-     Instead of translating the whole row content (which hides the
-     text), we compress the row's internal padding and shrink the
-     trailing whitespace next to the budget/actual columns. The
-     name text stays visible; the numeric columns shift inward just
-     enough to expose the tab. */
-
-  /* Reveal the tabs — expand to full tab width inside the padding
-     gap that the hover zone opens up on the row. */
-  .swipe-wrap.hover-check-zone:not(.animate-check):not(.animate-out) .swipe-action-check {
-    width: 72px;
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .swipe-wrap.hover-delete-zone:not(.animate-check):not(.animate-out) .swipe-action-delete {
-    width: 72px;
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* Smooth transition for the inner row padding */
-  .swipe-wrap .swipe-content .tracker-row,
-  .swipe-wrap .swipe-content .expense-row {
-    transition: padding 0.2s ease;
-  }
-
-  /* Left tab (Done) — compress left padding so budget/actual cols
-     slide inward without hiding the name text. */
-  .swipe-wrap.hover-check-zone:not(.animate-check):not(.animate-out) .swipe-content .tracker-row {
-    padding-left: 88px !important; /* 16px base + 72px tab width */
-  }
-
-  /* Right tab (Delete) — compress the trailing whitespace next to
-     the actual column so the tab slots in cleanly on the right.
-     `!important` is needed because some tracker rows ship with an
-     inline `padding-right: 28px` that would otherwise win. */
-  .swipe-wrap.hover-delete-zone:not(.animate-check):not(.animate-out) .swipe-content .tracker-row {
-    padding-right: 88px !important; /* 16px base + 72px tab width */
-  }
-  .swipe-wrap.hover-delete-zone:not(.animate-check):not(.animate-out) .swipe-content .expense-row {
-    padding-right: 88px !important;
-  }
-
-  .swipe-wrap .swipe-action-check:hover,
-  .swipe-wrap .swipe-action-delete:hover {
-    filter: brightness(1.08);
-  }
-
-  /* Already-paid rows: suppress the Done tab (already done) — the
-     Delete tab on the right still works so the user can remove the
-     bill. */
-  .swipe-wrap[data-has-paid="true"].hover-check-zone:has(.row-paid) .swipe-content .tracker-row {
-    padding-left: 16px !important;
-  }
-  .swipe-wrap[data-has-paid="true"].hover-check-zone:has(.row-paid) .swipe-action-check {
-    width: 0;
-    opacity: 0;
-    pointer-events: none;
+    display: none;
   }
 }
 

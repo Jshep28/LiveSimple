@@ -630,6 +630,8 @@ function renderTrackerSection(containerId, rows, section, hasPaid, uncatAmount) 
   const overIsGood = section === 'income' || section === 'savings' || section === 'debt';
   const deleteSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>`;
   const checkSvg  = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const deskDelSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  const deskChkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>`;
 
   let html = rows.map((row, i) => {
     const b = num(row.budget), a = num(row.actual);
@@ -639,27 +641,32 @@ function renderTrackerSection(containerId, rows, section, hasPaid, uncatAmount) 
       ? (overIsGood ? 'var(--green)' : 'var(--red)')
       : a > 0 ? 'var(--green)' : 'var(--coral)';
     const paidClass = (hasPaid && row.paid) ? ' row-paid' : '';
+    const alreadyPaid = hasPaid && row.paid;
     return `
-    <div class="swipe-wrap" data-section="${section}" data-index="${i}" data-has-paid="${hasPaid}">
-      ${hasPaid ? `<div class="swipe-action-check">${checkSvg}Done</div>` : ''}
-      <div class="swipe-action-delete">${deleteSvg}Delete</div>
-      <div class="swipe-content">
-        <div class="tracker-row${paidClass}" style="padding-right:28px;">
-          <div class="row-name">
-            <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('${section}',${i},this.value)" placeholder="Name" title="Click to rename">
+    <div class="row-outer">
+      ${hasPaid && !alreadyPaid ? `<button class="desktop-btn-check" data-section="${section}" data-index="${i}" title="Mark as paid">${deskChkSvg}</button>` : `<div class="desktop-btn-spacer"></div>`}
+      <div class="swipe-wrap" data-section="${section}" data-index="${i}" data-has-paid="${hasPaid}">
+        ${hasPaid ? `<div class="swipe-action-check">${checkSvg}Done</div>` : ''}
+        <div class="swipe-action-delete">${deleteSvg}Delete</div>
+        <div class="swipe-content">
+          <div class="tracker-row${paidClass}" style="padding-right:28px;">
+            <div class="row-name">
+              <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('${section}',${i},this.value)" placeholder="Name" title="Click to rename">
+            </div>
+            <div class="amount-input">
+              <span>${currency}</span>
+              <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
+                onchange="updateBudget('${section}',${i},this.value)" title="Budgeted amount">
+            </div>
+            <div class="row-total ${overBudget && !overIsGood ? 'red' : ''}" style="color:${a > 0 ? (overBudget && !overIsGood ? 'var(--red)' : overBudget && overIsGood ? 'var(--green)' : 'var(--dark)') : 'var(--mid)'}">
+              ${a > 0 ? bFmt(a) : '—'}${overBudget && !overIsGood ? ' <span style="font-size:9px;color:var(--red)">over</span>' : overBudget && overIsGood ? ' <span style="font-size:9px;color:var(--green)">↑</span>' : ''}
+            </div>
+            <button class="row-del" onclick="deleteRow('${section}',${i})" title="Remove row">×</button>
           </div>
-          <div class="amount-input">
-            <span>${currency}</span>
-            <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
-              onchange="updateBudget('${section}',${i},this.value)" title="Budgeted amount">
-          </div>
-          <div class="row-total ${overBudget && !overIsGood ? 'red' : ''}" style="color:${a > 0 ? (overBudget && !overIsGood ? 'var(--red)' : overBudget && overIsGood ? 'var(--green)' : 'var(--dark)') : 'var(--mid)'}">
-            ${a > 0 ? bFmt(a) : '—'}${overBudget && !overIsGood ? ' <span style="font-size:9px;color:var(--red)">over</span>' : overBudget && overIsGood ? ' <span style="font-size:9px;color:var(--green)">↑</span>' : ''}
-          </div>
-          <button class="row-del" onclick="deleteRow('${section}',${i})" title="Remove row">×</button>
+          ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
         </div>
-        ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
       </div>
+      <button class="desktop-btn-delete" data-section="${section}" data-index="${i}" title="Delete row">${deskDelSvg}</button>
     </div>
   `}).join('');
 
@@ -699,31 +706,36 @@ function renderExpenseSummary(d) {
     return;
   }
   const deleteSvgEs = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>`;
+  const deskDelSvgEs = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
   let html = d.expenseSummary.map((row, i) => {
     const b = num(row.budget), a = row.actual;
     const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
     const overBudget = b > 0 && a > b;
     const barColor = overBudget ? 'var(--red)' : a > 0 ? 'var(--coral)' : 'var(--coral)';
     return `
-    <div class="swipe-wrap" data-section="expenseSummary" data-index="${i}" data-has-paid="false">
-      <div class="swipe-action-delete">${deleteSvgEs}Delete</div>
-      <div class="swipe-content">
-        <div class="tracker-row" style="padding-right:28px;">
-          <div class="row-name">
-            <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('expenseSummary',${i},this.value);renderBudget();" placeholder="Category" title="Click to rename">
+    <div class="row-outer">
+      <div class="desktop-btn-spacer"></div>
+      <div class="swipe-wrap" data-section="expenseSummary" data-index="${i}" data-has-paid="false">
+        <div class="swipe-action-delete">${deleteSvgEs}Delete</div>
+        <div class="swipe-content">
+          <div class="tracker-row" style="padding-right:28px;">
+            <div class="row-name">
+              <input type="text" value="${row.name.replace(/"/g,'&quot;')}" onchange="updateName('expenseSummary',${i},this.value);renderBudget();" placeholder="Category" title="Click to rename">
+            </div>
+            <div class="amount-input">
+              <span>${currency}</span>
+              <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
+                onchange="updateBudget('expenseSummary',${i},this.value)" title="Budgeted amount">
+            </div>
+            <div class="row-total ${overBudget ? 'red' : ''}" style="color:${a > 0 ? (overBudget ? 'var(--red)' : 'var(--dark)') : 'var(--mid)'}">
+              ${bFmt(a)}${overBudget ? ' <span style="font-size:9px;color:var(--red)">over</span>' : ''}
+            </div>
+            <button class="row-del" onclick="deleteRow('expenseSummary',${i})" title="Remove category">×</button>
           </div>
-          <div class="amount-input">
-            <span>${currency}</span>
-            <input type="number" value="${row.budget||''}" min="0" step="0.01" placeholder="0.00" inputmode="decimal"
-              onchange="updateBudget('expenseSummary',${i},this.value)" title="Budgeted amount">
-          </div>
-          <div class="row-total ${overBudget ? 'red' : ''}" style="color:${a > 0 ? (overBudget ? 'var(--red)' : 'var(--dark)') : 'var(--mid)'}">
-            ${bFmt(a)}${overBudget ? ' <span style="font-size:9px;color:var(--red)">over</span>' : ''}
-          </div>
-          <button class="row-del" onclick="deleteRow('expenseSummary',${i})" title="Remove category">×</button>
+          ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
         </div>
-        ${b > 0 ? `<div class="row-progress"><div class="row-progress-fill" style="width:${pctFill}%;background:${barColor};"></div></div>` : ''}
       </div>
+      <button class="desktop-btn-delete" data-section="expenseSummary" data-index="${i}" title="Delete category">${deskDelSvgEs}</button>
     </div>
   `}).join('');
 
@@ -778,21 +790,26 @@ function renderTransactionLog(d) {
   };
 
   const txnDelSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>`;
+  const txnDeskDelSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
 
   el.innerHTML = all.map((e, idx) => {
     const ts  = typeStyles[e._type];
     const cat = e.category || e.source || e.name || '—';
-    return `<div class="swipe-wrap txn-swipe-wrap" data-txn-idx="${idx}">
-      <div class="swipe-action-delete">${txnDelSvg}Delete</div>
-      <div class="swipe-content">
-        <div class="expense-row" onclick="openTxnPopup(${idx})">
-          <span class="expense-date">${e.date ? e.date.slice(5) : '—'}</span>
-          <span class="expense-amount" style="color:${ts.color}">${ts.sign}${bFmt(e.amount)}</span>
-          <span class="expense-cat">${cat}</span>
-          <span class="log-type-badge" style="background:${ts.color}20;color:${ts.color}">${ts.label}</span>
-          <button class="delete-btn" onclick="event.stopPropagation();deleteTxn(${idx})">×</button>
+    return `<div class="row-outer">
+      <div class="desktop-btn-spacer"></div>
+      <div class="swipe-wrap txn-swipe-wrap" data-txn-idx="${idx}">
+        <div class="swipe-action-delete">${txnDelSvg}Delete</div>
+        <div class="swipe-content">
+          <div class="expense-row" onclick="openTxnPopup(${idx})">
+            <span class="expense-date">${e.date ? e.date.slice(5) : '—'}</span>
+            <span class="expense-amount" style="color:${ts.color}">${ts.sign}${bFmt(e.amount)}</span>
+            <span class="expense-cat">${cat}</span>
+            <span class="log-type-badge" style="background:${ts.color}20;color:${ts.color}">${ts.label}</span>
+            <button class="delete-btn" onclick="event.stopPropagation();deleteTxn(${idx})">×</button>
+          </div>
         </div>
       </div>
+      <button class="desktop-btn-delete desktop-btn-delete-txn" data-txn-idx="${idx}" title="Delete entry">${txnDeskDelSvg}</button>
     </div>`;
   }).join('');
 }
@@ -2825,77 +2842,54 @@ function renderReview() {
     }, 280);
   });
 
-  // ── Desktop hover edge-zone for Done / Delete tabs ──────────
-  // Only the outermost ~15% of each row edge reveals an action tab:
-  // left edge → green Done tab (bills only); right edge → red Delete.
-  // The middle 70% of the row is a dead zone so text inputs and
-  // budget fields can be used without triggering the action tabs.
-  document.addEventListener('mousemove', e => {
-    if (!isDesktopHover()) return;
-    const wrap = e.target.closest('.swipe-wrap');
-    if (!wrap) return;
-    // Don't interfere with an in-flight animation
-    if (wrap.classList.contains('animate-check') ||
-        wrap.classList.contains('animate-out')) return;
-
-    const rect = wrap.getBoundingClientRect();
-    const EDGE = rect.width * 0.15; // 15% from each edge
-    const fromLeft  = e.clientX - rect.left;
-    const fromRight = rect.right - e.clientX;
-
-    const canCheck = wrap.dataset.hasPaid === 'true' &&
-                     !wrap.querySelector('.row-paid');
-
-    if (fromLeft < EDGE && canCheck) {
-      wrap.classList.add('hover-check-zone');
-      wrap.classList.remove('hover-delete-zone');
-    } else if (fromRight < EDGE) {
-      wrap.classList.add('hover-delete-zone');
-      wrap.classList.remove('hover-check-zone');
-    } else {
-      // Middle of row — clear both zones so inputs are unobstructed
-      wrap.classList.remove('hover-check-zone', 'hover-delete-zone');
-    }
-  });
-
-  // Clear zone classes when cursor leaves the row
-  document.addEventListener('mouseout', e => {
-    const wrap = e.target.closest && e.target.closest('.swipe-wrap');
-    if (!wrap) return;
-    // Only clear when leaving the wrap entirely (relatedTarget outside)
-    if (e.relatedTarget && wrap.contains(e.relatedTarget)) return;
-    wrap.classList.remove('hover-check-zone', 'hover-delete-zone');
-  });
-
-  // ── Desktop click on the hover delete tab ────────────────────
-  // Mirrors the mobile swipe-left flow: add `animate-out` (slides
-  // content off-screen left), then call deleteRow / deleteTxn
-  // after the animation completes.
+  // ── Desktop: circle-button delete (outside row, right side) ─
   document.addEventListener('click', e => {
-    const tab = e.target.closest('.swipe-action-delete');
-    if (!tab) return;
-    if (!isDesktopHover()) return; // Mobile still uses swipe
+    if (!isDesktopHover()) return;
 
-    const wrap = tab.closest('.swipe-wrap');
-    if (!wrap) return;
-    if (wrap.classList.contains('animate-check') ||
-        wrap.classList.contains('animate-out')) return;
+    // Check button (green tick circle, bill rows)
+    const chkBtn = e.target.closest('.desktop-btn-check');
+    if (chkBtn) {
+      const section = chkBtn.dataset.section;
+      const index   = parseInt(chkBtn.dataset.index, 10);
+      if (!section || Number.isNaN(index)) return;
+      // Find the sibling swipe-wrap
+      const wrap = chkBtn.closest('.row-outer')?.querySelector('.swipe-wrap');
+      if (!wrap || wrap.dataset.hasPaid !== 'true') return;
+      if (wrap.classList.contains('animate-check') || wrap.classList.contains('animate-out')) return;
+      wrap.classList.add('animate-check');
+      setTimeout(() => togglePaid(section, index, true), 280);
+      return;
+    }
 
-    const isTxnRow = wrap.classList.contains('txn-swipe-wrap');
+    // Delete button (red minus circle, all rows)
+    const delBtn = e.target.closest('.desktop-btn-delete');
+    if (!delBtn) return;
 
-    wrap.classList.add('animate-out');
-    wrap.classList.remove('reveal-delete', 'hover-delete-zone');
-
-    setTimeout(() => {
-      if (isTxnRow) {
-        const txnIdx = parseInt(wrap.dataset.txnIdx, 10);
-        if (!Number.isNaN(txnIdx)) deleteTxn(txnIdx);
+    // Transaction log rows
+    const txnIdx = delBtn.classList.contains('desktop-btn-delete-txn')
+      ? parseInt(delBtn.dataset.txnIdx, 10) : NaN;
+    if (!Number.isNaN(txnIdx)) {
+      const wrap = delBtn.closest('.row-outer')?.querySelector('.swipe-wrap');
+      if (wrap) {
+        wrap.classList.add('animate-out');
+        setTimeout(() => deleteTxn(txnIdx), 280);
       } else {
-        const section = wrap.dataset.section;
-        const index   = parseInt(wrap.dataset.index, 10);
-        if (section && !Number.isNaN(index)) deleteRow(section, index);
+        deleteTxn(txnIdx);
       }
-    }, 280);
+      return;
+    }
+
+    // Budget / expense summary rows
+    const section = delBtn.dataset.section;
+    const index   = parseInt(delBtn.dataset.index, 10);
+    if (!section || Number.isNaN(index)) return;
+    const wrap = delBtn.closest('.row-outer')?.querySelector('.swipe-wrap');
+    if (wrap) {
+      wrap.classList.add('animate-out');
+      setTimeout(() => deleteRow(section, index), 280);
+    } else {
+      deleteRow(section, index);
+    }
   });
 })();
 
