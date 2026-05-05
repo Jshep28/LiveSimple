@@ -1305,7 +1305,7 @@ function updateGoal() {
       goalCard.style.display = 'block';
       goalCard.innerHTML = `
         <div class="goal-achieve-card-inner">
-          <div class="goal-achieve-label">🎯 ${achieveMonth} ${achieveYear}</div>
+          <div class="goal-achieve-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>${achieveMonth} ${achieveYear}</div>
           <div class="goal-achieve-stats">
             <div class="goal-achieve-stat">
               <span class="goal-achieve-stat-label">End Value</span>
@@ -1728,7 +1728,7 @@ function renderTargetAllocDrift() {
   const holdings = getHoldings();
   const targets  = getTargetAlloc();
   if (!Object.keys(targets).length || !holdings.length) {
-    el.innerHTML = '<div class="empty-state">Set target allocations in ⚙ Settings to see drift analysis</div>';
+    el.innerHTML = '<div class="empty-state">Set target allocations in Settings to see drift analysis</div>';
     return;
   }
   const totals = portfolioTotals();

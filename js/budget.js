@@ -116,7 +116,7 @@ function showStorageWarning() {
   warn = document.createElement('div');
   warn.id = 'storageWarningBanner';
   warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#ef4444;color:white;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;padding:10px 16px;text-align:center;';
-  warn.innerHTML = '⚠️ Storage is blocked — your data won\'t be saved. Open this app directly (not inside another site) or use Export/Import in Settings to back up your data. <button onclick="this.parentNode.remove()" style="margin-left:12px;background:rgba(255,255,255,0.25);border:none;border-radius:4px;color:white;font-weight:700;padding:2px 8px;cursor:pointer;">✕</button>';
+  warn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Storage is blocked — your data won\'t be saved. Open this app directly (not inside another site) or use Export/Import in Settings to back up your data. <button onclick="this.parentNode.remove()" style="margin-left:12px;background:rgba(255,255,255,0.25);border:none;border-radius:4px;color:white;font-weight:700;padding:2px 8px;cursor:pointer;">✕</button>';
   document.body.prepend(warn);
 }
 // ── TAX / PROJECTION STATE ────────────────────────────────────
@@ -1126,14 +1126,14 @@ function renderInsights(d, totalIn) {
     const b = num(es.budget), a = es.actual || 0;
     if (b > 0 && a > b) {
       const overpct = Math.round((a - b) / b * 100);
-      insights.push(`⚠️ <strong>${es.name}</strong> is ${overpct}% over budget (${bFmt(a)} of ${bFmt(b)})`);
+      insights.push(`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:5px;color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><strong>${es.name}</strong> is ${overpct}% over budget (${bFmt(a)} of ${bFmt(b)})`);
     }
   });
 
   // Over-budget bills
   d.bills.forEach(r => {
     const b = num(r.budget), a = num(r.actual);
-    if (b > 0 && a > b) insights.push(`⚠️ <strong>${r.name}</strong> bill exceeded budget by ${bFmt(a-b)}`);
+    if (b > 0 && a > b) insights.push(`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:5px;color:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><strong>${r.name}</strong> bill exceeded budget by ${bFmt(a-b)}`);
   });
 
   // Savings rate warning
@@ -1145,7 +1145,7 @@ function renderInsights(d, totalIn) {
   const todayDate = todayNow.getDate();
   if (todayNow.getMonth() === currentBudgetMonth && todayNow.getFullYear() === currentYear && todayDate > 15) {
     const unpaid = d.bills.filter(r => r.budget && !r.paid);
-    if (unpaid.length) insights.push(`🗓 ${unpaid.length} bill${unpaid.length>1?'s':''} still unpaid: ${unpaid.map(r=>r.name).join(', ')}`);
+    if (unpaid.length) insights.push(`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:5px;color:var(--coral)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${unpaid.length} bill${unpaid.length>1?'s':''} still unpaid: ${unpaid.map(r=>r.name).join(', ')}`);
   }
 
   if (insights.length) {
@@ -1166,6 +1166,59 @@ function updateBudget(section, i, val) {
   d[section][i].budget = val;
   saveBudgetMonth(currentBudgetMonth, d);
   updateTotals(d);
+  updateRowBar(section, i, d);
+}
+
+// Update a single row's progress bar in-place without re-rendering the whole section
+function updateRowBar(section, i, d) {
+  const containerMap = {
+    income: 'income-rows', bills: 'bills-rows',
+    expenseSummary: 'expense-summary-rows',
+    savings: 'savings-rows', debt: 'debt-rows'
+  };
+  const containerId = containerMap[section];
+  if (!containerId) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Each row is inside a .swipe-wrap (or .tracker-row for uncat); find the i-th swipe-wrap
+  const wraps = container.querySelectorAll('.swipe-wrap');
+  const wrap  = wraps[i];
+  if (!wrap) return;
+  const content = wrap.querySelector('.swipe-content');
+  if (!content) return;
+
+  const row = section === 'expenseSummary' ? d.expenseSummary[i] : d[section][i];
+  if (!row) return;
+
+  const b = num(row.budget);
+  const a = num(row.actual);
+  const overIsGood = section === 'income' || section === 'savings' || section === 'debt';
+  const overBudget = b > 0 && a > b;
+  const barColor = overBudget
+    ? (overIsGood ? 'var(--green)' : 'var(--red)')
+    : a > 0 ? 'var(--green)' : 'var(--coral)';
+  const pctFill = b > 0 ? Math.min(a / b * 100, 100) : 0;
+
+  let progressEl = content.querySelector('.row-progress');
+  if (b > 0) {
+    if (!progressEl) {
+      // Insert bar after the tracker-row div
+      progressEl = document.createElement('div');
+      progressEl.className = 'row-progress';
+      progressEl.innerHTML = '<div class="row-progress-fill"></div>';
+      const trackerRow = content.querySelector('.tracker-row');
+      if (trackerRow) trackerRow.after(progressEl);
+    }
+    const fill = progressEl.querySelector('.row-progress-fill');
+    if (fill) {
+      fill.style.width = pctFill + '%';
+      fill.style.background = barColor;
+    }
+  } else {
+    // Budget cleared — remove the bar
+    if (progressEl) progressEl.remove();
+  }
 }
 function togglePaid(section, i, checked) {
   const d = getBudgetMonth(currentBudgetMonth);
@@ -2557,7 +2610,7 @@ function renderReview() {
         <div style="height:100%;width:${spW}%;background:var(--coral);opacity:0.7;border-radius:4px;"></div>
       </div>
       <span class="rmb-val" style="${m.hasData ? netClass : ''}">${m.hasData ? netSign + bFmt(netVal) : '—'}</span>
-      ${m.notes ? `<div style="width:100%;padding:2px 0 4px 40px;font-size:11px;color:var(--mid);font-style:italic;">📝 ${m.notes}</div>` : ''}
+      ${m.notes ? `<div style="width:100%;padding:2px 0 4px 40px;font-size:11px;color:var(--mid);font-style:italic;display:flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>${m.notes}</div>` : ''}
     </div>`;
   }).join('');
 
@@ -2590,15 +2643,16 @@ function renderReview() {
     const worstNet = worst.inc - worst.spent;
     const bestCol = bestNet >= 0 ? 'var(--green)' : 'var(--red)';
     const worstCol = worstNet >= 0 ? 'var(--green)' : 'var(--red)';
-    const worstIcon = worstNet >= 0 ? '📊' : '📉';
+    const trophySvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:5px;color:var(--green)"><path d="M6 9H4a2 2 0 0 0-2 2v1a4 4 0 0 0 4 4h1"/><path d="M18 9h2a2 2 0 0 1 2 2v1a4 4 0 0 1-4 4h-1"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M5 9V3h14v6a7 7 0 0 1-14 0z"/></svg>`;
+    const trendSvg  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:5px;color:var(--mid)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`;
     document.getElementById('rv-bestworst').innerHTML = `
       <div class="tracker-row">
-        <div class="row-name">🏆 Best month</div>
+        <div class="row-name">${trophySvg} Best month</div>
         <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;">${best.name}</div>
         <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;color:${bestCol};text-align:right">${bestNet >= 0 ? '+' : ''}${bFmt(bestNet)}</div>
       </div>
       <div class="tracker-row">
-        <div class="row-name">${worstIcon} Tightest month</div>
+        <div class="row-name">${trendSvg} Tightest month</div>
         <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;">${worst.name}</div>
         <div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;color:${worstCol};text-align:right">${worstNet >= 0 ? '+' : ''}${bFmt(worstNet)}</div>
       </div>`;
