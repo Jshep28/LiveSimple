@@ -41,7 +41,7 @@
       <div class="logo-dropdown-item active-app" data-app="budget" onclick="switchApp('budget')">
         <div style="display:flex;align-items:center;">
           <div>
-            <div class="logo-dd-name">live<em>simple</em></div>
+            <div class="logo-dd-name">live<em>simple</em> · budget</div>
             <div class="logo-dd-sub">Budget &amp; Bills</div>
           </div>
           <span class="logo-dd-check" data-check="budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -678,7 +678,7 @@
       <div class="logo-dropdown-item active-app" data-app="budget" onclick="switchApp('budget')">
         <div style="display:flex;align-items:center;">
           <div>
-            <div class="logo-dd-name">live<em>simple</em></div>
+            <div class="logo-dd-name">live<em>simple</em> · budget</div>
             <div class="logo-dd-sub">Budget &amp; Bills</div>
           </div>
           <span class="logo-dd-check" data-check="budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -691,6 +691,15 @@
             <div class="logo-dd-sub">Investment Tracker</div>
           </div>
           <span class="logo-dd-check" data-check="invest" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </div>
+      </div>
+      <div class="logo-dropdown-item" data-app="habits" onclick="switchApp('habits')">
+        <div style="display:flex;align-items:center;">
+          <div>
+            <div class="logo-dd-name">live<em>simple</em> · habits</div>
+            <div class="logo-dd-sub">Habits &amp; Tasks</div>
+          </div>
+          <span class="logo-dd-check" data-check="habits" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         </div>
       </div>
     </div>
@@ -1331,7 +1340,7 @@
       <div class="logo-dropdown-item" data-app="budget" onclick="switchApp('budget')">
         <div style="display:flex;align-items:center;">
           <div>
-            <div class="logo-dd-name">live<em>simple</em></div>
+            <div class="logo-dd-name">live<em>simple</em> · budget</div>
             <div class="logo-dd-sub">Budget &amp; Bills</div>
           </div>
           <span class="logo-dd-check" data-check="budget" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -1369,11 +1378,16 @@
     </div>
     <button class="scroll-arrow scroll-arrow-right" id="habitsNavRight" onclick="scrollTabBar('habitsNavTabs',120)" aria-label="Scroll tabs right">›</button>
   </div>
-  <!-- Manage routines button -->
-  <button class="h-manage-nav-btn" id="hManageNavBtn" onclick="openManageSheet()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-    Manage
-  </button>
+  <!-- Manage + dark toggle -->
+  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+    <button class="h-manage-nav-btn" id="hManageNavBtn" onclick="openManageSheet()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Manage
+    </button>
+    <button class="dark-toggle" id="habitsDarkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+      <span id="habitsDarkIcon" class="mode-icon"></span>
+    </button>
+  </div>
 </nav>
 
 <div id="page-habits-main">

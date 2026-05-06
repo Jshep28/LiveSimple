@@ -555,11 +555,11 @@ function renderSettingsView(state) {
         <div class="settings-row">
           <div class="settings-row-info">
             <div class="settings-row-label">Dark Mode</div>
-            <div class="settings-row-desc">Switch between light and dark theme</div>
+            <div class="settings-row-desc">Switch to a dark theme — easier on the eyes at night</div>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="hDarkToggle" ${dark ? 'checked' : ''} onchange="hToggleDark(this)">
-            <span class="toggle-slider"></span>
+            <input type="checkbox" id="darkModeToggleHabits" ${dark ? 'checked' : ''} onchange="toggleDarkMode(this.checked)">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
           </label>
         </div>
       </div>
@@ -571,7 +571,7 @@ function renderSettingsView(state) {
             <div class="settings-row-label">Local storage ${ok ? 'active' : 'blocked'}</div>
             <div class="settings-row-desc">${ok ? 'Your habit data is saved on this device and persists between sessions' : 'Data cannot be saved — try opening the app directly or use a different browser'}</div>
           </div>
-          <span style="background:${ok ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'};color:${ok ? 'var(--green)' : 'var(--red)'};font-family:Montserrat,sans-serif;font-weight:700;font-size:11px;padding:3px 10px;border-radius:20px;white-space:nowrap;">${ok ? 'Active' : 'Inactive'}</span>
+          <span id="hStorageBadge" style="background:${ok ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'};color:${ok ? 'var(--green)' : 'var(--red)'};font-family:Montserrat,sans-serif;font-weight:700;font-size:11px;padding:3px 10px;border-radius:20px;white-space:nowrap;">${ok ? 'Active' : 'Inactive'}</span>
         </div>
       </div>
 
@@ -604,7 +604,7 @@ function renderSettingsView(state) {
         </div>
       </div>
 
-      <div style="padding:16px;margin:8px;border-radius:12px;background:var(--light);">
+      <div style="padding:16px;margin:8px 16px;border-radius:12px;background:var(--light);">
         <p style="font-family:'Montserrat',sans-serif;font-size:10px;line-height:1.7;color:var(--mid);text-align:center;">
           <strong style="font-family:'Montserrat',sans-serif;">Habit tracker.</strong> Live Simple · Habits is a personal productivity tool. All data is stored locally on your device and is never shared or transmitted. This app is not a substitute for professional medical, psychological, or therapeutic advice. If you are experiencing mental health difficulties, please seek support from a qualified professional.
         </p>
@@ -613,12 +613,6 @@ function renderSettingsView(state) {
       <div class="bottom-space"></div>
     </div>
   `;
-}
-
-function hToggleDark(el) {
-  const isDark = el.checked;
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  try { localStorage.setItem('livesimple_theme', isDark ? 'dark' : 'light'); } catch(e) {}
 }
 
 function hConfirmClearAll() {
