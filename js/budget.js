@@ -405,6 +405,12 @@ function bSetCurrency(v) {
 //  BUDGET PAGE
 // ============================================================
 function renderBudget() {
+  // Preserve any active edit-mode panels so re-render doesn't close them
+  const editingPanels = new Set(
+    [...document.querySelectorAll('.budget-section-panel.editing, #panel-txnlog.editing')]
+      .map(el => el.id)
+  );
+
   // Month selector
   const ms = document.getElementById('monthSelector');
   ms.innerHTML = MONTHS.map((m,i) =>
@@ -470,8 +476,21 @@ function renderBudget() {
   updateTotals(d);
   populateCatDropdown(d);
   updateCopyBar(d);
-  // Restore active section pill (re-apply after render)
-  selectBudgetSection(_activeBudgetSection);
+  // Restore active section pill (re-apply after render, internal — don't clear edit mode)
+  selectBudgetSection(_activeBudgetSection, true);
+
+  // Restore edit mode on any panels that were open before re-render
+  editingPanels.forEach(id => {
+    const panel = document.getElementById(id);
+    if (!panel) return;
+    panel.classList.add('editing');
+    const btn = panel.querySelector('.edit-rows-btn');
+    if (btn) {
+      btn.classList.add('active');
+      const textNode = [...btn.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+      if (textNode) textNode.textContent = ' Done';
+    }
+  });
 }
 
 function selectBudgetMonth(m) {
@@ -484,8 +503,8 @@ function selectBudgetMonth(m) {
 
 let _activeBudgetSection = 'income';
 
-function selectBudgetSection(section) {
-  clearAllEditModes();
+function selectBudgetSection(section, _internal) {
+  if (!_internal) clearAllEditModes();
   _activeBudgetSection = section;
   // Toggle pills
   ['income','bills','expense','savings','debt'].forEach(s => {
