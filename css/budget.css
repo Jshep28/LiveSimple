@@ -1270,8 +1270,10 @@ nav {
   min-width: 0;
 }
 
-/* Spacer keeps left-side alignment when the check button is absent */
+/* Spacer keeps left-side alignment when the check button is absent —
+   hidden on mobile, only takes up space on desktop */
 .desktop-btn-spacer {
+  display: none;
   width: 36px;
   flex-shrink: 0;
 }
@@ -1329,6 +1331,11 @@ nav {
   /* Show the Edit toggle button */
   .edit-rows-btn {
     display: flex;
+  }
+
+  /* Spacer is only needed on desktop to hold left-side alignment */
+  .desktop-btn-spacer {
+    display: block;
   }
 
   /* Reveal circle buttons when section is in edit mode */
