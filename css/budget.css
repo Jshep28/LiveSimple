@@ -1328,14 +1328,11 @@ nav {
   transform: scale(1.1);
 }
 
-/* In edit mode, add breathing room around the buttons */
-.budget-section-panel.editing .desktop-btn-check,
-#panel-txnlog.editing .desktop-btn-check {
-  margin-right: 5px;
-}
-.budget-section-panel.editing .desktop-btn-delete,
-#panel-txnlog.editing .desktop-btn-delete {
-  margin-left: 5px;
+/* In edit mode, pad the outer container so buttons have equal breathing
+   room from the panel edge and the row content */
+.budget-section-panel.editing .row-outer,
+#panel-txnlog.editing .row-outer {
+  padding: 0 10px;
 }
 
 @media (hover: hover) and (pointer: fine) {
