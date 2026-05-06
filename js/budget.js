@@ -1521,7 +1521,7 @@ function loadYear(y) {
 function confirmDeleteYear(y) {
   openModal(
     'Delete ' + y + ' data?',
-    'All budget and habit data for ' + y + ' will be permanently deleted.',
+    'All budget data for ' + y + ' will be permanently deleted.',
     'Delete ' + y,
     () => {
       const all = getAllState();
@@ -1560,7 +1560,7 @@ function confirmReset(type) {
         renderSettings();
       });
   } else if (type === 'year') {
-    openModal('Reset ' + currentYear + '?', 'All budget and habit data for ' + currentYear + ' will be cleared.', 'Reset Year', () => {
+    openModal('Reset ' + currentYear + '?', 'All budget data for ' + currentYear + ' will be cleared.', 'Reset Year', () => {
       const all = getAllState();
       all[currentYear] = { budget: {}, habits: {} };
       saveAllState(all);

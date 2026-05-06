@@ -49,10 +49,10 @@
 
 /* ── Hero rev-meter section ─────────────────────────────────── */
 .h-hero {
-  padding: 20px 16px 0;
+  padding: 16px 16px 0;
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
+  gap: 16px;
+  align-items: center;
 }
 
 /* Rev meter — SVG arc gauge */
@@ -61,7 +61,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 .rev-meter-wrap svg {
   overflow: visible;
@@ -69,11 +69,11 @@
 .rev-meter-label {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--mid);
-  margin-top: -4px;
+  margin-top: -2px;
 }
 
 /* Right stats beside the meter */
@@ -81,31 +81,35 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 6px;
+  gap: 0;
+  border-left: 1px solid var(--border);
+  padding-left: 16px;
 }
 .h-hero-stat {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
 }
+.h-hero-stat:last-child { border-bottom: none; }
 .h-hero-stat-label {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   font-size: 9px;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   color: var(--mid);
 }
 .h-hero-stat-val {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 22px;
+  font-size: 18px;
   color: var(--dark);
   line-height: 1;
 }
 .h-hero-stat-val span {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--mid);
 }
@@ -271,6 +275,9 @@
   font-weight: 700;
   font-size: 10px;
   color: var(--coral);
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 .h-routine-freq {
   font-family: 'Montserrat', sans-serif;
@@ -727,6 +734,49 @@
   height: 12px;
 }
 
+/* ── Routine streak icon ────────────────────────────────────── */
+.h-routine-streak {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.h-routine-streak svg { color: var(--coral); }
+
+/* ── 30-day line chart ───────────────────────────────────────── */
+.h-line-chart-wrap {
+  padding: 12px 14px 10px;
+  overflow: hidden;
+}
+
+/* ── Day detail sheet rows ───────────────────────────────────── */
+.h-day-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.h-day-sheet-row:last-child { border-bottom: none; }
+.h-day-sheet-row:hover { background: rgba(255,107,91,0.04); }
+.h-day-sheet-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--dark);
+}
+.h-day-sheet-name.done-text {
+  text-decoration: line-through;
+  color: var(--mid);
+}
+
+/* ── Settings page wrapper ───────────────────────────────────── */
+.h-settings-wrap {
+  padding-top: 8px;
+}
+.h-settings-wrap .settings-section { margin: 0 16px 12px; }
+.h-settings-wrap .settings-row { padding: 12px 14px; }
+
 /* ── Dark mode overrides ─────────────────────────────────────── */
 [data-theme="dark"] .h-section { background: var(--white); border-color: var(--border); }
 [data-theme="dark"] .h-routine-row:hover { background: rgba(255,107,91,0.05); }
@@ -738,3 +788,4 @@
 [data-theme="dark"] .h-freq-pill { background: var(--navy); color: var(--mid); }
 [data-theme="dark"] .h-cal-cell.heat-0 { background: rgba(255,255,255,0.08); }
 [data-theme="dark"] .h-year-cell.heat-0 { background: rgba(255,255,255,0.08); }
+[data-theme="dark"] .h-day-sheet-row:hover { background: rgba(255,107,91,0.06); }

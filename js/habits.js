@@ -184,16 +184,17 @@ function isCheckedMonth(state, routineId, monthStr) {
   return state.checkins.some(c => c.routineId === routineId && c.month === monthStr);
 }
 
-function toggleCheckin(routineId, freq) {
+function toggleCheckin(routineId, freq, dateOverride) {
   const state = hGet();
-  const today = toDateStr(new Date());
-  const week  = _hWeek;
-  const month = toMonthStr(_hYear, _hMonth);
+  const dateD = dateOverride ? new Date(dateOverride + 'T12:00:00') : new Date();
+  const dateStr = dateOverride || toDateStr(new Date());
+  const week  = isoWeek(dateD);
+  const month = dateD.getFullYear() + '-' + String(dateD.getMonth()+1).padStart(2,'0');
 
   if (freq === 'daily') {
-    const idx = state.checkins.findIndex(c => c.routineId === routineId && c.date === today);
+    const idx = state.checkins.findIndex(c => c.routineId === routineId && c.date === dateStr);
     if (idx >= 0) state.checkins.splice(idx, 1);
-    else state.checkins.push({ id: 'c_' + Date.now(), routineId, date: today, week, month });
+    else state.checkins.push({ id: 'c_' + Date.now(), routineId, date: dateStr, week, month });
   } else if (freq === 'weekly') {
     const idx = state.checkins.findIndex(c => c.routineId === routineId && c.week === week);
     if (idx >= 0) state.checkins.splice(idx, 1);
@@ -405,10 +406,12 @@ let _hManageFreq = 'daily';
 
 function hSetView(view, btn) {
   _hView = view;
-  // Update nav tabs
   document.querySelectorAll('#habitsNavTabs .nav-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.view === view);
   });
+  // Hide manage button on settings view
+  const manageBtn = document.getElementById('hManageNavBtn');
+  if (manageBtn) manageBtn.style.display = view === 'settings' ? 'none' : '';
   renderHabitsApp();
 }
 
@@ -439,22 +442,41 @@ function renderHabitsApp() {
   renderMainView(state);
 }
 
+function calcYearCompletion(state) {
+  const y = new Date().getFullYear();
+  let total = 0, possible = 0;
+  for (let m = 0; m < 12; m++) {
+    const pct = calcMonthCompletion(state, y, m);
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === y && today.getMonth() === m;
+    const isFuture = today.getFullYear() === y && m > today.getMonth();
+    if (isFuture) continue;
+    const days = isCurrentMonth ? today.getDate() : daysInMonthH(y, m);
+    const daily = state.routines.filter(r => r.freq === 'daily' && !r.archived);
+    daily.forEach(r => {
+      for (let d = 1; d <= days; d++) {
+        const ds = toDateStr(new Date(y, m, d));
+        possible++;
+        if (state.checkins.some(c => c.routineId === r.id && c.date === ds)) total++;
+      }
+    });
+  }
+  return possible ? Math.round(total / possible * 100) : 0;
+}
+
 function renderHeroMeter(state) {
   const todayPct  = calcTodayCompletion(state);
   const monthPct  = calcMonthCompletion(state, _hYear, _hMonth);
   const streak    = calcDailyStreak(state);
+  const yearPct   = calcYearCompletion(state);
 
   const meterEl = document.getElementById('hRevMeter');
-  if (meterEl) meterEl.innerHTML = buildRevMeter(todayPct, 140);
+  if (meterEl) meterEl.innerHTML = buildRevMeter(todayPct, 120);
 
-  const statEls = {
-    'hStatStreak': streak + ' day' + (streak !== 1 ? 's' : ''),
-    'hStatMonth':  monthPct + '%',
-  };
-  Object.entries(statEls).forEach(([id, val]) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
-  });
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('hStatStreak', streak + 'd');
+  set('hStatMonth',  monthPct + '%');
+  set('hStatYear',   yearPct + '%');
 }
 
 function renderWeekStrip(state) {
@@ -487,9 +509,11 @@ function renderWeekStrip(state) {
       pctClass = pct === 0 ? 'pct-0' : pct < 40 ? 'pct-low' : pct < 80 ? 'pct-mid' : 'pct-high';
     }
 
+    const clickable = !isFuture;
     html += `<div class="week-heatmap-day">
       <div class="week-heatmap-label">${dayName.slice(0,1)}</div>
-      <div class="week-heatmap-cell ${pctClass} ${isToday ? 'today' : ''} ${isFuture ? 'future' : ''}"></div>
+      <div class="week-heatmap-cell ${pctClass} ${isToday ? 'today' : ''} ${isFuture ? 'future' : ''}"
+        ${clickable ? `onclick="hOpenDaySheet('${ds}')"` : ''}></div>
       <div class="week-heatmap-num">${dayNum}</div>
     </div>`;
   }
@@ -500,10 +524,204 @@ function renderMainView(state) {
   const container = document.getElementById('hMainView');
   if (!container) return;
 
+  // Show/hide hero on settings view
+  const hero = document.getElementById('page-habits-main');
+  const heroSection = document.querySelector('#page-habits-main .h-hero');
+  const weekStrip = document.getElementById('hWeekStrip');
+  if (_hView === 'settings') {
+    if (heroSection) heroSection.style.display = 'none';
+    if (weekStrip) weekStrip.style.display = 'none';
+    container.innerHTML = renderSettingsView(state);
+    return;
+  }
+  if (heroSection) heroSection.style.display = '';
+  if (weekStrip) weekStrip.style.display = '';
+
   if (_hView === 'today')    container.innerHTML = renderTodayView(state);
   if (_hView === 'weekly')   container.innerHTML = renderWeeklyView(state);
   if (_hView === 'monthly')  container.innerHTML = renderMonthlyView(state);
   if (_hView === 'calendar') container.innerHTML = renderCalendarView(state);
+}
+
+// ── Settings view ─────────────────────────────────────────────
+function renderSettingsView(state) {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const ok = typeof checkStorageAvailable === 'function' ? checkStorageAvailable() : true;
+  return `
+    <div class="h-settings-wrap">
+
+      <div class="settings-section">
+        <div class="settings-section-title">Appearance</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Dark Mode</div>
+            <div class="settings-row-desc">Switch between light and dark theme</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="hDarkToggle" ${dark ? 'checked' : ''} onchange="hToggleDark(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Storage</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Local storage ${ok ? 'active' : 'blocked'}</div>
+            <div class="settings-row-desc">${ok ? 'Your habit data is saved on this device and persists between sessions' : 'Data cannot be saved — try opening the app directly or use a different browser'}</div>
+          </div>
+          <span style="background:${ok ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'};color:${ok ? 'var(--green)' : 'var(--red)'};font-family:Montserrat,sans-serif;font-weight:700;font-size:11px;padding:3px 10px;border-radius:20px;white-space:nowrap;">${ok ? 'Active' : 'Inactive'}</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Data</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Manage Routines</div>
+            <div class="settings-row-desc">Add, archive or delete your routines</div>
+          </div>
+          <button class="settings-btn neutral" onclick="openManageSheet()">Manage</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Clear All Habit Data</div>
+            <div class="settings-row-desc">Permanently delete all routines, check-ins and tasks. Cannot be undone.</div>
+          </div>
+          <button class="settings-btn danger" onclick="hConfirmClearAll()">Clear</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Danger Zone</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Wipe All Habit Data</div>
+            <div class="settings-row-desc">Removes everything from livesimple · habits permanently</div>
+          </div>
+          <button class="settings-btn danger" onclick="hConfirmWipe()">Wipe</button>
+        </div>
+      </div>
+
+      <div style="padding:16px;margin:8px;border-radius:12px;background:var(--light);">
+        <p style="font-family:'Montserrat',sans-serif;font-size:10px;line-height:1.7;color:var(--mid);text-align:center;">
+          <strong style="font-family:'Montserrat',sans-serif;">Habit tracker.</strong> Live Simple · Habits is a personal productivity tool. All data is stored locally on your device and is never shared or transmitted. This app is not a substitute for professional medical, psychological, or therapeutic advice. If you are experiencing mental health difficulties, please seek support from a qualified professional.
+        </p>
+      </div>
+
+      <div class="bottom-space"></div>
+    </div>
+  `;
+}
+
+function hToggleDark(el) {
+  const isDark = el.checked;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  try { localStorage.setItem('livesimple_theme', isDark ? 'dark' : 'light'); } catch(e) {}
+}
+
+function hConfirmClearAll() {
+  if (typeof openModal === 'function') {
+    openModal('Clear all habit data?',
+      'All routines, check-ins and tasks will be permanently deleted.',
+      'Clear All',
+      () => {
+        localStorage.removeItem('livesimple_habits_v2');
+        renderHabitsApp();
+      });
+  }
+}
+
+function hConfirmWipe() {
+  if (typeof openModal === 'function') {
+    openModal('Wipe all habit data?',
+      'Everything in livesimple · habits will be permanently deleted. This cannot be undone.',
+      'Wipe',
+      () => {
+        localStorage.removeItem('livesimple_habits_v2');
+        renderHabitsApp();
+      });
+  }
+}
+
+// ── Line graph: last 30 days daily completion ─────────────────
+function buildDailyLineGraph(state) {
+  const daily = state.routines.filter(r => r.freq === 'daily' && !r.archived);
+  if (!daily.length) return '';
+
+  const days = 30;
+  const today = new Date();
+  const pts = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const ds = toDateStr(d);
+    const done = daily.filter(r => state.checkins.some(c => c.routineId === r.id && c.date === ds)).length;
+    pts.push({ ds, pct: daily.length ? Math.round(done / daily.length * 100) : 0, isFuture: false });
+  }
+
+  const W = 320, H = 80, pad = { t: 8, r: 8, b: 22, l: 28 };
+  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
+
+  // Y axis ticks
+  const yTicks = [0, 50, 100];
+  const yLines = yTicks.map(v => {
+    const y = pad.t + gh - (v / 100) * gh;
+    return `<line x1="${pad.l}" y1="${y}" x2="${pad.l + gw}" y2="${y}" stroke="var(--border)" stroke-width="1"/>
+            <text x="${pad.l - 4}" y="${y + 3.5}" text-anchor="end" font-family="Montserrat,sans-serif" font-size="7" fill="var(--mid)">${v}%</text>`;
+  }).join('');
+
+  // X axis labels (every 7 days)
+  const xLabels = pts.map((p, i) => {
+    if (i === 0 || i === days - 1 || i % 7 === 0) {
+      const x = pad.l + (i / (days - 1)) * gw;
+      const d = new Date(p.ds + 'T12:00:00');
+      const lbl = (d.getDate()) + '/' + (d.getMonth() + 1);
+      return `<text x="${x}" y="${H - 4}" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="7" fill="var(--mid)">${lbl}</text>`;
+    }
+    return '';
+  }).join('');
+
+  // Line path
+  const linePts = pts.map((p, i) => {
+    const x = pad.l + (i / (days - 1)) * gw;
+    const y = pad.t + gh - (p.pct / 100) * gh;
+    return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+  }).join(' ');
+
+  // Area fill
+  const firstX = pad.l, lastX = pad.l + gw, baseY = pad.t + gh;
+  const areaPath = `M ${firstX} ${baseY} ` + pts.map((p, i) => {
+    const x = pad.l + (i / (days - 1)) * gw;
+    const y = pad.t + gh - (p.pct / 100) * gh;
+    return `L ${x} ${y}`;
+  }).join(' ') + ` L ${lastX} ${baseY} Z`;
+
+  // Dots on non-zero days
+  const dots = pts.map((p, i) => {
+    if (p.pct === 0) return '';
+    const x = pad.l + (i / (days - 1)) * gw;
+    const y = pad.t + gh - (p.pct / 100) * gh;
+    const isTod = i === days - 1;
+    return `<circle cx="${x}" cy="${y}" r="${isTod ? 3.5 : 2}" fill="${isTod ? 'var(--coral)' : 'var(--coral)'}" opacity="${isTod ? 1 : 0.7}"/>`;
+  }).join('');
+
+  return `<div class="h-line-chart-wrap">
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible;">
+      <defs>
+        <linearGradient id="hLineGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--coral)" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="var(--coral)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${yLines}
+      <path d="${areaPath}" fill="url(#hLineGrad)"/>
+      <path d="${linePts}" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}
+      ${xLabels}
+    </svg>
+  </div>`;
 }
 
 // ── Today view ────────────────────────────────────────────────
@@ -525,6 +743,7 @@ function renderTodayView(state) {
     : '<div class="h-empty">No daily routines — tap Manage to add some</div>';
 
   const taskRows = tasks.map(t => taskRow(t)).join('');
+  const lineGraph = buildDailyLineGraph(state);
 
   return `
     <div class="h-section">
@@ -548,6 +767,10 @@ function renderTodayView(state) {
       <div class="h-routine-list">${taskRows || '<div class="h-empty">No tasks for today</div>'}</div>
       ${taskAddRow('daily')}
     </div>
+    ${lineGraph ? `<div class="h-section">
+      <div class="h-section-head"><h2>30-Day Progress</h2></div>
+      ${lineGraph}
+    </div>` : ''}
     ${renderStreakCards(state)}
   `;
 }
@@ -722,7 +945,7 @@ function renderCalendarView(state) {
     }
 
     cells += `<div class="h-cal-cell heat-${heat} ${isToday ? 'today' : ''} ${isFuture ? 'future' : ''}"
-      onclick="hCalDayClick(${d})">${d}</div>`;
+      ${!isFuture ? `onclick="hOpenDaySheet('${ds}')"` : ''}>${d}</div>`;
   }
 
   // Year heatmap
@@ -796,9 +1019,47 @@ function renderYearHeatmap(state) {
   `;
 }
 
-function hCalDayClick(day) {
-  // Show a mini summary popup for that day (future: day detail sheet)
-  // For now just a no-op — could expand later
+// ── Day detail sheet (back-date check-in) ────────────────────
+function hOpenDaySheet(dateStr) {
+  const state = hGet();
+  const daily = state.routines.filter(r => r.freq === 'daily' && !r.archived);
+  const d = new Date(dateStr + 'T12:00:00');
+  const label = d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const rows = daily.length
+    ? daily.map(r => {
+        const done = state.checkins.some(c => c.routineId === r.id && c.date === dateStr);
+        return `<div class="h-day-sheet-row" onclick="toggleCheckin('${r.id}','daily','${dateStr}');renderDaySheetBody('${dateStr}')">
+          <div class="h-task-check ${done ? 'done' : ''}">${done ? checkSvg() : ''}</div>
+          <span class="h-day-sheet-name ${done ? 'done-text' : ''}">${r.name}</span>
+        </div>`;
+      }).join('')
+    : '<div class="h-empty">No daily routines yet</div>';
+
+  const overlay = document.getElementById('hDaySheetOverlay');
+  document.getElementById('hDaySheetTitle').textContent = label;
+  document.getElementById('hDaySheetBody').innerHTML = rows;
+  overlay.classList.add('open');
+}
+
+function renderDaySheetBody(dateStr) {
+  const state = hGet();
+  const daily = state.routines.filter(r => r.freq === 'daily' && !r.archived);
+  const rows = daily.length
+    ? daily.map(r => {
+        const done = state.checkins.some(c => c.routineId === r.id && c.date === dateStr);
+        return `<div class="h-day-sheet-row" onclick="toggleCheckin('${r.id}','daily','${dateStr}');renderDaySheetBody('${dateStr}')">
+          <div class="h-task-check ${done ? 'done' : ''}">${done ? checkSvg() : ''}</div>
+          <span class="h-day-sheet-name ${done ? 'done-text' : ''}">${r.name}</span>
+        </div>`;
+      }).join('')
+    : '<div class="h-empty">No daily routines yet</div>';
+  document.getElementById('hDaySheetBody').innerHTML = rows;
+  renderHabitsApp();
+}
+
+function hCloseDaySheet() {
+  document.getElementById('hDaySheetOverlay').classList.remove('open');
 }
 
 // ── Streak cards ──────────────────────────────────────────────
@@ -807,9 +1068,9 @@ function renderStreakCards(state) {
   const todayPct = calcTodayCompletion(state);
   const monthPct = calcMonthCompletion(state, _hYear, _hMonth);
 
-  const flame  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg>`;
-  const target = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
-  const star   = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  const flame  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg>`;
+  const target = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
+  const star   = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
   return `
     <div class="h-section">
@@ -857,8 +1118,9 @@ function checkSvg() {
   return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>`;
 }
 
+const STREAK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg>`;
+
 function routineRow(r, done, streak, onclick) {
-  // Completion bar for the period
   return `
     <div class="h-routine-row">
       <div class="h-check-circle ${done ? 'done' : ''}" onclick="${onclick}">
@@ -867,7 +1129,7 @@ function routineRow(r, done, streak, onclick) {
       <div class="h-routine-info">
         <div class="h-routine-name ${done ? 'done-text' : ''}">${r.name}</div>
         <div class="h-routine-meta">
-          ${streak > 0 ? `<span class="h-routine-streak">🔥 ${streak}d</span>` : ''}
+          ${streak > 0 ? `<span class="h-routine-streak">${STREAK_SVG} ${streak}d</span>` : ''}
           <span class="h-routine-freq">${r.freq}</span>
         </div>
       </div>

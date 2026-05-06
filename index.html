@@ -34,7 +34,7 @@
   <div class="logo-dropdown-wrap" id="logoDropdownWrap">
     <div class="logo-dropdown-trigger" onclick="toggleLogoDropdown()">
       <span class="logo">live<em>simple</em></span>
-      <span class="logo-app-label">· Budget &amp; Habits</span>
+      <span class="logo-app-label">· Budget</span>
       <span class="logo-dropdown-arrow">▾</span>
     </div>
     <div class="logo-dropdown-menu">
@@ -42,7 +42,7 @@
         <div style="display:flex;align-items:center;">
           <div>
             <div class="logo-dd-name">live<em>simple</em></div>
-            <div class="logo-dd-sub">Budget &amp; Habits</div>
+            <div class="logo-dd-sub">Budget &amp; Bills</div>
           </div>
           <span class="logo-dd-check" data-check="budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         </div>
@@ -628,7 +628,7 @@
     <div class="settings-row">
       <div class="settings-row-info">
         <div class="settings-row-label">Start Fresh — This Year</div>
-        <div class="settings-row-desc">Reset budget &amp; habits for <span id="resetYearLabel">2026</span> only</div>
+        <div class="settings-row-desc">Clear budget data for <span id="resetYearLabel">2026</span> only</div>
       </div>
       <button class="settings-btn danger" onclick="confirmReset('year')">Reset</button>
     </div>
@@ -637,9 +637,7 @@
         <div class="settings-row-label">Reset This Month</div>
         <div class="settings-row-desc">Clear data for <span id="resetMonthLabel">this month</span></div>
       </div>
-      <button class="settings-btn danger" onclick="confirmReset('month-budget')">Budget</button>
-      <button class="settings-btn danger" onclick="confirmReset('month-habits')" style="margin-left:4px;">Habits</button>
-      <button class="settings-btn danger" onclick="confirmReset('month-both')" style="margin-left:4px;">Both</button>
+      <button class="settings-btn danger" onclick="confirmReset('month-budget')">Reset</button>
     </div>
   </div>
 
@@ -655,11 +653,8 @@
   </div>
 
   <div style="padding:16px;margin:8px;border-radius:12px;background:var(--light);">
-    <p style="font-family:'Montserrat',sans-serif;font-size:10px;line-height:1.7;color:var(--mid);text-align:center;margin-bottom:10px;">
-      <strong style="font-family:'Montserrat',sans-serif;">Finance tracker.</strong> Live Simple · Budget is a personal budgeting tool only. All figures are entered manually and reflect only what you record. Nothing in this app constitutes financial, tax, or legal advice. Live Simple accepts no liability for financial decisions made based on information entered or displayed here. Always consult a qualified professional for financial guidance.
-    </p>
     <p style="font-family:'Montserrat',sans-serif;font-size:10px;line-height:1.7;color:var(--mid);text-align:center;">
-      <strong style="font-family:'Montserrat',sans-serif;">Habit tracker.</strong> Live Simple · Habits is a personal productivity tool. Habit data is stored locally on your device and is never shared. This app is not a substitute for professional medical, psychological, or therapeutic advice. If you are experiencing mental health difficulties, please seek support from a qualified professional.
+      <strong style="font-family:'Montserrat',sans-serif;">Finance tracker.</strong> Live Simple · Budget is a personal budgeting tool only. All figures are entered manually and reflect only what you record. Nothing in this app constitutes financial, tax, or legal advice. Live Simple accepts no liability for financial decisions made based on information entered or displayed here. Always consult a qualified professional for financial guidance.
     </p>
   </div>
 
@@ -684,7 +679,7 @@
         <div style="display:flex;align-items:center;">
           <div>
             <div class="logo-dd-name">live<em>simple</em></div>
-            <div class="logo-dd-sub">Budget &amp; Habits</div>
+            <div class="logo-dd-sub">Budget &amp; Bills</div>
           </div>
           <span class="logo-dd-check" data-check="budget"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         </div>
@@ -1364,15 +1359,18 @@
   </div>
   <!-- View tabs in nav bar -->
   <div class="scroll-tab-wrap" id="habitsNavWrap">
+    <button class="scroll-arrow scroll-arrow-left" id="habitsNavLeft" onclick="scrollTabBar('habitsNavTabs',-120)" aria-label="Scroll tabs left">‹</button>
     <div class="nav-tabs" id="habitsNavTabs">
       <button class="nav-tab active" data-view="today"    onclick="hSetView('today',this)">Today</button>
       <button class="nav-tab"        data-view="weekly"   onclick="hSetView('weekly',this)">Weekly</button>
       <button class="nav-tab"        data-view="monthly"  onclick="hSetView('monthly',this)">Monthly</button>
       <button class="nav-tab"        data-view="calendar" onclick="hSetView('calendar',this)">Calendar</button>
+      <button class="nav-tab"        data-view="settings" onclick="hSetView('settings',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
     </div>
+    <button class="scroll-arrow scroll-arrow-right" id="habitsNavRight" onclick="scrollTabBar('habitsNavTabs',120)" aria-label="Scroll tabs right">›</button>
   </div>
   <!-- Manage routines button -->
-  <button class="h-manage-nav-btn" onclick="openManageSheet()">
+  <button class="h-manage-nav-btn" id="hManageNavBtn" onclick="openManageSheet()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     Manage
   </button>
@@ -1388,11 +1386,15 @@
     <div class="h-hero-stats">
       <div class="h-hero-stat">
         <div class="h-hero-stat-label">Streak</div>
-        <div class="h-hero-stat-val" id="hStatStreak">0 <span>days</span></div>
+        <div class="h-hero-stat-val" id="hStatStreak">—</div>
       </div>
       <div class="h-hero-stat">
         <div class="h-hero-stat-label">This Month</div>
-        <div class="h-hero-stat-val" id="hStatMonth">0<span>%</span></div>
+        <div class="h-hero-stat-val" id="hStatMonth">—</div>
+      </div>
+      <div class="h-hero-stat">
+        <div class="h-hero-stat-label">Year</div>
+        <div class="h-hero-stat-val" id="hStatYear">—</div>
       </div>
     </div>
   </div>
@@ -1402,6 +1404,17 @@
 
   <!-- Main content area (swapped by view) -->
   <div id="hMainView"></div>
+</div>
+
+<!-- Day detail sheet (back-date checkins) -->
+<div class="h-manage-overlay" id="hDaySheetOverlay" onclick="if(event.target===this)hCloseDaySheet()">
+  <div class="h-manage-sheet">
+    <div class="h-manage-header">
+      <span class="h-manage-title" id="hDaySheetTitle"></span>
+      <button class="h-manage-close" onclick="hCloseDaySheet()">×</button>
+    </div>
+    <div id="hDaySheetBody" style="padding:4px 0;"></div>
+  </div>
 </div>
 
 <!-- Manage routines bottom sheet -->
