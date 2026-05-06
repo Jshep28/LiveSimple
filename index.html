@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="css/shared.css">
 <link rel="stylesheet" href="css/budget.css">
 <link rel="stylesheet" href="css/invest.css">
+<link rel="stylesheet" href="css/habits.css">
 </head>
 <body>
 <!-- ===== UNIFIED NAV ===== -->
@@ -55,13 +56,21 @@
           <span class="logo-dd-check" data-check="invest" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         </div>
       </div>
+      <div class="logo-dropdown-item" data-app="habits" onclick="switchApp('habits')">
+        <div style="display:flex;align-items:center;">
+          <div>
+            <div class="logo-dd-name">live<em>simple</em> · habits</div>
+            <div class="logo-dd-sub">Habits &amp; Tasks</div>
+          </div>
+          <span class="logo-dd-check" data-check="habits" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </div>
+      </div>
     </div>
   </div>
   <div class="scroll-tab-wrap" id="budgetNavWrap">
     <button class="scroll-arrow scroll-arrow-left" id="budgetNavLeft" onclick="scrollTabBar('budgetNavTabs',-120)" aria-label="Scroll tabs left">‹</button>
     <div class="nav-tabs" id="budgetNavTabs">
       <button class="nav-tab active" id="tab-budget" onclick="showPage('budget',this)">Budget</button>
-      <button class="nav-tab" id="tab-habits" onclick="showPage('habits',this)">Habits</button>
       <button class="nav-tab" id="tab-review" onclick="showPage('review',this)">Review</button>
       <button class="nav-tab" id="tab-settings" onclick="showPage('settings',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
     </div>
@@ -441,101 +450,7 @@
   <span class="fab-label">Log Entry</span>
 </button>
 
-<!-- ===================== HABITS PAGE ===================== -->
-<div id="page-habits" class="page">
 
-  <div class="habit-hero" style="display:none">
-    <h1>H A B I T S</h1>
-    <p id="habitMonthLabel">· January 2026 ·</p>
-  </div>
-  <div id="copyLastHabitsBar" class="copy-bar">
-    <span style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;color:var(--mid);">No habits set for this month</span>
-    <button onclick="copyLastHabits()" style="background:var(--coral);border:none;border-radius:8px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:white;cursor:pointer;white-space:nowrap;">Copy last month's habits</button>
-  </div>
-
-  <div class="month-scroll-wrap" id="habitMonthWrap">
-    <button class="month-scroll-arrow month-scroll-left" id="habitMonthLeft" onclick="scrollMonths('habitMonthSelector',-160)" aria-label="Scroll months left">‹</button>
-    <div class="month-selector" id="habitMonthSelector"></div>
-    <button class="month-scroll-arrow month-scroll-right" id="habitMonthRight" onclick="scrollMonths('habitMonthSelector',160)" aria-label="Scroll months right">›</button>
-  </div>
-
-  <div class="habit-stats">
-    <div class="habit-stat">
-      <div class="habit-stat-val" id="h-streak">0</div>
-      <div class="habit-stat-label">Day Streak</div>
-    </div>
-    <div class="habit-stat">
-      <div class="habit-stat-val" id="h-today">0%</div>
-      <div class="habit-stat-label">Today</div>
-    </div>
-    <div class="habit-stat">
-      <div class="habit-stat-val" id="h-month">0%</div>
-      <div class="habit-stat-label">This Month</div>
-    </div>
-  </div>
-
-  <!-- HABIT PROGRESS CHART -->
-  <div class="section" style="margin: 0 16px 16px;">
-    <div class="section-head">
-      <h2>Daily Progress</h2>
-      <span id="habitChartSubtitle" style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;color:rgba(255,255,255,0.6);"></span>
-    </div>
-    <div style="padding:14px 16px 10px;position:relative;height:160px;">
-      <canvas id="habitProgressChart"></canvas>
-    </div>
-    <div id="habitChartLegend" style="display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 12px;"></div>
-  </div>
-
-  <!-- DAILY HABITS CALENDAR -->
-  <div class="section-head" style="margin: 0 16px; border-radius: 14px 14px 0 0; padding: 10px 16px;">
-    <h2>Daily Habits</h2>
-  </div>
-  <div class="daily-habits-section" style="border-radius: 0 0 14px 14px; margin-top: 0;">
-    <div class="habit-add-row">
-      <input type="text" id="newDailyHabit" placeholder="Add a daily habit…" onkeydown="if(event.key==='Enter')addDailyHabit()">
-      <button onclick="addDailyHabit()">+ Add</button>
-    </div>
-    <div class="cal-wrap">
-      <div class="cal-table">
-        <div class="cal-header" id="calHeader"></div>
-        <div id="calBody"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- WEEKLY HABITS -->
-  <div class="section-head" style="margin: 16px 16px 0; border-radius: 14px 14px 0 0; padding: 10px 16px;">
-    <h2>Weekly Habits</h2>
-  </div>
-  <div class="week-tabs" style="margin: 0 16px; padding: 10px 16px 0;">
-    <button class="week-tab active" onclick="selectWeek(0,this)">Wk 1<span class="week-tab-rate" id="wk-rate-0"></span></button>
-    <button class="week-tab" onclick="selectWeek(1,this)">Wk 2<span class="week-tab-rate" id="wk-rate-1"></span></button>
-    <button class="week-tab" onclick="selectWeek(2,this)">Wk 3<span class="week-tab-rate" id="wk-rate-2"></span></button>
-    <button class="week-tab" onclick="selectWeek(3,this)">Wk 4<span class="week-tab-rate" id="wk-rate-3"></span></button>
-    <button class="week-tab" onclick="selectWeek(4,this)">Wk 5<span class="week-tab-rate" id="wk-rate-4"></span></button>
-  </div>
-  <div class="wm-section" style="border-radius: 0 0 14px 14px; margin-top: 0;">
-    <div id="weekly-rows"></div>
-    <div class="wm-add">
-      <input type="text" id="newWeeklyHabit" placeholder="Add a weekly habit…" onkeydown="if(event.key==='Enter')addWeeklyHabit()">
-      <button onclick="addWeeklyHabit()">+ Add</button>
-    </div>
-  </div>
-
-  <!-- MONTHLY HABITS -->
-  <div class="section-head" style="margin: 16px 16px 0; border-radius: 14px 14px 0 0; padding: 10px 16px;">
-    <h2>Monthly Habits</h2>
-  </div>
-  <div class="wm-section" style="border-radius: 0 0 14px 14px; margin-top: 0;">
-    <div id="monthly-rows"></div>
-    <div class="wm-add">
-      <input type="text" id="newMonthlyHabit" placeholder="Add a monthly habit…" onkeydown="if(event.key==='Enter')addMonthlyHabit()">
-      <button onclick="addMonthlyHabit()">+ Add</button>
-    </div>
-  </div>
-
-  <div class="bottom-space"></div>
-</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
@@ -1408,12 +1323,113 @@
 
 </div><!-- end app-invest -->
 
-<!-- ===== SHARED NAV (rendered on top via position:fixed override) ===== -->
-<!-- Actually we inject navs inside each app and show/hide the app-wrapper -->
-<!-- So we need per-app navs. Let's inject them. -->
+<!-- ===== HABITS APP ===== -->
+<div class="app-wrapper" id="app-habits">
+<nav>
+  <div class="logo-dropdown-wrap" id="habitsLogoDropWrap">
+    <div class="logo-dropdown-trigger" onclick="toggleLogoDropdown()">
+      <span class="logo">live<em>simple</em></span>
+      <span class="logo-app-label">· Habits</span>
+      <span class="logo-dropdown-arrow">▾</span>
+    </div>
+    <div class="logo-dropdown-menu">
+      <div class="logo-dropdown-item" data-app="budget" onclick="switchApp('budget')">
+        <div style="display:flex;align-items:center;">
+          <div>
+            <div class="logo-dd-name">live<em>simple</em></div>
+            <div class="logo-dd-sub">Budget &amp; Bills</div>
+          </div>
+          <span class="logo-dd-check" data-check="budget" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </div>
+      </div>
+      <div class="logo-dropdown-item" data-app="invest" onclick="switchApp('invest')">
+        <div style="display:flex;align-items:center;">
+          <div>
+            <div class="logo-dd-name">live<em>simple</em> · invest</div>
+            <div class="logo-dd-sub">Investment Tracker</div>
+          </div>
+          <span class="logo-dd-check" data-check="invest" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </div>
+      </div>
+      <div class="logo-dropdown-item active-app" data-app="habits" onclick="switchApp('habits')">
+        <div style="display:flex;align-items:center;">
+          <div>
+            <div class="logo-dd-name">live<em>simple</em> · habits</div>
+            <div class="logo-dd-sub">Habits &amp; Tasks</div>
+          </div>
+          <span class="logo-dd-check" data-check="habits"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- View tabs in nav bar -->
+  <div class="scroll-tab-wrap" id="habitsNavWrap">
+    <div class="nav-tabs" id="habitsNavTabs">
+      <button class="nav-tab active" data-view="today"    onclick="hSetView('today',this)">Today</button>
+      <button class="nav-tab"        data-view="weekly"   onclick="hSetView('weekly',this)">Weekly</button>
+      <button class="nav-tab"        data-view="monthly"  onclick="hSetView('monthly',this)">Monthly</button>
+      <button class="nav-tab"        data-view="calendar" onclick="hSetView('calendar',this)">Calendar</button>
+    </div>
+  </div>
+  <!-- Manage routines button -->
+  <button class="h-manage-nav-btn" onclick="openManageSheet()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    Manage
+  </button>
+</nav>
+
+<div id="page-habits-main">
+  <!-- Hero: rev meter + stats -->
+  <div class="h-hero">
+    <div class="rev-meter-wrap">
+      <div id="hRevMeter"></div>
+      <div class="rev-meter-label">Today</div>
+    </div>
+    <div class="h-hero-stats">
+      <div class="h-hero-stat">
+        <div class="h-hero-stat-label">Streak</div>
+        <div class="h-hero-stat-val" id="hStatStreak">0 <span>days</span></div>
+      </div>
+      <div class="h-hero-stat">
+        <div class="h-hero-stat-label">This Month</div>
+        <div class="h-hero-stat-val" id="hStatMonth">0<span>%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week heatmap strip -->
+  <div class="week-heatmap" id="hWeekStrip"></div>
+
+  <!-- Main content area (swapped by view) -->
+  <div id="hMainView"></div>
+</div>
+
+<!-- Manage routines bottom sheet -->
+<div class="h-manage-overlay" id="hManageOverlay" onclick="if(event.target===this)closeManageSheet()">
+  <div class="h-manage-sheet">
+    <div class="h-manage-header">
+      <span class="h-manage-title">Manage Routines</span>
+      <button class="h-manage-close" onclick="closeManageSheet()">×</button>
+    </div>
+    <div id="hManageList"></div>
+    <div class="h-manage-add">
+      <input type="text" id="hManageNewName" placeholder="New routine name…"
+        onkeydown="if(event.key==='Enter')hManageAddRoutine()">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+        <button class="h-freq-pill active" data-freq="daily"   onclick="hManageSetFreq('daily',this)">Daily</button>
+        <button class="h-freq-pill"        data-freq="weekly"  onclick="hManageSetFreq('weekly',this)">Weekly</button>
+        <button class="h-freq-pill"        data-freq="monthly" onclick="hManageSetFreq('monthly',this)">Monthly</button>
+      </div>
+      <button class="h-save-btn" style="margin-top:6px;width:100%;" onclick="hManageAddRoutine()">+ Add Routine</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- end app-habits -->
 
 <script src="js/shared.js"></script>
 <script src="js/budget.js"></script>
 <script src="js/invest.js"></script>
+<script src="js/habits.js"></script>
 </body>
 </html>

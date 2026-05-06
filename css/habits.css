@@ -1,0 +1,740 @@
+/* ============================================================
+   HABITS APP — habits.css
+   Live Simple · Habits
+   ============================================================ */
+
+/* ── Page shell ─────────────────────────────────────────────── */
+#app-habits {
+  min-height: 100vh;
+  background: var(--light);
+}
+#app-habits .logo em { color: var(--coral); font-style: normal; }
+
+#page-habits-main {
+  padding-bottom: 100px;
+}
+
+/* ── View tabs (Today / Weekly / Monthly / Calendar) ────────── */
+.h-view-bar {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.h-view-bar::-webkit-scrollbar { display: none; }
+
+.h-view-tab {
+  flex-shrink: 0;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--mid);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.h-view-tab.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: #fff;
+}
+.h-view-tab:hover:not(.active) {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+/* ── Hero rev-meter section ─────────────────────────────────── */
+.h-hero {
+  padding: 20px 16px 0;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+/* Rev meter — SVG arc gauge */
+.rev-meter-wrap {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.rev-meter-wrap svg {
+  overflow: visible;
+}
+.rev-meter-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin-top: -4px;
+}
+
+/* Right stats beside the meter */
+.h-hero-stats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+.h-hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.h-hero-stat-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+.h-hero-stat-val {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--dark);
+  line-height: 1;
+}
+.h-hero-stat-val span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mid);
+}
+
+/* ── Week heatmap strip ─────────────────────────────────────── */
+.week-heatmap {
+  display: flex;
+  gap: 5px;
+  padding: 16px 16px 0;
+}
+.week-heatmap-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.week-heatmap-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--mid);
+  text-transform: uppercase;
+}
+.week-heatmap-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--border);
+  transition: background 0.2s;
+  position: relative;
+  cursor: pointer;
+}
+.week-heatmap-cell.pct-0   { background: var(--border); }
+.week-heatmap-cell.pct-low { background: rgba(255,107,91,0.25); }
+.week-heatmap-cell.pct-mid { background: rgba(255,107,91,0.55); }
+.week-heatmap-cell.pct-high{ background: var(--coral); }
+.week-heatmap-cell.today   { outline: 2px solid var(--coral); outline-offset: 2px; }
+.week-heatmap-num {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  color: var(--mid);
+}
+
+/* ── Section cards ──────────────────────────────────────────── */
+.h-section {
+  margin: 14px 16px 0;
+  background: var(--white);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.h-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--coral);
+}
+.h-section-head h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+}
+.h-section-head-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.h-section-pct {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: rgba(255,255,255,0.75);
+}
+.h-add-btn {
+  background: rgba(255,255,255,0.22);
+  border: none;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.h-add-btn:hover { background: rgba(255,255,255,0.35); }
+
+/* ── Routine rows ───────────────────────────────────────────── */
+.h-routine-list {
+  padding: 4px 0;
+}
+.h-routine-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.h-routine-row:last-child { border-bottom: none; }
+.h-routine-row:hover { background: rgba(255,107,91,0.03); }
+
+/* Big tap-to-check circle */
+.h-check-circle {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.h-check-circle:hover { border-color: var(--coral); transform: scale(1.08); }
+.h-check-circle.done {
+  background: var(--green);
+  border-color: var(--green);
+}
+.h-check-circle.done svg { display: block; }
+.h-check-circle svg {
+  display: none;
+  width: 14px;
+  height: 14px;
+  stroke: #fff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.h-routine-info {
+  flex: 1;
+  min-width: 0;
+}
+.h-routine-name {
+  font-size: 14px;
+  color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.h-routine-name.done-text {
+  text-decoration: line-through;
+  color: var(--mid);
+}
+.h-routine-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+.h-routine-streak {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--coral);
+}
+.h-routine-freq {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--mid);
+}
+
+/* Mini bar showing this-period completion */
+.h-routine-bar-wrap {
+  width: 48px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.h-routine-bar-pct {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--mid);
+}
+.h-routine-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.h-routine-bar-fill {
+  height: 100%;
+  background: var(--coral);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ── Add routine inline form ────────────────────────────────── */
+.h-add-form {
+  display: none;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+  flex-direction: column;
+}
+.h-add-form.open { display: flex; }
+.h-add-form input[type="text"] {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 14px;
+  color: var(--dark);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.h-add-form input[type="text"]:focus { border-color: var(--coral); }
+.h-add-form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.h-freq-pills {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.h-freq-pill {
+  background: var(--light);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--mid);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.h-freq-pill.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: #fff;
+}
+.h-save-btn {
+  background: var(--coral);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  margin-left: auto;
+}
+.h-save-btn:hover { background: var(--coral-dark); }
+
+/* ── Task rows (one-off, checkbox style) ────────────────────── */
+.h-task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.h-task-row:last-child { border-bottom: none; }
+.h-task-check {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.h-task-check:hover { border-color: var(--coral); }
+.h-task-check.done { background: var(--green); border-color: var(--green); }
+.h-task-check.done svg { display: block; }
+.h-task-check svg {
+  display: none;
+  width: 10px;
+  height: 10px;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.h-task-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--dark);
+}
+.h-task-name.done-text {
+  text-decoration: line-through;
+  color: var(--mid);
+}
+.h-task-del {
+  background: none;
+  border: none;
+  color: var(--mid);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.h-task-del:hover { opacity: 1; color: var(--red); }
+
+/* ── Calendar heatmap view ──────────────────────────────────── */
+.h-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 14px;
+}
+.h-cal-day-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--mid);
+  text-align: center;
+  padding-bottom: 4px;
+}
+.h-cal-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--mid);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, transform 0.12s;
+  position: relative;
+}
+.h-cal-cell:hover:not(.empty) { transform: scale(1.1); }
+.h-cal-cell.empty { background: transparent; cursor: default; }
+.h-cal-cell.today { outline: 2px solid var(--coral); outline-offset: 2px; }
+.h-cal-cell.future { opacity: 0.35; cursor: default; }
+
+/* Heat colours */
+.h-cal-cell.heat-0  { background: var(--border); color: var(--mid); }
+.h-cal-cell.heat-1  { background: rgba(255,107,91,0.18); color: var(--coral); }
+.h-cal-cell.heat-2  { background: rgba(255,107,91,0.4);  color: var(--coral); }
+.h-cal-cell.heat-3  { background: rgba(255,107,91,0.65); color: #fff; }
+.h-cal-cell.heat-4  { background: var(--coral);          color: #fff; }
+
+/* ── Year heatmap (52 weeks × 7 days) ──────────────────────── */
+.h-year-heatmap {
+  padding: 14px 14px 8px;
+  overflow-x: auto;
+}
+.h-year-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
+  gap: 3px;
+  min-width: max-content;
+}
+.h-year-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background 0.15s;
+}
+.h-year-cell.heat-0 { background: var(--border); }
+.h-year-cell.heat-1 { background: rgba(255,107,91,0.22); }
+.h-year-cell.heat-2 { background: rgba(255,107,91,0.45); }
+.h-year-cell.heat-3 { background: rgba(255,107,91,0.7); }
+.h-year-cell.heat-4 { background: var(--coral); }
+.h-year-month-labels {
+  display: flex;
+  gap: 0;
+  padding: 4px 14px 0;
+  overflow-x: hidden;
+}
+.h-year-month-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  color: var(--mid);
+  text-transform: uppercase;
+}
+
+/* ── Streak flame card ──────────────────────────────────────── */
+.h-streak-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+.h-streak-card {
+  background: var(--light);
+  border-radius: 10px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+}
+.h-streak-card-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+.h-streak-card-val {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--dark);
+  line-height: 1;
+}
+.h-streak-card-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--mid);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Bar chart for weekly completion ────────────────────────── */
+.h-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 14px 14px 10px;
+  height: 100px;
+}
+.h-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.h-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--coral);
+  opacity: 0.75;
+  min-height: 3px;
+  transition: height 0.4s ease, opacity 0.2s;
+}
+.h-bar.current { opacity: 1; }
+.h-bar-week-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--mid);
+}
+.h-bar-pct-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--coral);
+}
+
+/* ── Manage routines sheet ──────────────────────────────────── */
+.h-manage-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 500;
+  align-items: flex-end;
+}
+.h-manage-overlay.open { display: flex; }
+.h-manage-sheet {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 20px 20px 0 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+.h-manage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 1;
+}
+.h-manage-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--dark);
+}
+.h-manage-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--mid);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+.h-manage-routine-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.h-manage-routine-row:last-child { border-bottom: none; }
+.h-manage-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.h-manage-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--dark);
+}
+.h-manage-freq-badge {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--mid);
+  background: var(--light);
+  border-radius: 8px;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+.h-manage-archive {
+  background: none;
+  border: none;
+  color: var(--mid);
+  font-size: 15px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.h-manage-archive:hover { opacity: 1; color: var(--red); }
+.h-manage-add {
+  padding: 12px 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.h-manage-add input {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 14px;
+  color: var(--dark);
+  background: var(--white);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.h-manage-add input:focus { border-color: var(--coral); }
+
+/* ── Empty state ────────────────────────────────────────────── */
+.h-empty {
+  text-align: center;
+  padding: 28px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  color: var(--mid);
+  font-style: italic;
+}
+
+/* ── Month selector (reuses shared budget style) ─────────────── */
+#habitMonthWrap { margin-top: 0; }
+
+/* ── Manage button in nav ────────────────────────────────────── */
+.h-manage-nav-btn {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.h-manage-nav-btn:hover { background: rgba(255,255,255,0.28); }
+.h-manage-nav-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Dark mode overrides ─────────────────────────────────────── */
+[data-theme="dark"] .h-section { background: var(--white); border-color: var(--border); }
+[data-theme="dark"] .h-routine-row:hover { background: rgba(255,107,91,0.05); }
+[data-theme="dark"] .h-manage-sheet { background: var(--white); }
+[data-theme="dark"] .h-manage-header { background: var(--white); }
+[data-theme="dark"] .h-streak-card { background: var(--navy); border-color: var(--border); }
+[data-theme="dark"] .h-add-form input[type="text"],
+[data-theme="dark"] .h-manage-add input { background: var(--white); color: var(--dark); }
+[data-theme="dark"] .h-freq-pill { background: var(--navy); color: var(--mid); }
+[data-theme="dark"] .h-cal-cell.heat-0 { background: rgba(255,255,255,0.08); }
+[data-theme="dark"] .h-year-cell.heat-0 { background: rgba(255,255,255,0.08); }

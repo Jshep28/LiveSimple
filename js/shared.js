@@ -292,8 +292,8 @@ window.refreshMonthArrows = function() {
 var _currentApp = localStorage.getItem('ls_active_app') || 'budget';
 
 function _getActiveDropdown() {
-  // Returns the visible logo dropdown wrap based on current app
-  var id = _currentApp === 'invest' ? 'logoDropdownWrapInvest' : 'logoDropdownWrap';
+  var map = { invest: 'logoDropdownWrapInvest', habits: 'habitsLogoDropWrap' };
+  var id = map[_currentApp] || 'logoDropdownWrap';
   return document.getElementById(id);
 }
 
@@ -307,8 +307,8 @@ function switchApp(appId) {
   });
   document.getElementById('app-' + appId).classList.add('active');
 
-  // Close both dropdowns
-  ['logoDropdownWrap','logoDropdownWrapInvest'].forEach(function(id) {
+  // Close all dropdowns
+  ['logoDropdownWrap','logoDropdownWrapInvest','habitsLogoDropWrap'].forEach(function(id) {
     var w = document.getElementById(id);
     if (w) w.classList.remove('open');
   });
@@ -329,14 +329,18 @@ function switchApp(appId) {
     if (typeof renderAll === 'function') renderAll();
     if (typeof updateMarketStatus === 'function') updateMarketStatus();
   }
+  if (appId === 'habits') {
+    if (typeof initHabitsApp === 'function') initHabitsApp();
+  }
 }
+
+const ALL_LOGO_DROPDOWNS = ['logoDropdownWrap','logoDropdownWrapInvest','habitsLogoDropWrap'];
 
 function toggleLogoDropdown() {
   var wrap = _getActiveDropdown();
   if (!wrap) return;
   var isOpen = wrap.classList.contains('open');
-  // Close all first
-  ['logoDropdownWrap','logoDropdownWrapInvest'].forEach(function(id) {
+  ALL_LOGO_DROPDOWNS.forEach(function(id) {
     var w = document.getElementById(id);
     if (w) w.classList.remove('open');
   });
@@ -345,7 +349,7 @@ function toggleLogoDropdown() {
 
 // Close on outside click
 document.addEventListener('click', function(e) {
-  ['logoDropdownWrap','logoDropdownWrapInvest'].forEach(function(id) {
+  ALL_LOGO_DROPDOWNS.forEach(function(id) {
     var wrap = document.getElementById(id);
     if (wrap && !wrap.contains(e.target)) {
       wrap.classList.remove('open');

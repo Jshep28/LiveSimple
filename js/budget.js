@@ -7,9 +7,7 @@ const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 let currency = '$';
 let currentBudgetMonth = new Date().getMonth();
-let currentHabitMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
-let selectedWeek = 0;
 let incomePeriodTab = 'overview'; // 'overview' | 0 | 1 | 2 ...
 let billsPeriodTab  = 'overview';
 
@@ -69,17 +67,6 @@ function defaultMonth(m) {
     debtLog: [],      // debt log:    {date, amount, name, note}
     rollover: '',
     notes: '',        // monthly note
-  };
-}
-
-function defaultHabitMonth(m) {
-  return {
-    dailyHabits: ['Spend 30 minutes learning', 'Exercise', 'Read 10 pages'],
-    dailyChecks: {}, // key: "habitIndex_day" => true
-    weeklyHabits: ['Go to the gym 3x', 'Meal prep', 'Budget review'],
-    weeklyChecks: {}, // key: "habitIndex_week" => true
-    monthlyHabits: ['Progress photo', 'Apply for job', 'Go to an event'],
-    monthlyChecks: {}, // key: "habitIndex" => true
   };
 }
 
@@ -315,18 +302,6 @@ function renderSectionWithPeriods(section, d, uncatAmount) {
   renderTrackerSection(rowsId, d[section], section, hasPaid, uncatAmount);
 }
 
-function getHabitMonth(m) {
-  const ys = getYearState(currentYear);
-  if (!ys.habits[m]) ys.habits[m] = defaultHabitMonth(m);
-  return ys.habits[m];
-}
-function saveHabitMonth(m, data) {
-  const all = getAllState();
-  if (!all[currentYear]) all[currentYear] = { budget: {}, habits: {} };
-  all[currentYear].habits[m] = data;
-  saveAllState(all);
-}
-
 // ============================================================
 //  UTILS
 // ============================================================
@@ -346,7 +321,6 @@ function showPage(p, btn) {
   document.getElementById('page-' + p).classList.add('active');
   if (btn) btn.classList.add('active');
   if (p === 'budget') renderBudget();
-  if (p === 'habits') renderHabits();
   if (p === 'review') renderReview();
   if (p === 'settings') renderSettings();
   updateFabVisibility(p);
@@ -1407,489 +1381,6 @@ function deleteLogEntry(logKey, i) {
   renderBudget();
 }
 
-// ============================================================
-//  HABITS PAGE
-// ============================================================
-function renderHabits() {
-  const ms = document.getElementById('habitMonthSelector');
-  ms.innerHTML = MONTHS.map((m,i) =>
-    `<button class="month-btn ${i===currentHabitMonth?'active':''}" onclick="selectHabitMonth(${i})">${m.slice(0,3)}</button>`
-  ).join('');
-  requestAnimationFrame(function() {
-    const active = ms.querySelector('.month-btn.active');
-    if (active) active.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
-    if (typeof window.refreshMonthArrows === 'function') window.refreshMonthArrows();
-  });
-
-  document.getElementById('habitMonthLabel').textContent = '· ' + MONTHS[currentHabitMonth] + ' ' + currentYear + ' ·';
-
-  renderCalendar();
-  renderWeeklyHabits();
-  renderMonthlyHabits();
-  updateHabitStats();
-  updateHabitsBar();
-  renderHabitProgressChart();
-
-  // Auto-scroll calendar to today after render
-  requestAnimationFrame(function() {
-    scrollCalendarToToday();
-  });
-}
-
-function selectHabitMonth(m) {
-  currentHabitMonth = m;
-  renderHabits();
-}
-
-function daysInMonth(m, y) { return new Date(y, m+1, 0).getDate(); }
-function dayOfWeek(m, y, d) { return new Date(y, m, d).getDay(); }
-
-function renderCalendar() {
-  const h = getHabitMonth(currentHabitMonth);
-  const days = daysInMonth(currentHabitMonth, currentYear);
-  const today = new Date();
-  const todayDay = (today.getMonth() === currentHabitMonth && today.getFullYear() === currentYear) ? today.getDate() : -1;
-
-  // Header
-  const headerEl = document.getElementById('calHeader');
-  let headerHTML = `<div class="cal-habit-col">Habit</div>`;
-  for (let d = 1; d <= days; d++) {
-    const dow = dayOfWeek(currentHabitMonth, currentYear, d);
-    const isToday = d === todayDay;
-    headerHTML += `<div class="cal-day-head ${isToday?'today':''}">
-      <span class="cal-day-num">${d}</span>
-      <span class="cal-day-name">${DAYS[dow].slice(0,1)}</span>
-    </div>`;
-  }
-  headerEl.innerHTML = headerHTML;
-
-  // Body
-  const bodyEl = document.getElementById('calBody');
-  if (!h.dailyHabits.length) {
-    bodyEl.innerHTML = '<div class="empty">Add your first daily habit above</div>';
-    return;
-  }
-
-  bodyEl.innerHTML = h.dailyHabits.map((habit, hi) => {
-    // calc pct
-    let checked = 0, possible = todayDay > 0 ? todayDay : days;
-    for (let d=1; d<=possible; d++) { if (h.dailyChecks[hi+'_'+d]) checked++; }
-    const p = possible ? Math.round(checked/possible*100) : 0;
-
-    let cells = '';
-    for (let d=1; d<=days; d++) {
-      const isFuture = d > todayDay && todayDay > 0;
-      const isChecked = !!h.dailyChecks[hi+'_'+d];
-      cells += `<div class="cal-cell ${isChecked?'checked':''} ${isFuture?'future':''}"
-        onclick="${isFuture?'':` toggleDay(${hi},${d})`}"></div>`;
-    }
-    return `<div class="cal-row">
-      <div class="cal-habit-name">
-        <span style="flex:1;font-size:12px;">${habit}</span>
-        <span class="pct">${p}%</span>
-        <button class="del" onclick="deleteDailyHabit(${hi})">×</button>
-      </div>
-      ${cells}
-    </div>`;
-  }).join('');
-}
-
-function toggleDay(hi, d) {
-  const h = getHabitMonth(currentHabitMonth);
-  const key = hi + '_' + d;
-  h.dailyChecks[key] = !h.dailyChecks[key];
-  saveHabitMonth(currentHabitMonth, h);
-  renderCalendar();
-  updateHabitStats();
-  renderHabitProgressChart();
-}
-
-function addDailyHabit() {
-  const inp = document.getElementById('newDailyHabit');
-  const val = inp.value.trim();
-  if (!val) return;
-  const h = getHabitMonth(currentHabitMonth);
-  h.dailyHabits.push(val);
-  saveHabitMonth(currentHabitMonth, h);
-  inp.value = '';
-  renderCalendar();
-  updateHabitStats();
-}
-
-function deleteDailyHabit(hi) {
-  const h = getHabitMonth(currentHabitMonth);
-  h.dailyHabits.splice(hi, 1);
-  // Reindex checks
-  const newChecks = {};
-  Object.entries(h.dailyChecks).forEach(([k, v]) => {
-    const [i, d] = k.split('_').map(Number);
-    if (i < hi) newChecks[k] = v;
-    else if (i > hi) newChecks[(i-1)+'_'+d] = v;
-  });
-  h.dailyChecks = newChecks;
-  saveHabitMonth(currentHabitMonth, h);
-  renderCalendar();
-  updateHabitStats();
-}
-
-function renderWeeklyHabits() {
-  const h = getHabitMonth(currentHabitMonth);
-  const el = document.getElementById('weekly-rows');
-  if (!h.weeklyHabits.length) {
-    el.innerHTML = '<div class="empty">No weekly habits yet</div>';
-    return;
-  }
-  el.innerHTML = h.weeklyHabits.map((habit, i) => `
-    <div class="wm-row">
-      <input type="checkbox" ${h.weeklyChecks[i+'_'+selectedWeek] ? 'checked' : ''}
-        onchange="toggleWeekly(${i}, this.checked)">
-      <div class="wm-row-name">
-        <input type="text" value="${habit}" onchange="updateWeeklyName(${i}, this.value)">
-      </div>
-      <button class="wm-del" onclick="deleteWeekly(${i})">×</button>
-    </div>
-  `).join('');
-}
-
-function toggleWeekly(i, checked) {
-  const h = getHabitMonth(currentHabitMonth);
-  h.weeklyChecks[i+'_'+selectedWeek] = checked;
-  saveHabitMonth(currentHabitMonth, h);
-}
-function updateWeeklyName(i, val) {
-  const h = getHabitMonth(currentHabitMonth);
-  h.weeklyHabits[i] = val;
-  saveHabitMonth(currentHabitMonth, h);
-}
-function addWeeklyHabit() {
-  const inp = document.getElementById('newWeeklyHabit');
-  const val = inp.value.trim();
-  if (!val) return;
-  const h = getHabitMonth(currentHabitMonth);
-  h.weeklyHabits.push(val);
-  saveHabitMonth(currentHabitMonth, h);
-  inp.value = '';
-  renderWeeklyHabits();
-}
-function deleteWeekly(i) {
-  const h = getHabitMonth(currentHabitMonth);
-  h.weeklyHabits.splice(i, 1);
-  saveHabitMonth(currentHabitMonth, h);
-  renderWeeklyHabits();
-}
-function selectWeek(w, btn) {
-  selectedWeek = w;
-  document.querySelectorAll('.week-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderWeeklyHabits();
-  const h = getHabitMonth(currentHabitMonth);
-  updateWeeklyRates(h);
-}
-
-function renderMonthlyHabits() {
-  const h = getHabitMonth(currentHabitMonth);
-  const el = document.getElementById('monthly-rows');
-  if (!h.monthlyHabits.length) {
-    el.innerHTML = '<div class="empty">No monthly habits yet</div>';
-    return;
-  }
-  el.innerHTML = h.monthlyHabits.map((habit, i) => `
-    <div class="wm-row">
-      <input type="checkbox" ${h.monthlyChecks[i] ? 'checked' : ''}
-        onchange="toggleMonthly(${i}, this.checked)">
-      <div class="wm-row-name">
-        <input type="text" value="${habit}" onchange="updateMonthlyName(${i}, this.value)">
-      </div>
-      <button class="wm-del" onclick="deleteMonthly(${i})">×</button>
-    </div>
-  `).join('');
-}
-
-function toggleMonthly(i, checked) {
-  const h = getHabitMonth(currentHabitMonth);
-  h.monthlyChecks[i] = checked;
-  saveHabitMonth(currentHabitMonth, h);
-}
-function updateMonthlyName(i, val) {
-  const h = getHabitMonth(currentHabitMonth);
-  h.monthlyHabits[i] = val;
-  saveHabitMonth(currentHabitMonth, h);
-}
-function addMonthlyHabit() {
-  const inp = document.getElementById('newMonthlyHabit');
-  const val = inp.value.trim();
-  if (!val) return;
-  const h = getHabitMonth(currentHabitMonth);
-  h.monthlyHabits.push(val);
-  saveHabitMonth(currentHabitMonth, h);
-  inp.value = '';
-  renderMonthlyHabits();
-}
-function deleteMonthly(i) {
-  const h = getHabitMonth(currentHabitMonth);
-  h.monthlyHabits.splice(i, 1);
-  saveHabitMonth(currentHabitMonth, h);
-  renderMonthlyHabits();
-}
-
-// ── Copy habit lists from previous month ─────────────────────
-function copyLastHabits() {
-  const prevMonth = currentHabitMonth === 0 ? 11 : currentHabitMonth - 1;
-  const prevYear = currentHabitMonth === 0 ? currentYear - 1 : currentYear;
-  const all = getAllState();
-  const prevData = ((all[prevYear] || {}).habits || {})[prevMonth];
-  if (!prevData) {
-    alert('No habits found for ' + MONTHS[prevMonth] + '.');
-    return;
-  }
-  const h = getHabitMonth(currentHabitMonth);
-  // Copy habit names only, not check data
-  h.dailyHabits = [...(prevData.dailyHabits || [])];
-  h.weeklyHabits = [...(prevData.weeklyHabits || [])];
-  h.monthlyHabits = [...(prevData.monthlyHabits || [])];
-  saveHabitMonth(currentHabitMonth, h);
-  renderHabits();
-}
-
-function updateHabitsBar() {
-  const bar = document.getElementById('copyLastHabitsBar');
-  if (!bar) return;
-  const h = getHabitMonth(currentHabitMonth);
-  const hasAny = (h.dailyHabits.length + h.weeklyHabits.length + h.monthlyHabits.length) > 0;
-  const prevMonth = currentHabitMonth === 0 ? 11 : currentHabitMonth - 1;
-  const prevYear = currentHabitMonth === 0 ? currentYear - 1 : currentYear;
-  const all = getAllState();
-  const hasPrevData = !!((all[prevYear] || {}).habits || {})[prevMonth];
-  bar.classList.toggle('visible', !hasAny && hasPrevData);
-}
-
-// ── Habit progress line chart ─────────────────────────────────
-let habitProgressChartObj = null;
-
-function renderHabitProgressChart() {
-  const h = getHabitMonth(currentHabitMonth);
-  const today = new Date();
-  const isCurrentMonth = today.getMonth() === currentHabitMonth && today.getFullYear() === currentYear;
-  const todayDay = isCurrentMonth ? today.getDate() : daysInMonth(currentHabitMonth, currentYear);
-  const days = daysInMonth(currentHabitMonth, currentYear);
-  const numHabits = h.dailyHabits.length;
-
-  const canvas = document.getElementById('habitProgressChart');
-  const legendEl = document.getElementById('habitChartLegend');
-  const subtitleEl = document.getElementById('habitChartSubtitle');
-  if (!canvas) return;
-
-  // Destroy previous chart instance
-  if (habitProgressChartObj) { habitProgressChartObj.destroy(); habitProgressChartObj = null; }
-
-  if (!numHabits) {
-    canvas.style.display = 'none';
-    if (legendEl) legendEl.innerHTML = '<span style="font-size:12px;color:var(--mid);font-style:italic;">Add daily habits to see progress</span>';
-    if (subtitleEl) subtitleEl.textContent = '';
-    return;
-  }
-  canvas.style.display = 'block';
-
-  // Build day-by-day overall completion % (all habits combined)
-  const labels = [];
-  const overallData = [];
-  const perHabitData = h.dailyHabits.map(() => []); // one array per habit
-
-  for (let d = 1; d <= todayDay; d++) {
-    labels.push(d);
-    let done = 0;
-    h.dailyHabits.forEach((_, hi) => {
-      const checked = !!h.dailyChecks[hi + '_' + d];
-      if (checked) done++;
-      perHabitData[hi].push(checked ? 100 : 0);
-    });
-    overallData.push(numHabits ? Math.round(done / numHabits * 100) : 0);
-  }
-
-  // 7-day rolling average for smoothing
-  const rollingAvg = overallData.map((_, i) => {
-    const slice = overallData.slice(Math.max(0, i - 6), i + 1);
-    return Math.round(slice.reduce((a, b) => a + b, 0) / slice.length);
-  });
-
-  // Monthly completion so far
-  const avgCompletion = overallData.length
-    ? Math.round(overallData.reduce((a, b) => a + b, 0) / overallData.length)
-    : 0;
-  if (subtitleEl) subtitleEl.textContent = avgCompletion + '% avg this month';
-
-  const HABIT_COLORS = ['#ff6b5b','#4a90d9','#3dbf82','#f59e0b','#8b5cf6','#0097a7','#e85444','#22c55e'];
-
-  const datasets = [
-    {
-      label: 'Daily %',
-      data: overallData,
-      borderColor: 'rgba(255,107,91,0.25)',
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      pointRadius: 0,
-      tension: 0.3,
-      fill: false,
-      order: 2,
-    },
-    {
-      label: '7-day avg',
-      data: rollingAvg,
-      borderColor: '#ff6b5b',
-      backgroundColor: 'rgba(255,107,91,0.08)',
-      borderWidth: 2.5,
-      pointRadius: 0,
-      tension: 0.4,
-      fill: true,
-      order: 1,
-    }
-  ];
-
-  // Legend
-  if (legendEl) {
-    legendEl.innerHTML = `
-      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">
-        <div style="width:20px;height:2.5px;background:#ff6b5b;border-radius:2px;"></div> 7-day rolling avg
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mid);font-family:'Montserrat',sans-serif;font-weight:600;">
-        <div style="width:20px;height:1px;background:rgba(255,107,91,0.35);border-radius:2px;"></div> Daily
-      </div>
-    `;
-  }
-
-  habitProgressChartObj = new Chart(canvas, {
-    type: 'line',
-    data: { labels, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: ctx => 'Day ' + ctx[0].label,
-            label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%'
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: {
-            color: '#6b7a8d',
-            font: { size: 9 },
-            maxTicksLimit: 10,
-            callback: v => v + 1
-          }
-        },
-        y: {
-          min: 0, max: 100,
-          grid: { color: 'rgba(0,0,0,0.04)' },
-          ticks: {
-            color: '#6b7a8d',
-            font: { size: 9 },
-            callback: v => v + '%',
-            stepSize: 25,
-          }
-        }
-      }
-    }
-  });
-}
-
-// ── Auto-scroll calendar to today's column ────────────────────
-function scrollCalendarToToday() {
-  const today = new Date();
-  const isCurrentMonth = today.getMonth() === currentHabitMonth && today.getFullYear() === currentYear;
-  if (!isCurrentMonth) return; // only scroll for the current month
-
-  const calWrap = document.querySelector('.cal-wrap');
-  const calHeader = document.getElementById('calHeader');
-  if (!calWrap || !calHeader) return;
-
-  // Find the "today" header cell
-  const todayHead = calHeader.querySelector('.cal-day-head.today');
-  if (!todayHead) return;
-
-  // Scroll so today is roughly centred, accounting for the fixed habit name column (160px)
-  const habitColWidth = 160;
-  const cellLeft = todayHead.offsetLeft;
-  const wrapWidth = calWrap.clientWidth;
-  const scrollTarget = cellLeft - habitColWidth - (wrapWidth - habitColWidth) / 2 + todayHead.offsetWidth / 2;
-
-  calWrap.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'smooth' });
-}
-
-function updateHabitStats() {
-  const h = getHabitMonth(currentHabitMonth);
-  const today = new Date();
-  const todayDay = (today.getMonth() === currentHabitMonth && today.getFullYear() === currentYear) ? today.getDate() : daysInMonth(currentHabitMonth, currentYear);
-  const numHabits = h.dailyHabits.length;
-
-  if (!numHabits) {
-    document.getElementById('h-today').textContent = '—';
-    document.getElementById('h-month').textContent = '—';
-    document.getElementById('h-streak').textContent = '0';
-    return;
-  }
-
-  // Today %
-  let todayChecked = 0;
-  h.dailyHabits.forEach((_, hi) => { if (h.dailyChecks[hi+'_'+todayDay]) todayChecked++; });
-  document.getElementById('h-today').textContent = Math.round(todayChecked/numHabits*100) + '%';
-
-  // Month %
-  let total = 0, possible = todayDay * numHabits;
-  for (let d=1; d<=todayDay; d++) {
-    h.dailyHabits.forEach((_, hi) => { if (h.dailyChecks[hi+'_'+d]) total++; });
-  }
-  document.getElementById('h-month').textContent = possible ? Math.round(total/possible*100) + '%' : '0%';
-
-  // ── Cross-month streak ────────────────────────────────────────
-  // Walk backwards from today across month boundaries
-  let streak = 0;
-  let checkMonth = currentHabitMonth;
-  let checkYear = currentYear;
-  let checkDay = todayDay;
-
-  outer: for (let safety = 0; safety < 400; safety++) {
-    const hData = getHabitMonthForYear(checkMonth, checkYear);
-    const nH = (hData.dailyHabits || []).length;
-    if (!nH) break;
-    const allDone = hData.dailyHabits.every((_, hi) => hData.dailyChecks && hData.dailyChecks[hi+'_'+checkDay]);
-    if (!allDone) break outer;
-    streak++;
-    checkDay--;
-    if (checkDay < 1) {
-      checkMonth--;
-      if (checkMonth < 0) { checkMonth = 11; checkYear--; }
-      checkDay = daysInMonth(checkMonth, checkYear);
-    }
-  }
-  document.getElementById('h-streak').textContent = streak;
-
-  // ── Weekly completion rates ───────────────────────────────────
-  updateWeeklyRates(h);
-}
-
-function getHabitMonthForYear(m, y) {
-  const all = getAllState();
-  return ((all[y] || {}).habits || {})[m] || { dailyHabits: [], dailyChecks: {} };
-}
-
-function updateWeeklyRates(h) {
-  // Calculate completion % for each week slot
-  const daysPerWeek = [7, 7, 7, 7, 7]; // up to 5 weeks
-  for (let w = 0; w < 5; w++) {
-    const el = document.getElementById('wk-rate-' + w);
-    if (!el) continue;
-    if (!h.weeklyHabits.length) { el.textContent = ''; continue; }
-    const checked = h.weeklyHabits.filter((_, i) => h.weeklyChecks && h.weeklyChecks[i+'_'+w]).length;
-    const pctW = Math.round(checked / h.weeklyHabits.length * 100);
-    el.textContent = checked > 0 ? ' ' + pctW + '%' : '';
-  }
-}
 
 // ── Expense drawer ────────────────────────────────────────────
 function openExpenseDrawer(tab) {
@@ -2023,7 +1514,6 @@ function renderSettings() {
 function loadYear(y) {
   currentYear = y;
   currentBudgetMonth = 0;
-  currentHabitMonth = 0;
   showPage('budget', document.getElementById('tab-budget'));
   document.getElementById('tab-budget').classList.add('active');
 }
@@ -2058,15 +1548,14 @@ function confirmReset(type) {
     openModal('Reset ' + mName + ' habits?',
       'All habit data for ' + mLabel + ' will be cleared. Budget data will be kept.',
       'Reset Habits', () => {
-        saveHabitMonth(currentHabitMonth, defaultHabitMonth(currentHabitMonth));
+        // Habits now managed by habits app — direct user there
         renderSettings();
       });
   } else if (type === 'month-both') {
     openModal('Reset all of ' + mName + '?',
-      'All budget and habit data for ' + mLabel + ' will be cleared. This cannot be undone.',
-      'Reset Both', () => {
+      'All budget data for ' + mLabel + ' will be cleared. This cannot be undone.',
+      'Reset Budget', () => {
         saveBudgetMonth(currentBudgetMonth, defaultMonth(currentBudgetMonth));
-        saveHabitMonth(currentHabitMonth, defaultHabitMonth(currentHabitMonth));
         renderBudget();
         renderSettings();
       });
@@ -2204,7 +1693,6 @@ function importData(input) {
         saveAllState(merged);
         renderSettings();
         renderBudget();
-        renderHabits();
       });
     } catch(err) {
       alert('Invalid file. Please use a Live Simple backup JSON file.');
@@ -2315,32 +1803,16 @@ function importCSV(input) {
             } else if (type === 'Note') {
               md.notes = name;
 
-            // ── Habit rows ───────────────────────────────────────
-            } else if (type === 'HabitDaily' || type === 'HabitWeekly' || type === 'HabitMonthly') {
-              if (!all[year].habits) all[year].habits = {};
-              if (!all[year].habits[month]) all[year].habits[month] = defaultHabitMonth(month);
-              const hd = all[year].habits[month];
-              const idx = parseInt(budget); // budget col holds the original index
-              const listKey = type === 'HabitDaily' ? 'dailyHabits'
-                            : type === 'HabitWeekly' ? 'weeklyHabits' : 'monthlyHabits';
-              // Ensure array is large enough, then set at original index
-              while (hd[listKey].length <= idx) hd[listKey].push('');
-              hd[listKey][idx] = name;
-
-            } else if (type === 'HabitDailyCheck' || type === 'HabitWeeklyCheck' || type === 'HabitMonthlyCheck') {
-              if (!all[year].habits) all[year].habits = {};
-              if (!all[year].habits[month]) all[year].habits[month] = defaultHabitMonth(month);
-              const hd = all[year].habits[month];
-              const checksKey = type === 'HabitDailyCheck' ? 'dailyChecks'
-                              : type === 'HabitWeeklyCheck' ? 'weeklyChecks' : 'monthlyChecks';
-              if (paid) hd[checksKey][name] = true; // name col holds the check key (e.g. "0_14")
+            // ── Legacy habit rows (skipped — habits now stored separately) ──
+            } else if (type === 'HabitDaily' || type === 'HabitWeekly' || type === 'HabitMonthly'
+                    || type === 'HabitDailyCheck' || type === 'HabitWeeklyCheck' || type === 'HabitMonthlyCheck') {
+              // Old habit CSV rows are ignored; habit data lives in livesimple_habits_v2
             }
           });
 
           saveAllState(all);
           renderSettings();
           renderBudget();
-          renderHabits();
           alert('CSV imported successfully.');
         });
     } catch(err) {
