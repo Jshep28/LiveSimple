@@ -8,6 +8,13 @@
   min-height: 100vh;
   background: var(--light);
 }
+#app-habits .logo {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 17px;
+  color: white;
+  letter-spacing: -0.3px;
+}
 #app-habits .logo em { color: var(--coral); font-style: normal; }
 
 #page-habits-main {

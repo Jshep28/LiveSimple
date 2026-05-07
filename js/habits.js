@@ -409,9 +409,6 @@ function hSetView(view, btn) {
   document.querySelectorAll('#habitsNavTabs .nav-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.view === view);
   });
-  // Hide manage button on settings view
-  const manageBtn = document.getElementById('hManageNavBtn');
-  if (manageBtn) manageBtn.style.display = view === 'settings' ? 'none' : '';
   renderHabitsApp();
 }
 

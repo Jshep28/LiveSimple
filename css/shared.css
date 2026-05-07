@@ -1094,6 +1094,7 @@ nav {
 }
 #app-budget .logo-app-label { color: rgba(255,255,255,0.6); }
 #app-invest .logo-app-label { color: rgba(255,255,255,0.6); }
+#app-habits .logo-app-label { color: rgba(255,255,255,0.6); }
 
 .logo-dropdown-trigger:hover .logo-dropdown-arrow { opacity: 1; }
 .logo-dropdown-menu {
