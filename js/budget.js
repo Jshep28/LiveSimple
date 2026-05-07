@@ -388,8 +388,9 @@ function renderBudget() {
   // Desktop pill selector
   const ms = document.getElementById('monthSelector');
   if (ms) {
+    const todayM = new Date().getMonth();
     ms.innerHTML = MONTHS.map((m, i) =>
-      `<button class="month-btn ${i === currentBudgetMonth ? 'active' : ''}" onclick="selectBudgetMonth(${i})">${m.slice(0,3)}</button>`
+      `<button class="month-btn ${i === currentBudgetMonth ? 'active' : ''} ${i === todayM ? 'today' : ''}" onclick="selectBudgetMonth(${i})">${m.slice(0,3)}</button>`
     ).join('');
     requestAnimationFrame(function() {
       const active = ms.querySelector('.month-btn.active');
@@ -400,7 +401,8 @@ function renderBudget() {
 
   // Mobile drum picker
   if (typeof window.buildMonthDrum === 'function') {
-    window.buildMonthDrum('monthDrum', MONTHS, currentBudgetMonth, selectBudgetMonth);
+    var todayMonthIdx = new Date().getMonth();
+    window.buildMonthDrum('monthDrum', MONTHS, currentBudgetMonth, selectBudgetMonth, todayMonthIdx);
   }
 
   document.getElementById('heroMonth').textContent = MONTHS[currentBudgetMonth].split('').join(' ');

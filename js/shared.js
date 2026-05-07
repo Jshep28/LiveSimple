@@ -223,15 +223,21 @@ setTimeout(initScrollArrows, 300);
 // ============================================================
 //  MONTH DRUM PICKER  (Apple-clock-style horizontal scroll wheel)
 // ============================================================
-window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
+window.buildMonthDrum = function(containerId, months, activeIdx, onSelect, todayIdx) {
   var drum = document.getElementById(containerId);
   if (!drum) return;
 
   // Item width — must match CSS
   var ITEM_W = 72;
 
-  // Track last-fired index to prevent double-firing from scroll debounce after a click
+  // todayIdx: the real current month (for coral dot highlight), defaults to activeIdx
+  var _todayIdx = (typeof todayIdx === 'number') ? todayIdx : activeIdx;
+
+  // Track last-fired index to prevent double-firing
   var _lastFiredIdx = activeIdx;
+  // Track whether user is currently touch-dragging (suppress click)
+  var _isDragging = false;
+  var _touchStartX = 0;
 
   // Build items with ghost padding so first/last can centre
   drum.innerHTML = '';
@@ -244,17 +250,30 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
 
   months.forEach(function(m, i) {
     var el = document.createElement('div');
-    el.className = 'month-drum-item' + (i === activeIdx ? ' active' : '');
-    el.textContent = m.slice(0, 3).toUpperCase();
+    var cls = 'month-drum-item';
+    if (i === activeIdx)  cls += ' active';
+    if (i === _todayIdx)  cls += ' today';
+    el.className = cls;
     el.dataset.idx = i;
+
+    // Label + optional today dot
+    var label = document.createElement('span');
+    label.textContent = m.slice(0, 3).toUpperCase();
+    el.appendChild(label);
+
+    if (i === _todayIdx) {
+      var dot = document.createElement('span');
+      dot.className = 'month-drum-dot';
+      el.appendChild(dot);
+    }
+
     el.addEventListener('click', function() {
-      // Instantly snap the drum position (no animation lag)
-      scrollDrumTo(drum, i, ITEM_W, false);
-      // Update active highlight immediately
-      drum.querySelectorAll('.month-drum-item').forEach(function(el2) {
-        el2.classList.toggle('active', parseInt(el2.dataset.idx) === i);
-      });
-      // Fire selection immediately — don't wait for scroll debounce
+      if (_isDragging) return; // don't fire after a drag
+      // Smooth scroll so user sees drum move naturally
+      scrollDrumTo(drum, i, ITEM_W, true);
+      // Update active highlight immediately (no wait)
+      setDrumActive(drum, i);
+      // Fire selection immediately — don't wait for debounce
       if (i !== _lastFiredIdx) {
         _lastFiredIdx = i;
         onSelect(i);
@@ -269,13 +288,12 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
   ghostEnd.style.cssText = 'flex-shrink:0;';
   drum.appendChild(ghostEnd);
 
-  // Size ghosts after layout so drum width is known
+  // Size ghosts and jump to initial position
   function sizeGhosts() {
     var drumW = drum.clientWidth;
     var padW = Math.max(0, (drumW - ITEM_W) / 2);
     ghost.style.width = padW + 'px';
     ghostEnd.style.width = padW + 'px';
-    // Scroll to active without animation on first build
     scrollDrumTo(drum, activeIdx, ITEM_W, false);
   }
 
@@ -285,7 +303,20 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
     requestAnimationFrame(sizeGhosts);
   }
 
-  // Snap detection on scroll end (for finger-drag scrolling)
+  // Detect touch drags so we don't treat drag-release as a click
+  drum.addEventListener('touchstart', function(e) {
+    _touchStartX = e.touches[0].clientX;
+    _isDragging = false;
+  }, { passive: true });
+  drum.addEventListener('touchmove', function(e) {
+    if (Math.abs(e.touches[0].clientX - _touchStartX) > 6) _isDragging = true;
+  }, { passive: true });
+  drum.addEventListener('touchend', function() {
+    // Reset drag flag after a short delay so the ensuing click event can check it
+    setTimeout(function() { _isDragging = false; }, 100);
+  }, { passive: true });
+
+  // Snap detection for finger-drag scrolling (fires onSelect after scroll settles)
   var _snapTimer = null;
   drum.addEventListener('scroll', function() {
     updateDrumActive(drum, ITEM_W);
@@ -293,33 +324,14 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
     _snapTimer = setTimeout(function() {
       var idx = getCentreIdx(drum, ITEM_W);
       if (idx >= 0 && idx < months.length) {
-        // Update active class
-        drum.querySelectorAll('.month-drum-item').forEach(function(el) {
-          el.classList.toggle('active', parseInt(el.dataset.idx) === idx);
-        });
-        // Only fire onSelect if this is a new index (guards against click-triggered scroll)
+        setDrumActive(drum, idx);
         if (idx !== _lastFiredIdx) {
           _lastFiredIdx = idx;
           onSelect(idx);
         }
       }
-    }, 120);
+    }, 150);
   }, { passive: true });
-
-  // Touch drag support (for non-snap browsers)
-  var _dragStartX = null, _dragStartScroll = null;
-  drum.addEventListener('pointerdown', function(e) {
-    _dragStartX = e.clientX;
-    _dragStartScroll = drum.scrollLeft;
-    drum.setPointerCapture(e.pointerId);
-  });
-  drum.addEventListener('pointermove', function(e) {
-    if (_dragStartX === null) return;
-    var dx = _dragStartX - e.clientX;
-    drum.scrollLeft = _dragStartScroll + dx;
-  });
-  drum.addEventListener('pointerup', function() { _dragStartX = null; });
-  drum.addEventListener('pointercancel', function() { _dragStartX = null; });
 };
 
 function getCentreIdx(drum, itemW) {
@@ -327,11 +339,15 @@ function getCentreIdx(drum, itemW) {
   return Math.max(0, Math.round(drum.scrollLeft / itemW));
 }
 
-function updateDrumActive(drum, itemW) {
-  var idx = getCentreIdx(drum, itemW);
+function setDrumActive(drum, idx) {
   drum.querySelectorAll('.month-drum-item').forEach(function(el) {
     el.classList.toggle('active', parseInt(el.dataset.idx) === idx);
   });
+}
+
+function updateDrumActive(drum, itemW) {
+  var idx = getCentreIdx(drum, itemW);
+  setDrumActive(drum, idx);
 }
 
 function scrollDrumTo(drum, idx, itemW, animate) {

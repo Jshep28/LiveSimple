@@ -709,6 +709,10 @@ nav {
   border-color: var(--coral);
   color: white;
 }
+.month-btn.today:not(.active) {
+  color: var(--coral);
+  border-color: var(--coral);
+}
 .month-btn:hover:not(.active) {
   border-color: var(--coral);
   color: var(--coral);
@@ -738,10 +742,12 @@ nav {
     overflow-x: scroll;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
+    scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding: 0;
     gap: 0;
+    will-change: scroll-position;
   }
   .month-drum::-webkit-scrollbar { display: none; }
 
@@ -749,8 +755,10 @@ nav {
     flex-shrink: 0;
     width: 72px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 3px;
     height: 100%;
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
@@ -761,13 +769,31 @@ nav {
     user-select: none;
     -webkit-user-select: none;
     cursor: pointer;
-    transition: color 0.1s, font-size 0.1s, font-weight 0.1s;
+    transition: color 0.18s ease, font-size 0.18s ease, opacity 0.18s ease;
     -webkit-tap-highlight-color: transparent;
+    opacity: 0.55;
   }
   .month-drum-item.active {
     color: var(--dark);
     font-size: 15px;
     font-weight: 900;
+    opacity: 1;
+  }
+  .month-drum-item.today > span:first-child {
+    color: var(--coral);
+  }
+  .month-drum-item.active.today > span:first-child {
+    color: var(--coral);
+  }
+
+  /* Small coral dot beneath today's month label */
+  .month-drum-dot {
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--coral);
+    flex-shrink: 0;
   }
 
   /* Fade gradients only — no cursor bars */
@@ -775,20 +801,20 @@ nav {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 72px;
+    width: 80px;
     pointer-events: none;
     z-index: 1;
   }
   .month-drum-fade-left {
     left: 0;
-    background: linear-gradient(to right, var(--white) 20%, transparent);
+    background: linear-gradient(to right, var(--white) 30%, transparent);
   }
   .month-drum-fade-right {
     right: 0;
-    background: linear-gradient(to left, var(--white) 20%, transparent);
+    background: linear-gradient(to left, var(--white) 30%, transparent);
   }
-  [data-theme="dark"] .month-drum-fade-left  { background: linear-gradient(to right, var(--white) 20%, transparent); }
-  [data-theme="dark"] .month-drum-fade-right { background: linear-gradient(to left,  var(--white) 20%, transparent); }
+  [data-theme="dark"] .month-drum-fade-left  { background: linear-gradient(to right, var(--card-bg, #1e2a3a) 30%, transparent); }
+  [data-theme="dark"] .month-drum-fade-right { background: linear-gradient(to left,  var(--card-bg, #1e2a3a) 30%, transparent); }
 }
 
 /* HABIT TRACKER PAGE */
