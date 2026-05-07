@@ -674,33 +674,95 @@ nav {
   transition: width 0.4s ease;
 }
 
-/* MONTH SELECTOR (budget page) */
-.month-selector {
-  display: flex;
-  gap: 8px;
-  padding: 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
+/* ── MONTH DRUM PICKER ──────────────────────────────────────── */
+.month-drum-wrap {
+  position: relative;
+  height: 60px;
+  margin: 0 0 4px;
+  overflow: hidden;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
 }
-.month-selector::-webkit-scrollbar { display: none; }
-.month-btn {
+
+/* The scrolling track */
+.month-drum {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* padding pads so first/last items can centre */
+  padding: 0;
+  gap: 0;
+  cursor: grab;
+}
+.month-drum:active { cursor: grabbing; }
+.month-drum::-webkit-scrollbar { display: none; }
+
+/* Each month item */
+.month-drum-item {
   flex-shrink: 0;
-  background: white;
-  border: 1.5px solid var(--border);
-  border-radius: 20px;
-  padding: 5px 14px;
+  width: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
   color: var(--mid);
+  scroll-snap-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color 0.15s, font-size 0.15s;
   cursor: pointer;
-  transition: all 0.2s;
 }
-.month-btn.active {
-  background: var(--coral);
-  border-color: var(--coral);
-  color: white;
+.month-drum-item.active {
+  color: var(--dark);
+  font-size: 14px;
+  font-weight: 900;
 }
+
+/* Centre selection indicator lines */
+.month-drum-cursor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  width: 72px;
+  height: 100%;
+  border-left: 2px solid var(--coral);
+  border-right: 2px solid var(--coral);
+  opacity: 0.35;
+  border-radius: 2px;
+}
+
+/* Left/right fade-out gradients */
+.month-drum-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  pointer-events: none;
+  z-index: 1;
+}
+.month-drum-fade-left {
+  left: 0;
+  background: linear-gradient(to right, var(--white) 30%, transparent);
+}
+.month-drum-fade-right {
+  right: 0;
+  background: linear-gradient(to left, var(--white) 30%, transparent);
+}
+
+/* Dark mode */
+[data-theme="dark"] .month-drum-fade-left  { background: linear-gradient(to right, var(--white) 30%, transparent); }
+[data-theme="dark"] .month-drum-fade-right { background: linear-gradient(to left,  var(--white) 30%, transparent); }
 
 /* HABIT TRACKER PAGE */
 .habit-hero {

@@ -220,6 +220,108 @@ setTimeout(initScrollArrows, 300);
 
 // ── Month selector scroll arrows ──────────────────────────────
 
+// ============================================================
+//  MONTH DRUM PICKER  (Apple-clock-style horizontal scroll wheel)
+// ============================================================
+window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
+  var drum = document.getElementById(containerId);
+  if (!drum) return;
+
+  // Item width — must match CSS
+  var ITEM_W = 72;
+
+  // Build items with ghost padding so first/last can centre
+  drum.innerHTML = '';
+
+  // Ghost spacer so month[0] can sit at centre
+  var ghost = document.createElement('div');
+  ghost.className = 'month-drum-ghost';
+  ghost.style.cssText = 'flex-shrink:0;';
+  drum.appendChild(ghost);
+
+  months.forEach(function(m, i) {
+    var el = document.createElement('div');
+    el.className = 'month-drum-item' + (i === activeIdx ? ' active' : '');
+    el.textContent = m.slice(0, 3).toUpperCase();
+    el.dataset.idx = i;
+    el.addEventListener('click', function() {
+      scrollDrumTo(drum, i, ITEM_W, true);
+    });
+    drum.appendChild(el);
+  });
+
+  // Matching ghost at end
+  var ghostEnd = document.createElement('div');
+  ghostEnd.className = 'month-drum-ghost';
+  ghostEnd.style.cssText = 'flex-shrink:0;';
+  drum.appendChild(ghostEnd);
+
+  // Size ghosts after layout so drum width is known
+  function sizeGhosts() {
+    var drumW = drum.clientWidth;
+    var padW = Math.max(0, (drumW - ITEM_W) / 2);
+    ghost.style.width = padW + 'px';
+    ghostEnd.style.width = padW + 'px';
+    // Scroll to active without animation on first build
+    scrollDrumTo(drum, activeIdx, ITEM_W, false);
+  }
+
+  if (drum.clientWidth > 0) {
+    sizeGhosts();
+  } else {
+    requestAnimationFrame(sizeGhosts);
+  }
+
+  // Snap detection on scroll end
+  var _snapTimer = null;
+  drum.addEventListener('scroll', function() {
+    updateDrumActive(drum, ITEM_W);
+    clearTimeout(_snapTimer);
+    _snapTimer = setTimeout(function() {
+      var idx = getCentreIdx(drum, ITEM_W);
+      if (idx >= 0 && idx < months.length) {
+        // Update active class
+        drum.querySelectorAll('.month-drum-item').forEach(function(el) {
+          el.classList.toggle('active', parseInt(el.dataset.idx) === idx);
+        });
+        onSelect(idx);
+      }
+    }, 120);
+  }, { passive: true });
+
+  // Touch drag support (for non-snap browsers)
+  var _dragStartX = null, _dragStartScroll = null;
+  drum.addEventListener('pointerdown', function(e) {
+    _dragStartX = e.clientX;
+    _dragStartScroll = drum.scrollLeft;
+    drum.setPointerCapture(e.pointerId);
+  });
+  drum.addEventListener('pointermove', function(e) {
+    if (_dragStartX === null) return;
+    var dx = _dragStartX - e.clientX;
+    drum.scrollLeft = _dragStartScroll + dx;
+  });
+  drum.addEventListener('pointerup', function() { _dragStartX = null; });
+  drum.addEventListener('pointercancel', function() { _dragStartX = null; });
+};
+
+function getCentreIdx(drum, itemW) {
+  // scrollLeft=0 shows item 0 at centre (because ghost pad = (drumW-itemW)/2)
+  return Math.max(0, Math.round(drum.scrollLeft / itemW));
+}
+
+function updateDrumActive(drum, itemW) {
+  var idx = getCentreIdx(drum, itemW);
+  drum.querySelectorAll('.month-drum-item').forEach(function(el) {
+    el.classList.toggle('active', parseInt(el.dataset.idx) === idx);
+  });
+}
+
+function scrollDrumTo(drum, idx, itemW, animate) {
+  // scrollLeft = idx * itemW puts item idx at centre (ghost pad = (drumW-itemW)/2)
+  drum.scrollTo({ left: idx * itemW, behavior: animate ? 'smooth' : 'instant' });
+}
+
 function scrollMonths(stripId, delta) {
   var el = document.getElementById(stripId);
   if (!el) return;
@@ -244,29 +346,24 @@ function updateMonthArrows(stripId, leftBtnId, rightBtnId, wrapId) {
 }
 
 function initMonthArrows() {
+  // Only habit month selector still uses arrow buttons
   var pairs = [
-    { strip: 'monthSelector',     left: 'budgetMonthLeft', right: 'budgetMonthRight', wrap: 'budgetMonthWrap' },
-    { strip: 'habitMonthSelector',left: 'habitMonthLeft',  right: 'habitMonthRight',  wrap: 'habitMonthWrap'  },
+    { strip: 'habitMonthSelector', left: 'habitMonthLeft', right: 'habitMonthRight', wrap: 'habitMonthWrap' },
   ];
   pairs.forEach(function(p) {
     var strip = document.getElementById(p.strip);
     if (!strip) return;
-    // Initial state
     updateMonthArrows(p.strip, p.left, p.right, p.wrap);
-    // Update on scroll
     strip.addEventListener('scroll', function() {
       updateMonthArrows(p.strip, p.left, p.right, p.wrap);
     });
   });
 }
 
-// Re-check month arrows on resize too
 window.addEventListener('resize', function() {
-  updateMonthArrows('monthSelector',      'budgetMonthLeft','budgetMonthRight','budgetMonthWrap');
   updateMonthArrows('habitMonthSelector', 'habitMonthLeft', 'habitMonthRight', 'habitMonthWrap');
 });
 
-// Init — also retry after a short delay so JS-rendered month buttons are in the DOM
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
     initMonthArrows();
@@ -277,10 +374,7 @@ if (document.readyState === 'loading') {
   setTimeout(initMonthArrows, 400);
 }
 
-// Expose a helper so the existing month-rendering JS can call this
-// after it rebuilds the month buttons (renderMonthSelector calls, etc.)
 window.refreshMonthArrows = function() {
-  updateMonthArrows('monthSelector',      'budgetMonthLeft','budgetMonthRight','budgetMonthWrap');
   updateMonthArrows('habitMonthSelector', 'habitMonthLeft', 'habitMonthRight', 'habitMonthWrap');
 };
 

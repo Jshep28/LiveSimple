@@ -36,7 +36,7 @@
   border: 1px solid rgba(0,0,0,0.08);
   overflow: hidden;
   z-index: 9999;
-  min-width: 180px;
+  min-width: 220px;
 }
 .logo-dropdown-wrap.open .logo-dropdown-menu {
   display: block;
@@ -57,6 +57,7 @@
   font-weight: 900;
   font-size: 13px;
   color: #1a2332;
+  white-space: nowrap;
 }
 .logo-dd-name em { font-style: normal; color: #ff6b5b; }
 .logo-dd-sub {

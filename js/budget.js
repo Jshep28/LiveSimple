@@ -385,16 +385,10 @@ function renderBudget() {
       .map(el => el.id)
   );
 
-  // Month selector
-  const ms = document.getElementById('monthSelector');
-  ms.innerHTML = MONTHS.map((m,i) =>
-    `<button class="month-btn ${i===currentBudgetMonth?'active':''}" onclick="selectBudgetMonth(${i})">${m.slice(0,3)}</button>`
-  ).join('');
-  requestAnimationFrame(function() {
-    const active = ms.querySelector('.month-btn.active');
-    if (active) active.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
-    if (typeof window.refreshMonthArrows === 'function') window.refreshMonthArrows();
-  });
+  // Month drum picker
+  if (typeof window.buildMonthDrum === 'function') {
+    window.buildMonthDrum('monthSelector', MONTHS, currentBudgetMonth, selectBudgetMonth);
+  }
 
   document.getElementById('heroMonth').textContent = MONTHS[currentBudgetMonth].split('').join(' ');
 
