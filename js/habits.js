@@ -302,9 +302,10 @@ function renderManageSheet() {
 
 // ── Rev meter SVG ─────────────────────────────────────────────
 function buildRevMeter(pct, size) {
-  size = size || 130;
-  const r = (size / 2) - 14;
-  const cx = size / 2, cy = size / 2 + 8;
+  size = size || 120;
+  const r = (size / 2) - 12;
+  // Centre the arc in the upper portion; leave room below for the pct label
+  const cx = size / 2, cy = size / 2 + 4;
   const startAngle = -210, endAngle = 30; // 240° sweep
   const totalDeg = endAngle - startAngle;
   const fillDeg  = totalDeg * Math.clamp01(pct / 100);
@@ -324,32 +325,34 @@ function buildRevMeter(pct, size) {
   // Needle
   const needleDeg = startAngle + fillDeg;
   const needleTip = polarToXY(needleDeg, r - 6);
-  const needleBase1 = polarToXY(needleDeg + 90, 5);
-  const needleBase2 = polarToXY(needleDeg - 90, 5);
+  const needleBase1 = polarToXY(needleDeg + 90, 4);
+  const needleBase2 = polarToXY(needleDeg - 90, 4);
 
   // Color: green > 80%, coral 40-80%, red < 40%
   const trackColor = pct >= 80 ? '#22c55e' : pct >= 40 ? '#ff6b5b' : '#ef4444';
 
   const valText = Math.round(pct) + '%';
+  // SVG total height: include space for the percentage text below the pivot
+  const svgH = size - 4;
 
-  return `<svg width="${size}" height="${size - 10}" viewBox="0 0 ${size} ${size - 10}" xmlns="http://www.w3.org/2000/svg">
+  return `<svg width="${size}" height="${svgH}" viewBox="0 0 ${size} ${svgH}" xmlns="http://www.w3.org/2000/svg">
     <!-- Track bg -->
-    <path d="${arcPath(startAngle, endAngle, r)}" fill="none" stroke="var(--border)" stroke-width="10" stroke-linecap="round"/>
+    <path d="${arcPath(startAngle, endAngle, r)}" fill="none" stroke="var(--border)" stroke-width="9" stroke-linecap="round"/>
     <!-- Fill -->
-    ${fillDeg > 1 ? `<path d="${arcPath(startAngle, startAngle + fillDeg, r)}" fill="none" stroke="${trackColor}" stroke-width="10" stroke-linecap="round"/>` : ''}
+    ${fillDeg > 1 ? `<path d="${arcPath(startAngle, startAngle + fillDeg, r)}" fill="none" stroke="${trackColor}" stroke-width="9" stroke-linecap="round"/>` : ''}
     <!-- Tick marks -->
     ${[0,25,50,75,100].map(t => {
       const deg = startAngle + totalDeg * t / 100;
-      const inner = polarToXY(deg, r - 9);
-      const outer = polarToXY(deg, r - 3);
+      const inner = polarToXY(deg, r - 8);
+      const outer = polarToXY(deg, r - 2);
       return `<line x1="${inner.x}" y1="${inner.y}" x2="${outer.x}" y2="${outer.y}" stroke="var(--white)" stroke-width="1.5"/>`;
     }).join('')}
     <!-- Needle -->
     <polygon points="${needleTip.x},${needleTip.y} ${needleBase1.x},${needleBase1.y} ${cx},${cy} ${needleBase2.x},${needleBase2.y}"
       fill="${trackColor}" opacity="0.9"/>
-    <circle cx="${cx}" cy="${cy}" r="5" fill="var(--dark)" opacity="0.8"/>
-    <!-- Value -->
-    <text x="${cx}" y="${cy + 24}" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="16" fill="${trackColor}">${valText}</text>
+    <circle cx="${cx}" cy="${cy}" r="4.5" fill="var(--dark)" opacity="0.8"/>
+    <!-- Percentage value — centred below the pivot point -->
+    <text x="${cx}" y="${cy + 20}" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="14" fill="${trackColor}">${valText}</text>
   </svg>`;
 }
 

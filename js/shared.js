@@ -141,12 +141,22 @@ function initScrollArrows() {
     });
     updateScrollArrows('investTabBar','investTabLeft','investTabRight','investTabWrap');
   }
+
+  // Habits nav tabs
+  var habitsStrip = document.getElementById('habitsNavTabs');
+  if (habitsStrip) {
+    habitsStrip.addEventListener('scroll', function() {
+      updateScrollArrows('habitsNavTabs','habitsNavLeft','habitsNavRight','habitsNavWrap');
+    });
+    updateScrollArrows('habitsNavTabs','habitsNavLeft','habitsNavRight','habitsNavWrap');
+  }
 }
 
 // Re-check on resize (viewport change)
 window.addEventListener('resize', function() {
   updateScrollArrows('budgetNavTabs','budgetNavLeft','budgetNavRight','budgetNavWrap');
   updateScrollArrows('investTabBar','investTabLeft','investTabRight','investTabWrap');
+  updateScrollArrows('habitsNavTabs','habitsNavLeft','habitsNavRight','habitsNavWrap');
 });
 
 // Init after DOM ready
