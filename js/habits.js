@@ -719,30 +719,80 @@ function buildDailyLineGraph(state) {
 }
 
 // ── Today view ────────────────────────────────────────────────
+// ── Date navigation state for Today/Weekly/Monthly views ──────
+let _hNavDate = toDateStr(new Date()); // YYYY-MM-DD, used for "today" view offset
+
+function hNavDay(delta) {
+  const d = new Date(_hNavDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  // Don't go into the future
+  if (d > new Date()) { _hNavDate = toDateStr(new Date()); }
+  else { _hNavDate = toDateStr(d); }
+  renderHabitsApp();
+}
+function hNavWeek(delta) {
+  const d = new Date(_hNavDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta * 7);
+  if (d > new Date()) { _hNavDate = toDateStr(new Date()); }
+  else { _hNavDate = toDateStr(d); }
+  _hWeek = isoWeek(new Date(_hNavDate + 'T12:00:00'));
+  renderHabitsApp();
+}
+function hNavMonth(delta) {
+  _hMonth += delta;
+  if (_hMonth > 11) { _hMonth = 0; _hYear++; }
+  if (_hMonth < 0)  { _hMonth = 11; _hYear--; }
+  // Clamp to current month
+  const now = new Date();
+  if (_hYear > now.getFullYear() || (_hYear === now.getFullYear() && _hMonth > now.getMonth())) {
+    _hYear = now.getFullYear(); _hMonth = now.getMonth();
+  }
+  renderHabitsApp();
+}
+
+function dateNavBar(label, prevFn, nextFn, isToday) {
+  return `<div class="h-date-nav">
+    <button class="h-date-nav-arrow" onclick="${prevFn}" aria-label="Previous">‹</button>
+    <span class="h-date-nav-label">${label}</span>
+    <button class="h-date-nav-arrow ${isToday ? 'h-date-nav-arrow-disabled' : ''}" onclick="${nextFn}" ${isToday ? 'disabled' : ''} aria-label="Next">›</button>
+  </div>`;
+}
+
 function renderTodayView(state) {
-  const today = toDateStr(new Date());
+  // Use _hNavDate (may be in the past if user navigated)
+  const viewDate = _hNavDate;
+  const nowStr   = toDateStr(new Date());
+  const isToday  = viewDate === nowStr;
+
+  const d = new Date(viewDate + 'T12:00:00');
+  const dayLabel = isToday
+    ? 'Today'
+    : d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+
   const daily = state.routines.filter(r => r.freq === 'daily' && !r.archived);
-  const tasks  = state.tasks.filter(t => t.freq === 'daily' && t.date === today);
+  const tasks  = state.tasks.filter(t => t.freq === 'daily' && t.date === viewDate);
 
   const donePct = daily.length
-    ? Math.round(daily.filter(r => state.checkins.some(c => c.routineId === r.id && c.date === today)).length / daily.length * 100)
+    ? Math.round(daily.filter(r => state.checkins.some(c => c.routineId === r.id && c.date === viewDate)).length / daily.length * 100)
     : 0;
 
   const routineRows = daily.length
     ? daily.map(r => {
-        const done = state.checkins.some(c => c.routineId === r.id && c.date === today);
+        const done = state.checkins.some(c => c.routineId === r.id && c.date === viewDate);
         const streak = calcRoutineStreak(state, r.id);
-        return routineRow(r, done, streak, `toggleCheckin('${r.id}','daily')`);
+        return routineRow(r, done, streak, `toggleCheckin('${r.id}','daily','${viewDate}')`);
       }).join('')
     : '<div class="h-empty">No daily routines — tap Manage to add some</div>';
 
   const taskRows = tasks.map(t => taskRow(t)).join('');
-  const lineGraph = buildDailyLineGraph(state);
+  const lineGraph = isToday ? buildDailyLineGraph(state) : '';
+
+  const nav = dateNavBar(dayLabel, 'hNavDay(-1)', 'hNavDay(1)', isToday);
 
   return `
     <div class="h-section">
       <div class="h-section-head">
-        <h2>Daily Routines</h2>
+        ${nav}
         <div class="h-section-head-right">
           <span class="h-section-pct">${donePct}%</span>
           <button class="h-add-btn" onclick="hOpenAddForm('daily')">+ Add</button>
@@ -753,12 +803,12 @@ function renderTodayView(state) {
     </div>
     <div class="h-section">
       <div class="h-section-head">
-        <h2>Today's Tasks</h2>
+        <h2>${isToday ? "Today's Tasks" : dayLabel + ' Tasks'}</h2>
         <div class="h-section-head-right">
           <button class="h-add-btn" onclick="hFocusTask('daily')">+ Add</button>
         </div>
       </div>
-      <div class="h-routine-list">${taskRows || '<div class="h-empty">No tasks for today</div>'}</div>
+      <div class="h-routine-list">${taskRows || '<div class="h-empty">No tasks for this day</div>'}</div>
       ${taskAddRow('daily')}
     </div>
     ${lineGraph ? `<div class="h-section">
@@ -772,7 +822,7 @@ function renderTodayView(state) {
 // ── Weekly view ───────────────────────────────────────────────
 function renderWeeklyView(state) {
   const week  = _hWeek;
-  const month = toMonthStr(_hYear, _hMonth);
+  const monthly = toMonthStr(_hYear, _hMonth);
   const weekly = state.routines.filter(r => r.freq === 'weekly' && !r.archived);
   const tasks  = state.tasks.filter(t => t.freq === 'weekly' && t.week === week);
 
@@ -787,13 +837,21 @@ function renderWeeklyView(state) {
       }).join('')
     : '<div class="h-empty">No weekly routines — tap Manage to add some</div>';
 
-  // Weekly bar chart (last 8 weeks)
+  // Derive week label: "W21 · May 2026"
+  const navDate = new Date(_hNavDate + 'T12:00:00');
+  const weekNum = week.split('-W')[1];
+  const isCurrentWeek = week === isoWeek(new Date());
+  const weekLabel = isCurrentWeek
+    ? `This Week (W${weekNum})`
+    : `W${weekNum} · ${navDate.toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}`;
+
   const barChart = renderWeeklyBarChart(state);
+  const nav = dateNavBar(weekLabel, 'hNavWeek(-1)', 'hNavWeek(1)', isCurrentWeek);
 
   return `
     <div class="h-section">
       <div class="h-section-head">
-        <h2>This Week's Routines</h2>
+        ${nav}
         <div class="h-section-head-right">
           <span class="h-section-pct">${donePct}%</span>
           <button class="h-add-btn" onclick="hOpenAddForm('weekly')">+ Add</button>
@@ -804,7 +862,7 @@ function renderWeeklyView(state) {
     </div>
     <div class="h-section">
       <div class="h-section-head">
-        <h2>This Week's Tasks</h2>
+        <h2>${isCurrentWeek ? "This Week's Tasks" : weekLabel + ' Tasks'}</h2>
         <div class="h-section-head-right">
           <button class="h-add-btn" onclick="hFocusTask('weekly')">+ Add</button>
         </div>
@@ -864,13 +922,19 @@ function renderMonthlyView(state) {
       }).join('')
     : '<div class="h-empty">No monthly routines — tap Manage to add some</div>';
 
-  // Year-wide monthly completion bars
+  const now = new Date();
+  const isCurrentMonth = _hYear === now.getFullYear() && _hMonth === now.getMonth();
+  const monthLabel = isCurrentMonth
+    ? `${H_MONTHS[_hMonth]}`
+    : `${H_MONTHS[_hMonth]} ${_hYear}`;
+
   const yearBars = renderYearMonthBars(state);
+  const nav = dateNavBar(monthLabel, 'hNavMonth(-1)', 'hNavMonth(1)', isCurrentMonth);
 
   return `
     <div class="h-section">
       <div class="h-section-head">
-        <h2>This Month's Routines</h2>
+        ${nav}
         <div class="h-section-head-right">
           <span class="h-section-pct">${donePct}%</span>
           <button class="h-add-btn" onclick="hOpenAddForm('monthly')">+ Add</button>
@@ -881,7 +945,7 @@ function renderMonthlyView(state) {
     </div>
     <div class="h-section">
       <div class="h-section-head">
-        <h2>This Month's Tasks</h2>
+        <h2>${monthLabel} Tasks</h2>
         <div class="h-section-head-right">
           <button class="h-add-btn" onclick="hFocusTask('monthly')">+ Add</button>
         </div>
@@ -973,6 +1037,7 @@ function renderYearHeatmap(state) {
   // Pad to Monday
   const startDow = jan1.getDay() || 7; // 1=Mon..7=Sun
   const padDays  = startDow - 1;
+  const CELL_W   = 16; // px per column — must match CSS
 
   let cells = '';
   // Padding empties at start
@@ -994,21 +1059,28 @@ function renderYearHeatmap(state) {
     cells += `<div class="h-year-cell heat-${heat}" title="${ds}"></div>`;
   }
 
-  // Month labels
+  // Month labels — placed in a row that scrolls with the grid
+  // Each label is positioned absolutely relative to a min-width container
+  const totalWeeks = Math.ceil((padDays + totalDays) / 7);
+  const gridW = totalWeeks * CELL_W;
+
   const monthLabels = H_MONTHS.map((mn, mi) => {
     const firstOfMonth = new Date(y, mi, 1);
     const doy = Math.floor((firstOfMonth - jan1) / 86400000);
     const week = Math.floor((doy + padDays) / 7);
-    const leftPx = week * 16; // approx column width
+    const leftPx = week * CELL_W;
     return `<span class="h-year-month-label" style="position:absolute;left:${leftPx}px">${mn.slice(0,3)}</span>`;
   }).join('');
 
+  // Wrap both grid and labels in one scroll container so they scroll together
   return `
-    <div class="h-year-heatmap">
-      <div class="h-year-grid">${cells}</div>
-    </div>
-    <div style="position:relative;height:16px;padding:0 14px;overflow:hidden;">
-      ${monthLabels}
+    <div class="h-year-scroll-wrap">
+      <div class="h-year-heatmap" style="min-width:${gridW + 28}px">
+        <div class="h-year-grid">${cells}</div>
+      </div>
+      <div style="position:relative;height:16px;min-width:${gridW + 28}px;padding:0 14px;">
+        ${monthLabels}
+      </div>
     </div>
   `;
 }
@@ -1160,14 +1232,14 @@ function addForm(freq) {
 
 function taskAddRow(freq) {
   return `
-    <div class="h-task-row" style="border-top:1px solid var(--border);border-bottom:none;">
-      <div class="h-task-check" style="opacity:0.3;cursor:default">
+    <div class="h-task-add-row">
+      <div class="h-task-check" style="opacity:0.3;cursor:default;flex-shrink:0;">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </div>
       <input type="text" id="hTaskInput_${freq}" placeholder="Add task…"
-        style="flex:1;border:none;outline:none;font-family:'Lora',Georgia,serif;font-size:13px;color:var(--dark);background:transparent;"
+        class="h-task-add-input"
         onkeydown="if(event.key==='Enter')hAddTask('${freq}')">
-      <button class="h-task-del" onclick="hAddTask('${freq}')" style="opacity:0.7;font-size:13px;font-family:'Montserrat',sans-serif;font-weight:700;color:var(--coral);">Add</button>
+      <button class="h-task-add-btn" onclick="hAddTask('${freq}')">Add</button>
     </div>`;
 }
 

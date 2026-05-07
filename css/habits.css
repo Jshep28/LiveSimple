@@ -504,9 +504,20 @@
 .h-cal-cell.heat-4  { background: var(--coral);          color: #fff; }
 
 /* ── Year heatmap (52 weeks × 7 days) ──────────────────────── */
-.h-year-heatmap {
-  padding: 14px 14px 8px;
+/* Outer wrapper scrolls horizontally, carrying both the grid AND month labels */
+.h-year-scroll-wrap {
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.h-year-scroll-wrap::-webkit-scrollbar { display: none; }
+
+.h-year-heatmap {
+  padding: 14px 14px 4px;
+  /* overflow-x handled by parent .h-year-scroll-wrap */
+  overflow: visible;
 }
 .h-year-grid {
   display: grid;
@@ -795,6 +806,83 @@
   color: var(--mid);
 }
 
+/* ── Date navigation bar (Today / Week / Month header) ───────── */
+.h-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.h-date-nav-arrow {
+  background: rgba(255,255,255,0.22);
+  border: none;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.h-date-nav-arrow:hover { background: rgba(255,255,255,0.36); }
+.h-date-nav-arrow-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.h-date-nav-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Task add row (input + button at bottom of task section) ─── */
+.h-task-add-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--white);
+}
+.h-task-add-row input[type="text"],
+.h-task-add-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 14px;
+  color: var(--dark);
+  background: transparent !important;
+  min-width: 0;
+}
+.h-task-add-row input[type="text"]::placeholder,
+.h-task-add-input::placeholder { color: var(--mid); opacity: 0.7; }
+.h-task-add-btn {
+  background: none;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--coral);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 4px 2px;
+}
+
 /* ── Settings page wrapper ───────────────────────────────────── */
 /* Uses the same .settings-section / .settings-row classes as budget — no overrides needed */
 .h-settings-wrap {
@@ -807,9 +895,37 @@
 [data-theme="dark"] .h-manage-sheet { background: var(--white); }
 [data-theme="dark"] .h-manage-header { background: var(--white); }
 [data-theme="dark"] .h-streak-card { background: var(--navy); border-color: var(--border); }
+/* Override the global dark-mode input rule for ALL habits inputs */
 [data-theme="dark"] .h-add-form input[type="text"],
-[data-theme="dark"] .h-manage-add input { background: var(--white); color: var(--dark); }
+[data-theme="dark"] .h-manage-add input,
+[data-theme="dark"] #app-habits input[type="text"],
+[data-theme="dark"] #app-habits input[type="date"],
+[data-theme="dark"] #app-habits textarea {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: var(--border) !important;
+  color: var(--dark) !important;
+}
+/* Task add input: always transparent — no box */
+[data-theme="dark"] .h-task-add-input,
+[data-theme="dark"] .h-task-add-row input {
+  background: transparent !important;
+  border: none !important;
+  color: var(--dark) !important;
+}
+[data-theme="dark"] .h-add-form input[type="text"]:focus,
+[data-theme="dark"] .h-manage-add input:focus,
+[data-theme="dark"] #app-habits input[type="text"]:focus {
+  background: rgba(255,255,255,0.1) !important;
+  border-color: var(--coral) !important;
+}
+/* Task add row: match card bg, no dark pill appearance */
+[data-theme="dark"] .h-task-add-row {
+  background: var(--white);
+  border-top-color: var(--border);
+}
 [data-theme="dark"] .h-freq-pill { background: var(--navy); color: var(--mid); }
 [data-theme="dark"] .h-cal-cell.heat-0 { background: rgba(255,255,255,0.08); }
 [data-theme="dark"] .h-year-cell.heat-0 { background: rgba(255,255,255,0.08); }
 [data-theme="dark"] .h-day-sheet-row:hover { background: rgba(255,107,91,0.06); }
+[data-theme="dark"] .h-hero { background: var(--white); border-color: var(--border); }
+[data-theme="dark"] .week-heatmap { background: var(--white); border-color: var(--border); }
