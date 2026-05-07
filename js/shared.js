@@ -230,6 +230,9 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
   // Item width — must match CSS
   var ITEM_W = 72;
 
+  // Track last-fired index to prevent double-firing from scroll debounce after a click
+  var _lastFiredIdx = activeIdx;
+
   // Build items with ghost padding so first/last can centre
   drum.innerHTML = '';
 
@@ -245,7 +248,17 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
     el.textContent = m.slice(0, 3).toUpperCase();
     el.dataset.idx = i;
     el.addEventListener('click', function() {
-      scrollDrumTo(drum, i, ITEM_W, true);
+      // Instantly snap the drum position (no animation lag)
+      scrollDrumTo(drum, i, ITEM_W, false);
+      // Update active highlight immediately
+      drum.querySelectorAll('.month-drum-item').forEach(function(el2) {
+        el2.classList.toggle('active', parseInt(el2.dataset.idx) === i);
+      });
+      // Fire selection immediately — don't wait for scroll debounce
+      if (i !== _lastFiredIdx) {
+        _lastFiredIdx = i;
+        onSelect(i);
+      }
     });
     drum.appendChild(el);
   });
@@ -272,7 +285,7 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
     requestAnimationFrame(sizeGhosts);
   }
 
-  // Snap detection on scroll end
+  // Snap detection on scroll end (for finger-drag scrolling)
   var _snapTimer = null;
   drum.addEventListener('scroll', function() {
     updateDrumActive(drum, ITEM_W);
@@ -284,7 +297,11 @@ window.buildMonthDrum = function(containerId, months, activeIdx, onSelect) {
         drum.querySelectorAll('.month-drum-item').forEach(function(el) {
           el.classList.toggle('active', parseInt(el.dataset.idx) === idx);
         });
-        onSelect(idx);
+        // Only fire onSelect if this is a new index (guards against click-triggered scroll)
+        if (idx !== _lastFiredIdx) {
+          _lastFiredIdx = idx;
+          onSelect(idx);
+        }
       }
     }, 120);
   }, { passive: true });
@@ -346,9 +363,9 @@ function updateMonthArrows(stripId, leftBtnId, rightBtnId, wrapId) {
 }
 
 function initMonthArrows() {
-  // Only habit month selector still uses arrow buttons
   var pairs = [
-    { strip: 'habitMonthSelector', left: 'habitMonthLeft', right: 'habitMonthRight', wrap: 'habitMonthWrap' },
+    { strip: 'monthSelector',      left: 'budgetMonthLeft', right: 'budgetMonthRight', wrap: 'budgetMonthWrap' },
+    { strip: 'habitMonthSelector', left: 'habitMonthLeft',  right: 'habitMonthRight',  wrap: 'habitMonthWrap'  },
   ];
   pairs.forEach(function(p) {
     var strip = document.getElementById(p.strip);
@@ -361,7 +378,8 @@ function initMonthArrows() {
 }
 
 window.addEventListener('resize', function() {
-  updateMonthArrows('habitMonthSelector', 'habitMonthLeft', 'habitMonthRight', 'habitMonthWrap');
+  updateMonthArrows('monthSelector',      'budgetMonthLeft', 'budgetMonthRight', 'budgetMonthWrap');
+  updateMonthArrows('habitMonthSelector', 'habitMonthLeft',  'habitMonthRight',  'habitMonthWrap');
 });
 
 if (document.readyState === 'loading') {
@@ -375,7 +393,8 @@ if (document.readyState === 'loading') {
 }
 
 window.refreshMonthArrows = function() {
-  updateMonthArrows('habitMonthSelector', 'habitMonthLeft', 'habitMonthRight', 'habitMonthWrap');
+  updateMonthArrows('monthSelector',      'budgetMonthLeft', 'budgetMonthRight', 'budgetMonthWrap');
+  updateMonthArrows('habitMonthSelector', 'habitMonthLeft',  'habitMonthRight',  'habitMonthWrap');
 };
 
 

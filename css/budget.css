@@ -674,95 +674,122 @@ nav {
   transition: width 0.4s ease;
 }
 
-/* ── MONTH DRUM PICKER ──────────────────────────────────────── */
-.month-drum-wrap {
+/* ── MONTH SELECTOR — desktop: pill buttons, mobile: drum ───── */
+
+/* Desktop pill selector (hidden on mobile) */
+.month-scroll-wrap {
+  display: flex;
+  align-items: center;
   position: relative;
-  height: 60px;
-  margin: 0 0 4px;
-  overflow: hidden;
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
 }
-
-/* The scrolling track */
-.month-drum {
+.month-selector {
   display: flex;
-  align-items: center;
-  height: 100%;
-  overflow-x: scroll;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  gap: 8px;
+  padding: 16px;
+  overflow-x: auto;
   scrollbar-width: none;
-  /* padding pads so first/last items can centre */
-  padding: 0;
-  gap: 0;
-  cursor: grab;
+  flex: 1;
 }
-.month-drum:active { cursor: grabbing; }
-.month-drum::-webkit-scrollbar { display: none; }
-
-/* Each month item */
-.month-drum-item {
+.month-selector::-webkit-scrollbar { display: none; }
+.month-btn {
   flex-shrink: 0;
-  width: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.5px;
+  font-size: 11px;
   color: var(--mid);
-  scroll-snap-align: center;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: color 0.15s, font-size 0.15s;
   cursor: pointer;
+  transition: all 0.15s;
 }
-.month-drum-item.active {
-  color: var(--dark);
-  font-size: 14px;
-  font-weight: 900;
+.month-btn.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: white;
 }
-
-/* Centre selection indicator lines */
-.month-drum-cursor {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  width: 72px;
-  height: 100%;
-  border-left: 2px solid var(--coral);
-  border-right: 2px solid var(--coral);
-  opacity: 0.35;
-  border-radius: 2px;
+.month-btn:hover:not(.active) {
+  border-color: var(--coral);
+  color: var(--coral);
 }
 
-/* Left/right fade-out gradients */
-.month-drum-fade {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 80px;
-  pointer-events: none;
-  z-index: 1;
-}
-.month-drum-fade-left {
-  left: 0;
-  background: linear-gradient(to right, var(--white) 30%, transparent);
-}
-.month-drum-fade-right {
-  right: 0;
-  background: linear-gradient(to left, var(--white) 30%, transparent);
-}
+/* Mobile drum (hidden on desktop) */
+.month-drum-wrap { display: none; }
 
-/* Dark mode */
-[data-theme="dark"] .month-drum-fade-left  { background: linear-gradient(to right, var(--white) 30%, transparent); }
-[data-theme="dark"] .month-drum-fade-right { background: linear-gradient(to left,  var(--white) 30%, transparent); }
+@media (max-width: 768px) {
+  /* Hide desktop pills */
+  .month-scroll-wrap { display: none !important; }
+
+  /* Show drum */
+  .month-drum-wrap {
+    display: block;
+    position: relative;
+    height: 56px;
+    overflow: hidden;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .month-drum {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0;
+    gap: 0;
+  }
+  .month-drum::-webkit-scrollbar { display: none; }
+
+  .month-drum-item {
+    flex-shrink: 0;
+    width: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--mid);
+    scroll-snap-align: center;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    transition: color 0.1s, font-size 0.1s, font-weight 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .month-drum-item.active {
+    color: var(--dark);
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  /* Fade gradients only — no cursor bars */
+  .month-drum-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 72px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .month-drum-fade-left {
+    left: 0;
+    background: linear-gradient(to right, var(--white) 20%, transparent);
+  }
+  .month-drum-fade-right {
+    right: 0;
+    background: linear-gradient(to left, var(--white) 20%, transparent);
+  }
+  [data-theme="dark"] .month-drum-fade-left  { background: linear-gradient(to right, var(--white) 20%, transparent); }
+  [data-theme="dark"] .month-drum-fade-right { background: linear-gradient(to left,  var(--white) 20%, transparent); }
+}
 
 /* HABIT TRACKER PAGE */
 .habit-hero {

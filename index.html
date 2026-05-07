@@ -115,11 +115,17 @@
     <button onclick="copyLastMonth(true)" style="background:var(--navy);border:none;border-radius:8px;padding:5px 12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:white;cursor:pointer;white-space:nowrap;">Copy budget + actuals</button>
   </div>
 
-  <div class="month-drum-wrap" id="budgetMonthWrap">
+  <!-- Desktop: pill month selector -->
+  <div class="month-scroll-wrap" id="budgetMonthWrap">
+    <button class="month-scroll-arrow month-scroll-left" id="budgetMonthLeft" onclick="scrollMonths('monthSelector',-160)" aria-label="Scroll months left">‹</button>
+    <div class="month-selector" id="monthSelector"></div>
+    <button class="month-scroll-arrow month-scroll-right" id="budgetMonthRight" onclick="scrollMonths('monthSelector',160)" aria-label="Scroll months right">›</button>
+  </div>
+  <!-- Mobile: drum scroll picker -->
+  <div class="month-drum-wrap" id="budgetMonthDrumWrap">
     <div class="month-drum-fade month-drum-fade-left"></div>
-    <div class="month-drum" id="monthSelector"></div>
+    <div class="month-drum" id="monthDrum"></div>
     <div class="month-drum-fade month-drum-fade-right"></div>
-    <div class="month-drum-cursor"></div>
   </div>
 
   <div class="left-card">
