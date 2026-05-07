@@ -8,6 +8,13 @@
   min-height: 100vh;
   background: var(--light);
 }
+
+/* Nav is always two rows: override the shared 56px fixed height */
+#app-habits nav {
+  height: auto !important;
+  min-height: 56px;
+}
+
 #app-habits .logo {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;

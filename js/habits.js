@@ -1211,4 +1211,20 @@ function selectHabitMonth(m) {
 function initHabitsApp() {
   migrateOldHabits();
   renderHabitsApp();
+  // Re-check nav tab scroll arrows after render (habits nav is two-row, needs measuring)
+  requestAnimationFrame(function() {
+    if (typeof updateScrollArrows === 'function') {
+      updateScrollArrows('habitsNavTabs','habitsNavLeft','habitsNavRight','habitsNavWrap');
+    }
+  });
 }
+
+// Auto-init: if habits is the active app when this script loads,
+// shared.js already ran switchApp() before habits.js existed.
+// Re-run now so the UI renders correctly on first load.
+(function() {
+  var active = document.getElementById('app-habits');
+  if (active && active.classList.contains('active')) {
+    initHabitsApp();
+  }
+})();
